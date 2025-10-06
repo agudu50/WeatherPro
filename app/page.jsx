@@ -215,7 +215,7 @@ export default function App() {
               <Cloud className="h-8 w-8 text-white animate-bounce" />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
             </div>
-            <h1 className="text-2xl font-bold text-white">WeatherPro</h1>
+            <h1 className="text-2xl font-bold text-white">Climafy</h1>
           </div>
           <div className="hidden md:flex items-center gap-6">
             <Link href="#features" className="text-white/80 hover:text-white transition-colors">Features</Link>
@@ -461,7 +461,7 @@ export default function App() {
       <footer className="relative z-10 text-center text-white/60 pb-8">
         <div className="container mx-auto px-4">
           <div className="border-t border-white/20 pt-8">
-            <p>&copy; 2024 WeatherPro Dashboard. Built with precision and care.</p>
+            <p>&copy; 2024 Climafy Dashboard. Built with precision and care.</p>
             <div className="flex justify-center gap-6 mt-4">
               <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
               <Link href="#" className="hover:text-white transition-colors">Terms</Link>
