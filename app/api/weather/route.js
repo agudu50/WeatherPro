@@ -8,6 +8,9 @@ export async function GET(request) {
   const lat = searchParams.get("lat")
   const lon = searchParams.get("lon")
 
+  console.log('API Key exists:', !!API_KEY)
+  console.log('API Key first 5 chars:', API_KEY?.substring(0, 5))
+
   if (!API_KEY) {
     return NextResponse.json({ error: "API key not configured" }, { status: 500 })
   }
@@ -22,11 +25,16 @@ export async function GET(request) {
       return NextResponse.json({ error: "City name or coordinates required" }, { status: 400 })
     }
 
+    console.log('Fetching weather from:', weatherUrl.replace(API_KEY, 'HIDDEN'))
+
     const response = await fetch(weatherUrl)
 
     if (!response.ok) {
       if (response.status === 404) {
         return NextResponse.json({ error: "City not found" }, { status: 404 })
+      }
+      if (response.status === 401) {
+        return NextResponse.json({ error: "Invalid API key" }, { status: 401 })
       }
       throw new Error("Weather API request failed")
     }
