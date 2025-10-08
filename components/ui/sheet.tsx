@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import * as SheetPrimitive from '@radix-ui/react-dialog'
-import { XIcon } from 'lucide-react'
+import { X as XIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -48,9 +48,15 @@ function SheetContent({
   className,
   children,
   side = 'right',
+  title = 'Dialog',
+  showHeader = false,
+  headerContent,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: 'top' | 'right' | 'bottom' | 'left'
+  title?: string
+  showHeader?: boolean // when true render a visible header optimized for mobile
+  headerContent?: React.ReactNode
 }) {
   return (
     <SheetPortal>
@@ -59,21 +65,71 @@ function SheetContent({
         data-slot="sheet-content"
         className={cn(
           'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-4 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500',
+          // responsive sizing: full width on xs, constrained on sm+
           side === 'right' &&
-            'data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm',
+            'inset-y-0 right-0 h-full w-full sm:w-3/4 sm:max-w-sm border-l',
           side === 'left' &&
-            'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm',
+            'inset-y-0 left-0 h-full w-full sm:w-3/4 sm:max-w-sm border-r',
           side === 'top' &&
-            'data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b',
+            'inset-x-0 top-0 h-auto w-full border-b',
           side === 'bottom' &&
-            'data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t',
+            'inset-x-0 bottom-0 h-auto w-full border-t sm:max-h-[70vh]',
           className,
         )}
         {...props}
       >
+        {/* Always include an accessible Radix Title (sr-only fallback) */}
+        <SheetPrimitive.Title className="sr-only">{title}</SheetPrimitive.Title>
+
+        {/* Visible header optimized for mobile (hamburger / nav sheets) */}
+        {showHeader && (
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-background/60 sm:hidden">
+            <div className="flex items-center gap-3">
+              {/* small logo / handle */}
+              <div className="w-8 h-8 rounded-md bg-muted-foreground/10 flex items-center justify-center">
+                {/* decorative */}
+              </div>
+              <div className="min-w-0">
+                <SheetPrimitive.Title className="text-sm font-semibold text-foreground truncate">
+                  {title}
+                </SheetPrimitive.Title>
+                {headerContent && (
+                  <div className="text-xs text-muted-foreground truncate">
+                    {headerContent}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* mobile close - visible only on small screens (header) */}
+            <SheetPrimitive.Close asChild>
+              <button
+                aria-label="Close"
+                className="inline-flex items-center justify-center w-9 h-9 rounded-md hover:bg-muted-foreground/10 focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <XIcon className="h-4 w-4" />
+              </button>
+            </SheetPrimitive.Close>
+          </div>
+        )}
+
+        {/* Top drag handle for bottom sheet (mobile UX) */}
+        {side === 'bottom' && (
+          <div className="hidden sm:block w-full flex justify-center pt-2">
+            <div className="h-1.5 w-12 rounded-full bg-muted-foreground/30" />
+          </div>
+        )}
+
         {children}
-        <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
-          <XIcon className="size-4" />
+
+        {/* Desktop/large-screen close - hidden on mobile when header is used */}
+        <SheetPrimitive.Close
+          className={cn(
+            'ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none',
+            showHeader ? 'hidden sm:inline-flex' : 'inline-flex'
+          )}
+        >
+          <XIcon className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>
