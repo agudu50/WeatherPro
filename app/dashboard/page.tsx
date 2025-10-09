@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import {
   Cloud,
   Droplets,
@@ -131,6 +131,9 @@ export default function DashboardPage() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [particles, setParticles] = useState<Array<{id: number, left: number, top: number, delay: number}>>([])
   
+  // ✅ Add useRef to track the timer
+  const clockTimerRef = useRef<NodeJS.Timeout | null>(null)
+  
   const [userLocation, setUserLocation] = useState({
     name: "Detecting your location...",
     lat: null as number | null,
@@ -253,7 +256,30 @@ export default function DashboardPage() {
     )
   }
 
-  // ✅ Load preferences
+  // ✅ FIXED: Use recursive setTimeout to avoid StrictMode issues with setInterval
+  useEffect(() => {
+    console.log('🕐 Clock timer starting...') // Debug log
+    
+    const updateClock = () => {
+      const now = new Date()
+      console.log('⏰ Clock updating:', now.toLocaleTimeString()) // Debug log
+      setCurrentTime(now)
+      clockTimerRef.current = setTimeout(updateClock, 1000)
+    }
+
+    // Start the timer
+    updateClock()
+
+    return () => {
+      console.log('🛑 Cleaning up clock timer') // Debug log
+      if (clockTimerRef.current) {
+        clearTimeout(clockTimerRef.current)
+        clockTimerRef.current = null
+      }
+    }
+  }, []) // Empty dependency array
+
+  // ✅ Load preferences and initialize app
   useEffect(() => {
     setIsLoaded(true)
     
@@ -296,25 +322,32 @@ export default function DashboardPage() {
       delay: Math.random() * 5
     }))
     setParticles(newParticles)
+  }, []) // Only run once on mount
 
-    const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 1000)
-
+  // ✅ Weather refresh timer - separate useEffect
+  useEffect(() => {
+    let retryCount = 0
+    const maxRetries = 3
+    
     const weatherRefreshTimer = setInterval(() => {
-      console.log('🔄 Auto-refreshing weather data...')
-      if (userLocation.lat && userLocation.lon) {
-        fetchWeather(userLocation)
+      if (userLocation.lat && userLocation.lon && !loading) {
+        console.log('🔄 Auto-refreshing weather data...', new Date().toISOString())
+        fetchWeather(userLocation).catch(() => {
+          retryCount++
+          if (retryCount < maxRetries) {
+            console.log(`🔄 Retry ${retryCount}/${maxRetries} in ${retryCount * 5}s`)
+            setTimeout(() => fetchWeather(userLocation), retryCount * 5000)
+          }
+        })
       }
-    }, 10 * 60 * 1000)
+    }, 5 * 60 * 1000) // Refresh every 5 minutes for live data
 
     return () => {
-      clearInterval(timer)
       clearInterval(weatherRefreshTimer)
     }
-  }, [])
+  }, [userLocation.lat, userLocation.lon, loading]) // This can have dependencies
 
-  // ✅ Fetch REAL weather data
+  // ✅ Enhanced fetch functions with better error handling and live data optimization
   const fetchWeather = async (location: typeof userLocation) => {
     setLoading(true)
     setError(null)
@@ -332,18 +365,35 @@ export default function DashboardPage() {
         throw new Error('No valid location data')
       }
       
-      const response = await fetch(url)
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      })
       
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to fetch weather')
+        // Enhanced error handling
+        if (response.status === 404) {
+          throw new Error('📍 Location not found. Please check the city name or enable GPS.')
+        } else if (response.status === 401) {
+          throw new Error('🔑 API key invalid. Please check your OpenWeatherMap API key.')
+        } else if (response.status === 429) {
+          throw new Error('⏰ Too many requests. Please try again in a moment.')
+        } else if (response.status >= 500) {
+          throw new Error('🛠️ Weather service temporarily unavailable. Please try again later.')
+        }
+        throw new Error(errorData.error || 'Failed to fetch weather data')
       }
       
       const data = await response.json()
       console.log('✅ LIVE Weather data received:', {
         location: data.name,
         temp: data.main.temp,
-        weather: data.weather[0].main
+        weather: data.weather[0].main,
+        timestamp: new Date().toISOString()
       })
       
       setWeatherData(data)
@@ -369,24 +419,23 @@ export default function DashboardPage() {
       
     } catch (err) {
       console.error('❌ Weather fetch error:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load weather')
+      setError(err instanceof Error ? err.message : 'Failed to load weather data')
     } finally {
       setLoading(false)
     }
   }
 
-  // ✅ Fetch forecast data
+  // ✅ Enhanced forecast with live data optimization
   const fetchForecast = async (lat: number, lon: number) => {
     try {
-      const API_KEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
-      )
+      const response = await fetch(`/api/forecast?lat=${lat}&lon=${lon}`, {
+        headers: { 'Cache-Control': 'no-cache' }
+      })
       
       if (!response.ok) throw new Error('Failed to fetch forecast')
       
       const data = await response.json()
-      console.log('✅ LIVE Forecast data received')
+      console.log('✅ LIVE Forecast data received:', data.list.length, 'items')
       
       const hourly = data.list.slice(0, 8)
       setHourlyForecast(hourly)
@@ -401,39 +450,47 @@ export default function DashboardPage() {
     }
   }
 
-  // ✅ Fetch Air Quality data
+  // ✅ Enhanced Air Quality with live data
   const fetchAirQuality = async (lat: number, lon: number) => {
     try {
-      const API_KEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-      )
+      const response = await fetch(`/api/air-quality?lat=${lat}&lon=${lon}`, {
+        headers: { 'Cache-Control': 'no-cache' }
+      })
       
       if (!response.ok) throw new Error('Failed to fetch air quality')
       
       const data = await response.json()
-      console.log('✅ Air Quality data received:', data.list[0].main.aqi)
+      console.log('✅ LIVE Air Quality data received:', data.list[0].main.aqi)
       setAirQuality(data)
     } catch (error) {
       console.error('❌ Air quality fetch error:', error)
     }
   }
 
-  // ✅ Fetch UV Index
-  const fetchUVIndex = async (lat: number, lon: number) => {
+  // ✅ This function should be in your dashboard component
+  interface UVIndexApiResponse {
+    value: number
+    date: number
+  }
+
+  const fetchUVIndex = async (lat: number, lon: number): Promise<void> => {
     try {
-      const API_KEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-      )
+      const response: Response = await fetch(`/api/uv?lat=${lat}&lon=${lon}`, {
+        headers: { 'Cache-Control': 'no-cache' }
+      })
       
-      if (!response.ok) throw new Error('Failed to fetch UV index')
+      if (!response.ok) {
+        const errorData: { error: string } = await response.json()
+        console.warn('⚠️ UV index fetch failed:', errorData.error)
+        return // Gracefully fail without crashing the app
+      }
       
-      const data = await response.json()
-      console.log('✅ UV Index data received:', data.value)
+      const data: UVIndexApiResponse = await response.json()
+      console.log('✅ LIVE UV Index data received:', data.value)
       setUVIndexData(data)
     } catch (error) {
-      console.error('❌ UV index fetch error:', error)
+      console.warn('⚠️ UV index fetch error:', error)
+      // Don't set error state, just log it
     }
   }
 
@@ -629,7 +686,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-1.5 sm:gap-2 order-2 sm:order-1">
                   <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600" />
                   <span className={`text-lg sm:text-xl md:text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                    {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                    {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 </div>
                 

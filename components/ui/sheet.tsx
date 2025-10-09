@@ -115,7 +115,7 @@ function SheetContent({
 
         {/* Top drag handle for bottom sheet (mobile UX) */}
         {side === 'bottom' && (
-          <div className="hidden sm:block w-full flex justify-center pt-2">
+          <div className="hidden sm:block w-full justify-center pt-2">
             <div className="h-1.5 w-12 rounded-full bg-muted-foreground/30" />
           </div>
         )}

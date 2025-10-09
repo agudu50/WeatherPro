@@ -19,16 +19,23 @@ export async function GET(request) {
   }
 
   try {
+    // ✅ CORRECT: Use UV index API endpoint
     const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+      `https://api.openweathermap.org/data/2.5/uvi?lat=${lat}&lon=${lon}&appid=${API_KEY}`
     )
     
-    if (!response.ok) throw new Error('Forecast API failed')
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('UV index API error:', response.status, errorText)
+      throw new Error('UV index API failed')
+    }
     
     const data = await response.json()
+    console.log('✅ UV Index API response:', data)
     return NextResponse.json(data)
     
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch forecast' }, { status: 500 })
+    console.error('UV index fetch error:', error)
+    return NextResponse.json({ error: 'Failed to fetch UV index' }, { status: 500 })
   }
 }

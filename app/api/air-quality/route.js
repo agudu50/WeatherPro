@@ -20,15 +20,20 @@ export async function GET(request) {
 
   try {
     const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+      `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`
     )
     
-    if (!response.ok) throw new Error('Forecast API failed')
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Air quality API error:', response.status, errorText)
+      throw new Error('Air quality API failed')
+    }
     
     const data = await response.json()
     return NextResponse.json(data)
     
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch forecast' }, { status: 500 })
+    console.error('Air quality fetch error:', error)
+    return NextResponse.json({ error: 'Failed to fetch air quality' }, { status: 500 })
   }
 }
