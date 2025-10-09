@@ -26,6 +26,8 @@ import {
   Zap,
   TrendingUp,
   TrendingDown,
+  User,
+  LogOut,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -139,7 +141,7 @@ export default function DashboardPage() {
   const [forecastData, setForecastData] = useState<ForecastItem[]>([])
   const [hourlyForecast, setHourlyForecast] = useState<ForecastItem[]>([])
   const [airQuality, setAirQuality] = useState<AirQualityData | null>(null)
-  const [uvIndex, setUVIndex] = useState<UVIndexData | null>(null)
+  const [uvIndexData, setUVIndexData] = useState<UVIndexData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isCelsius, setIsCelsius] = useState(true)
@@ -429,7 +431,7 @@ export default function DashboardPage() {
       
       const data = await response.json()
       console.log('✅ UV Index data received:', data.value)
-      setUVIndex(data)
+      setUVIndexData(data)
     } catch (error) {
       console.error('❌ UV index fetch error:', error)
     }
@@ -463,6 +465,18 @@ export default function DashboardPage() {
   const handleRefresh = () => {
     console.log('🔄 Manual refresh')
     requestUserLocation(true)
+  }
+
+  const handleUserProfile = () => {
+    console.log('👤 User profile clicked')
+    // Add user profile logic here
+  }
+
+  const handleLogout = () => {
+    console.log('🚪 Logout clicked')
+    // Add logout logic here, e.g., clear localStorage, redirect to login
+    localStorage.clear()
+    window.location.href = '/login' // or wherever the login page is
   }
 
   const toggleUnit = () => {
@@ -544,7 +558,7 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'} relative overflow-hidden transition-colors duration-500`}>
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'} relative overflow-x-hidden min-w-0 transition-colors duration-500`}>
       {/* Animated Background Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((particle) => (
@@ -561,11 +575,11 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="relative z-10 p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
+      <div className="relative z-10 p-2 sm:p-4 md:p-6 max-w-7xl w-full mx-auto pb-24 sm:pb-12 box-border px-2 sm:px-4 md:px-6 page-inner">
         {/* Header Section - Mobile Optimized */}
         <div className={`mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0'}`}>
-          <div className={`${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border ${isDarkMode ? 'border-gray-700' : 'border-white/20'} transition-colors duration-500`}>
-            <div className="flex flex-col gap-4 sm:gap-6">
+          <div className={`${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-2xl p-3 sm:p-5 md:p-7 border ${isDarkMode ? 'border-gray-700' : 'border-white/20'} transition-colors duration-500`}>
+            <div className="flex flex-col gap-3 sm:gap-5">
               <div className="flex-1">
                 <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2`}>
                   Live Weather Dashboard
@@ -573,22 +587,22 @@ export default function DashboardPage() {
                 <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} text-sm sm:text-base md:text-lg`}>Real-time weather data from your location</p>
                 
                 {weatherMessage && !loading && (
-                  <div className={`mt-3 sm:mt-4 px-3 sm:px-4 py-2 ${isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'} rounded-lg inline-block animate-pulse`}>
+                  <div className={`mt-2 sm:mt-3 px-2 sm:px-3 py-1.5 ${isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'} rounded-lg inline-block animate-pulse`}>
                     <p className={`text-xs sm:text-sm font-medium ${isDarkMode ? 'text-blue-200' : 'text-blue-800'}`}>{weatherMessage}</p>
                   </div>
                 )}
                 
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4">
-                  <div className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 mt-2 sm:mt-3">
+                  <div className={`flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                     {loading && !weatherData ? (
                       <>
                         <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 animate-spin" />
-                        <span className="font-semibold truncate max-w-[150px] sm:max-w-none">{userLocation.name}</span>
+                        <span className="font-semibold truncate max-w-[120px] sm:max-w-none">{userLocation.name}</span>
                       </>
                     ) : (
                       <>
                         <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 animate-pulse" />
-                        <span className="font-semibold truncate max-w-[150px] sm:max-w-none">{userLocation.name}</span>
+                        <span className="font-semibold truncate max-w-[120px] sm:max-w-none">{userLocation.name}</span>
                         {userLocation.lat && userLocation.lon && (
                           <Badge variant="outline" className="text-[10px] sm:text-xs hidden sm:inline-flex">
                             GPS: {userLocation.lat.toFixed(4)}°, {userLocation.lon.toFixed(4)}°
@@ -597,7 +611,7 @@ export default function DashboardPage() {
                       </>
                     )}
                   </div>
-                  <div className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <div className={`flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                     <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
                     <span className="hidden sm:inline">{currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
                     <span className="sm:hidden">{currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
@@ -611,40 +625,40 @@ export default function DashboardPage() {
               </div>
               
               {/* Controls - Mobile Optimized */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
-                <div className="flex items-center gap-2 sm:gap-3 order-2 sm:order-1">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-3">
+                <div className="flex items-center gap-1.5 sm:gap-2 order-2 sm:order-1">
                   <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600" />
                   <span className={`text-lg sm:text-xl md:text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                     {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
                 
-                <div className="flex flex-wrap gap-1.5 sm:gap-2 order-1 sm:order-2">
+                <div className="flex flex-wrap gap-1 sm:gap-1.5 order-1 sm:order-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => requestUserLocation(true)}
-                    className={`flex-1 sm:flex-none ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
+                    className={`flex-1 sm:flex-none min-w-[36px] ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
                     title="Refresh GPS location"
                   >
-                    <Navigation className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <Navigation className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                   
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleVoiceSearch}
-                    className={`flex-1 sm:flex-none ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
+                    className={`flex-1 sm:flex-none min-w-[36px] ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
                     title="Voice search"
                   >
-                    <Mic className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <Mic className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                   
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={toggleUnit}
-                    className={`flex-1 sm:flex-none ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
+                    className={`flex-1 sm:flex-none min-w-[36px] ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
                   >
                     <span className="text-xs sm:text-sm">°{isCelsius ? 'C' : 'F'}</span>
                   </Button>
@@ -653,19 +667,29 @@ export default function DashboardPage() {
                     variant="outline"
                     size="sm"
                     onClick={toggleDarkMode}
-                    className={`flex-1 sm:flex-none ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
+                    className={`flex-1 sm:flex-none min-w-[36px] ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
                   >
-                    {isDarkMode ? <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                    {isDarkMode ? <Sun className="h-3 w-3 sm:h-4 sm:w-4" /> : <Moon className="h-3 w-3 sm:h-4 sm:w-4" />}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleUserProfile}
+                    className={`flex-1 sm:flex-none min-w-[36px] ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
+                    title="User profile"
+                  >
+                    <User className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                   
                   <Button
                     onClick={handleRefresh}
                     disabled={loading}
                     size="sm"
-                    className="flex-1 sm:flex-none bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    className="flex-1 sm:flex-none min-w-[36px] bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                     title="Refresh all data"
                   >
-                    <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${loading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${loading ? 'animate-spin' : ''}`} />
                   </Button>
                 </div>
               </div>
@@ -675,7 +699,7 @@ export default function DashboardPage() {
 
         {/* Error State */}
         {error && (
-          <div className="mb-4 sm:mb-6 bg-red-50 border-2 border-red-300 text-red-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
+          <div className="mb-4 sm:mb-6 bg-red-50 border-2 border-red-300 text-red-800 rounded-xl sm:rounded-2xl p-2 sm:p-3 flex items-start gap-2 sm:gap-3">
             <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-sm sm:text-base">Error</p>
@@ -687,39 +711,40 @@ export default function DashboardPage() {
         {/* Main Temperature Card - Mobile Optimized */}
         <div className={`mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 delay-200 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
           <Card className="border-0 shadow-2xl bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 text-white overflow-hidden relative">
-            <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-            <CardContent className="p-4 sm:p-6 md:p-8 relative z-10">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-6">
-                <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto">
-                  <div className="p-4 sm:p-6 bg-white/20 rounded-2xl sm:rounded-3xl backdrop-blur-md">
+            {/* overlay: inherit card radius, full size and non-interactive to avoid overflow */}
+            <div className="absolute inset-0 w-full h-full box-border bg-white/10 backdrop-blur-sm rounded-2xl sm:rounded-3xl pointer-events-none" />
+            <CardContent className="p-3 sm:p-5 md:p-7 relative z-10">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-5 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 w-full sm:w-auto">
+                  <div className="p-3 sm:p-5 bg-white/20 rounded-2xl sm:rounded-3xl backdrop-blur-md">
                     {weatherData?.weather[0]?.icon ? (
                       <img 
                         src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@4x.png`}
                         alt={weatherData.weather[0].description}
-                        className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24"
+                        className="h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20"
                       />
                     ) : (
-                      <Cloud className="h-16 w-16 sm:h-20 sm:w-20 animate-pulse" />
+                      <Cloud className="h-14 w-14 sm:h-18 sm:w-18 animate-pulse" />
                     )}
                   </div>
                   <div className="text-center sm:text-left">
-                    <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-2">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2">
                       {loading ? '--' : formatTemp(weatherData?.main.temp || 0)}°{isCelsius ? 'C' : 'F'}
                     </h2>
-                    <p className="text-base sm:text-lg md:text-xl opacity-90 capitalize">
+                    <p className="text-sm sm:text-base md:text-lg opacity-90 capitalize">
                       {loading ? 'Loading live data...' : weatherData?.weather[0]?.description || 'N/A'}
                     </p>
-                    <p className="text-xs sm:text-sm opacity-75 mt-2">
+                    <p className="text-xs sm:text-sm opacity-75 mt-1 sm:mt-2">
                       Feels like {loading ? '--' : formatTemp(weatherData?.main.feels_like || 0)}°{isCelsius ? 'C' : 'F'}
                     </p>
                     {weatherData?.main && (
-                      <div className="flex items-center justify-center sm:justify-start gap-3 sm:gap-4 mt-2 sm:mt-3 text-xs sm:text-sm opacity-90">
+                      <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 mt-1 sm:mt-2 text-xs sm:text-sm opacity-90">
                         <span className="flex items-center gap-1">
-                          <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                           {formatTemp(weatherData.main.temp_max)}°
                         </span>
                         <span className="flex items-center gap-1">
-                          <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <TrendingDown className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                           {formatTemp(weatherData.main.temp_min)}°
                         </span>
                       </div>
@@ -728,11 +753,11 @@ export default function DashboardPage() {
                 </div>
                 
                 <div className="text-center sm:text-right w-full sm:w-auto">
-                  <Badge className="bg-white/30 text-white text-sm sm:text-base md:text-lg px-3 sm:px-4 py-1.5 sm:py-2 mb-2 sm:mb-3">
+                  <Badge className="bg-white/30 text-white text-xs sm:text-sm md:text-base px-2 sm:px-3 py-1 sm:py-1.5 mb-1 sm:mb-2">
                     {loading ? 'Loading' : weatherData?.weather[0]?.main || 'N/A'}
                   </Badge>
                   {weatherData?.clouds && (
-                    <p className="text-xs sm:text-sm opacity-75 mb-1 sm:mb-2">
+                    <p className="text-xs sm:text-sm opacity-75 mb-0.5 sm:mb-1">
                       ☁️ Cloud cover: {weatherData.clouds.all}%
                     </p>
                   )}
@@ -748,32 +773,32 @@ export default function DashboardPage() {
         </div>
 
         {/* Weather Details Grid - Mobile Optimized */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
           {weatherCards.map((card, index) => {
             const Icon = card.icon
             return (
               <div
                 key={card.title}
-                className={`transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+                className={`transition-all duration-1000 min-w-0 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
                 style={{ transitionDelay: `${300 + index * 100}ms` }}
               >
                 <Card className={`border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg overflow-hidden group`}>
-                  <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4 md:p-6">
+                  <CardHeader className="pb-1 sm:pb-2 p-2 sm:p-3 md:p-4">
                     <div className="flex items-center justify-between">
                       <CardTitle className={`text-xs sm:text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                         {card.title}
                       </CardTitle>
-                      <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-gradient-to-br ${card.bgGradient} group-hover:scale-110 transition-transform duration-300`}>
-                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />
+                      <div className={`p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-gradient-to-br ${card.bgGradient} group-hover:scale-110 transition-transform duration-300`}>
+                        <Icon className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-                    <div className="flex items-baseline gap-1 sm:gap-2 mb-1 sm:mb-2">
-                      <span className={`text-2xl sm:text-3xl md:text-4xl font-bold ${card.color}`}>
+                  <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
+                    <div className="flex items-baseline gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                      <span className={`text-xl sm:text-2xl md:text-3xl font-bold ${card.color}`}>
                         {loading ? '--' : card.value}
                       </span>
-                      <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-sm sm:text-base md:text-lg`}>{card.unit}</span>
+                      <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-xs sm:text-sm md:text-base`}>{card.unit}</span>
                     </div>
                     <p className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} line-clamp-2`}>
                       {card.description}
@@ -786,29 +811,29 @@ export default function DashboardPage() {
         </div>
 
         {/* Additional Weather Info - Mobile Optimized */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
           {/* UV Index */}
-          {uvIndex && (
-            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg`}>
-              <CardHeader className="p-3 sm:p-4 md:p-6">
-                <CardTitle className={`flex items-center gap-2 text-xs sm:text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                  <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+          {uvIndexData && (
+            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg overflow-hidden`}>
+              <CardHeader className="p-2 sm:p-3 md:p-4">
+                <CardTitle className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                  <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
                   UV Index
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-600">{uvIndex.value.toFixed(1)}</span>
-                    <Badge className={`${getUVDescription(uvIndex.value).bgColor} ${getUVDescription(uvIndex.value).color} border-0 text-xs`}>
-                      {getUVDescription(uvIndex.value).label}
+              <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="flex items-baseline gap-1.5 sm:gap-2">
+                    <span className="text-xl sm:text-2xl md:text-3xl font-bold text-yellow-600">{uvIndexData.value.toFixed(1)}</span>
+                    <Badge className={`${getUVDescription(uvIndexData.value).bgColor} ${getUVDescription(uvIndexData.value).color} border-0 text-xs`}>
+                      {getUVDescription(uvIndexData.value).label}
                     </Badge>
                   </div>
-                  <Progress value={(uvIndex.value / 11) * 100} className="h-1.5 sm:h-2" />
+                  <Progress value={(uvIndexData.value / 11) * 100} className="h-1 sm:h-1.5" />
                   <p className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {uvIndex.value <= 2 ? "Minimal sun protection required" :
-                     uvIndex.value <= 5 ? "Moderate sun protection needed" :
-                     uvIndex.value <= 7 ? "High sun protection required" :
+                    {uvIndexData.value <= 2 ? "Minimal sun protection required" :
+                     uvIndexData.value <= 5 ? "Moderate sun protection needed" :
+                     uvIndexData.value <= 7 ? "High sun protection required" :
                      "Extreme protection necessary"}
                   </p>
                 </div>
@@ -818,22 +843,22 @@ export default function DashboardPage() {
 
           {/* Air Quality */}
           {airQuality && (
-            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg`}>
-              <CardHeader className="p-3 sm:p-4 md:p-6">
-                <CardTitle className={`flex items-center gap-2 text-xs sm:text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                  <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg overflow-hidden`}>
+              <CardHeader className="p-2 sm:p-3 md:p-4">
+                <CardTitle className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                  <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
                   Air Quality
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-600">{airQuality.list[0].main.aqi}</span>
+              <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="flex items-baseline gap-1.5 sm:gap-2">
+                    <span className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600">{airQuality.list[0].main.aqi}</span>
                     <Badge className={`${getAQIDescription(airQuality.list[0].main.aqi).bgColor} ${getAQIDescription(airQuality.list[0].main.aqi).color} border-0 text-xs`}>
                       {getAQIDescription(airQuality.list[0].main.aqi).label}
                     </Badge>
                   </div>
-                  <Progress value={(airQuality.list[0].main.aqi / 5) * 100} className="h-1.5 sm:h-2" />
+                  <Progress value={(airQuality.list[0].main.aqi / 5) * 100} className="h-1 sm:h-1.5" />
                   <div className={`text-[10px] sm:text-xs space-y-0.5 sm:space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     <p>PM2.5: {airQuality.list[0].components.pm2_5.toFixed(1)} μg/m³</p>
                     <p>PM10: {airQuality.list[0].components.pm10.toFixed(1)} μg/m³</p>
@@ -845,18 +870,18 @@ export default function DashboardPage() {
 
           {/* Sunrise/Sunset */}
           {weatherData?.sys && (
-            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg`}>
-              <CardHeader className="p-3 sm:p-4 md:p-6">
-                <CardTitle className={`flex items-center gap-2 text-xs sm:text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                  <Sunrise className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg overflow-hidden`}>
+              <CardHeader className="p-2 sm:p-3 md:p-4">
+                <CardTitle className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                  <Sunrise className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-500" />
                   Sun Times
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-                <div className="space-y-3 sm:space-y-4">
+              <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
+                <div className="space-y-2 sm:space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <Sunrise className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-500" />
+                    <div className="flex items-center gap-1 sm:gap-1.5">
+                      <Sunrise className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-orange-500" />
                       <span className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Sunrise</span>
                     </div>
                     <span className={`font-bold text-sm sm:text-base ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
@@ -864,8 +889,8 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <Sunset className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-500" />
+                    <div className="flex items-center gap-1 sm:gap-1.5">
+                      <Sunset className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-indigo-500" />
                       <span className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Sunset</span>
                     </div>
                     <span className={`font-bold text-sm sm:text-base ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
@@ -873,7 +898,7 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   {weatherData.sys.sunrise && weatherData.sys.sunset && (
-                    <p className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-center pt-1 sm:pt-2`}>
+                    <p className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-center pt-1`}>
                       Daylight: {((weatherData.sys.sunset - weatherData.sys.sunrise) / 3600).toFixed(1)} hours
                     </p>
                   )}
@@ -886,33 +911,34 @@ export default function DashboardPage() {
         {/* Hourly Forecast - Mobile Optimized */}
         {hourlyForecast.length > 0 && (
           <div className={`mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 delay-300 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg`}>
-              <CardHeader className="p-3 sm:p-4 md:p-6">
-                <CardTitle className={`flex items-center gap-2 text-sm sm:text-base ${isDarkMode ? 'text-gray-200' : ''}`}>
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg overflow-hidden`}>
+              <CardHeader className="p-2 sm:p-3 md:p-4">
+                <CardTitle className={`flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base ${isDarkMode ? 'text-gray-200' : ''}`}>
+                  <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Hourly Forecast
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-                <div className="overflow-x-auto -mx-3 sm:-mx-4 md:-mx-6">
-                  <div className="flex gap-2 sm:gap-3 md:gap-4 px-3 sm:px-4 md:px-6 pb-2">
+              <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
+                {/* horizontal list: keep scrolling inside container but avoid page-wide overflow */}
+                <div className="overflow-x-auto pb-2">
+                  <div className="flex gap-1.5 sm:gap-2 md:gap-3 px-1 sm:px-3 md:px-4 pb-1 snap-x snap-mandatory overflow-y-hidden">
                     {hourlyForecast.map((hour, index) => {
                       const time = new Date(hour.dt * 1000)
                       return (
-                        <div key={index} className={`flex-shrink-0 text-center p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl ${isDarkMode ? 'bg-gray-700/50' : 'bg-blue-50'} min-w-[70px] sm:min-w-[85px] md:min-w-[100px]`}>
-                          <p className={`text-[10px] sm:text-xs md:text-sm font-semibold mb-1 sm:mb-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                        <div key={index} className={`flex-shrink-0 text-center p-1.5 sm:p-2 md:p-3 rounded-lg sm:rounded-xl ${isDarkMode ? 'bg-gray-700/50' : 'bg-blue-50'} min-w-[60px] sm:min-w-[75px] md:min-w-[90px] snap-center`}>
+                          <p className={`text-[10px] sm:text-xs md:text-sm font-semibold mb-0.5 sm:mb-1 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                             {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                           <img 
                             src={`https://openweathermap.org/img/wn/${hour.weather[0].icon}@2x.png`}
                             alt={hour.weather[0].description}
-                            className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 mx-auto"
+                            className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 mx-auto"
                           />
-                          <p className={`text-base sm:text-lg md:text-xl font-bold mt-1 sm:mt-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                          <p className={`text-sm sm:text-base md:text-lg font-bold mt-0.5 sm:mt-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
                             {formatTemp(hour.main.temp)}°
                           </p>
-                          <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-1 sm:mt-2">
-                            <Droplets className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-500" />
+                          <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1">
+                            <Droplets className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-blue-500" />
                             <span className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                               {(hour.pop * 100).toFixed(0)}%
                             </span>
@@ -930,44 +956,44 @@ export default function DashboardPage() {
         {/* 5-Day Forecast - Mobile Optimized */}
         {forecastData.length > 0 && (
           <div className={`mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 delay-400 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg`}>
-              <CardHeader className="p-3 sm:p-4 md:p-6">
-                <CardTitle className={`flex items-center gap-2 text-sm sm:text-base ${isDarkMode ? 'text-gray-200' : ''}`}>
-                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg overflow-hidden`}>
+              <CardHeader className="p-2 sm:p-3 md:p-4">
+                <CardTitle className={`flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base ${isDarkMode ? 'text-gray-200' : ''}`}>
+                  <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   5-Day Forecast
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
+              <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
                   {forecastData.map((day, index) => {
                     const date = new Date(day.dt * 1000)
                     const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
                     const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                     return (
-                      <div key={index} className={`text-center p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl ${isDarkMode ? 'bg-gray-700/50' : 'bg-blue-50'} hover:scale-105 transition-transform duration-300`}>
-                        <p className={`font-semibold mb-0.5 sm:mb-1 text-xs sm:text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>{dayName}</p>
-                        <p className={`text-[10px] sm:text-xs mb-1 sm:mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{dateStr}</p>
+                      <div key={index} className={`text-center p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl ${isDarkMode ? 'bg-gray-700/50' : 'bg-blue-50'} hover:scale-105 transition-transform duration-300 min-w-0`}>
+                        <p className={`font-semibold mb-0.5 text-xs sm:text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>{dayName}</p>
+                        <p className={`text-[10px] sm:text-xs mb-0.5 sm:mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{dateStr}</p>
                         <img 
                           src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
                           alt={day.weather[0].description}
-                          className="h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12 mx-auto"
+                          className="h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 mx-auto"
                         />
-                        <p className={`text-xl sm:text-2xl font-bold mt-1 sm:mt-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                        <p className={`text-lg sm:text-xl font-bold mt-0.5 sm:mt-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
                           {formatTemp(day.main.temp)}°
                         </p>
                         <p className={`text-[10px] sm:text-xs capitalize mt-0.5 sm:mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} line-clamp-2`}>
                           {day.weather[0].description}
                         </p>
-                        <div className="flex items-center justify-center gap-1 sm:gap-2 mt-1 sm:mt-2 text-[10px] sm:text-xs">
+                        <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1 text-[10px] sm:text-xs">
                           <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3 inline" /> {formatTemp(day.main.temp_max)}°
+                            <TrendingUp className="h-2 w-2 sm:h-2.5 sm:w-2.5 inline" /> {formatTemp(day.main.temp_max)}°
                           </span>
                           <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            <TrendingDown className="h-2.5 w-2.5 sm:h-3 sm:w-3 inline" /> {formatTemp(day.main.temp_min)}°
+                            <TrendingDown className="h-2 w-2 sm:h-2.5 sm:w-2.5 inline" /> {formatTemp(day.main.temp_min)}°
                           </span>
                         </div>
-                        <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-1 sm:mt-2">
-                          <Droplets className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-500" />
+                        <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1">
+                          <Droplets className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-blue-500" />
                           <span className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                             {(day.pop * 100).toFixed(0)}%
                           </span>
@@ -984,33 +1010,33 @@ export default function DashboardPage() {
         {/* Additional Weather Details - Mobile Optimized */}
         {weatherData && (
           <div className={`transition-all duration-1000 delay-500 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg`}>
-              <CardHeader className="p-3 sm:p-4 md:p-6">
-                <CardTitle className={`flex items-center gap-2 text-sm sm:text-base ${isDarkMode ? 'text-gray-200' : ''}`}>
-                  <Thermometer className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg overflow-hidden`}>
+              <CardHeader className="p-2 sm:p-3 md:p-4">
+                <CardTitle className={`flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base ${isDarkMode ? 'text-gray-200' : ''}`}>
+                  <Thermometer className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Additional Details
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
+              <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                   {weatherData.wind.gust && (
-                    <div className={`p-2 sm:p-3 md:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
-                      <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                        <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
+                    <div className={`p-2 sm:p-3 md:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'} min-w-0`}>
+                      <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                        <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-500" />
                         <span className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Wind Gust</span>
                       </div>
-                      <p className={`text-base sm:text-lg md:text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                      <p className={`text-sm sm:text-base md:text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                         {(weatherData.wind.gust * 3.6).toFixed(1)} km/h
                       </p>
                     </div>
                   )}
                   
-                  <div className={`p-2 sm:p-3 md:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
-                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                      <Compass className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
+                  <div className={`p-2 sm:p-3 md:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'} min-w-0`}>
+                    <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                      <Compass className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-blue-500" />
                       <span className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Wind Dir</span>
                     </div>
-                    <p className={`text-base sm:text-lg md:text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                    <p className={`text-sm sm:text-base md:text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                       {getWindDirection(weatherData.wind.deg)}
                     </p>
                     <p className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -1019,23 +1045,23 @@ export default function DashboardPage() {
                   </div>
 
                   {weatherData.rain && (
-                    <div className={`p-2 sm:p-3 md:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
-                      <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                        <CloudRain className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
+                    <div className={`p-2 sm:p-3 md:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'} min-w-0`}>
+                      <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                        <CloudRain className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-blue-500" />
                         <span className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Rainfall</span>
                       </div>
-                      <p className={`text-base sm:text-lg md:text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                      <p className={`text-sm sm:text-base md:text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                         {weatherData.rain["1h"] || weatherData.rain["3h"] || 0} mm
                       </p>
                     </div>
                   )}
 
-                  <div className={`p-2 sm:p-3 md:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
-                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                      <Cloud className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500" />
+                  <div className={`p-2 sm:p-3 md:p-4 rounded-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'} min-w-0`}>
+                    <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                      <Cloud className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-500" />
                       <span className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Cloudiness</span>
                     </div>
-                    <p className={`text-base sm:text-lg md:text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                    <p className={`text-sm sm:text-base md:text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                       {weatherData.clouds.all}%
                     </p>
                   </div>
@@ -1046,21 +1072,110 @@ export default function DashboardPage() {
         )}
       </div>
 
+      {/* Mobile Bottom Action Bar */}
+      <div className="lg:hidden fixed left-2 right-2 bottom-2 z-50">
+        <div className={`flex items-center justify-between gap-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur rounded-full shadow-xl px-2 py-1.5`}>
+          <button
+            onClick={() => requestUserLocation(true)}
+            aria-label="Refresh location"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="Refresh GPS"
+          >
+            <Navigation className="h-4 w-4 text-indigo-600" />
+          </button>
+
+          <button
+            onClick={handleVoiceSearch}
+            aria-label="Voice search"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="Voice search"
+          >
+            <Mic className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+          </button>
+
+          <button
+            onClick={toggleUnit}
+            aria-label="Toggle unit"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="Toggle °C/°F"
+          >
+            <span className="text-xs font-medium">{isCelsius ? '°C' : '°F'}</span>
+          </button>
+
+          <button
+            onClick={toggleDarkMode}
+            aria-label="Toggle dark mode"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="Toggle theme"
+          >
+            {isDarkMode ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-gray-700" />}
+          </button>
+
+          <button
+            onClick={handleUserProfile}
+            aria-label="User profile"
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="User profile"
+          >
+            <User className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+          </button>
+
+          <button
+            onClick={handleRefresh}
+            aria-label="Refresh all data"
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md hover:opacity-95"
+            title="Refresh all data"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+      </div>
+
       <style jsx>{`
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px) translateX(0px);
-            opacity: 0.3;
-          }
-          50% {
-            transform: translateY(-20px) translateX(10px);
-            opacity: 0.6;
-          }
+         @keyframes float {
+           0%, 100% {
+             transform: translateY(0px) translateX(0px);
+             opacity: 0.3;
+           }
+           50% {
+             transform: translateY(-20px) translateX(10px);
+             opacity: 0.6;
+           }
+         }
+         .animate-float {
+           animation: float 6s ease-in-out infinite;
+         }
+         /* hide native scrollbars for a cleaner mobile look */
+         .overflow-x-auto::-webkit-scrollbar { display: none; }
+         .overflow-x-auto { -ms-overflow-style: none; scrollbar-width: none; }
+ 
+        /* reset & layout safeguards */
+        :global(html), :global(body), :global(#__next) {
+          margin: 0;
+          width: 100%;
+          min-height: 100vh;
+          overflow-x: hidden;
+          touch-action: pan-y;
+          -webkit-tap-highlight-color: transparent;
+          box-sizing: border-box;
         }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
+
+        :global(*), :global(*::before), :global(*::after) {
+          box-sizing: inherit;
         }
-      `}</style>
-    </div>
-  )
+
+        /* Prevent grid/flex children from pushing their column larger */
+        :global(.grid > *), :global(.flex > *), :global(.page-inner > *) {
+          min-width: 0;
+        }
+
+        /* Ensure images and svgs don't overflow their containers */
+        :global(img), :global(svg) {
+          max-width: 100%;
+          height: auto;
+          display: block;
+        }
+       `}</style>
+     </div>
+   )
 }
