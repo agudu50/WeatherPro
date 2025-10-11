@@ -115,7 +115,7 @@ yarn start
 
 
 📁 Project Structure
-textweatherapp/
+weatherapp/
 ├── app/
 │   ├── dashboard/
 │   │   ├── page.tsx          # Main dashboard component (mobile-optimized UI)
@@ -135,6 +135,7 @@ textweatherapp/
 ├── public/                   # Static assets (icons, etc.)
 ├── tailwind.config.js        # Tailwind setup with custom themes
 └── README.md                 # You're reading it!
+
 
 ♿ Accessibility & Known Fixes
 The app prioritizes WCAG 2.1 AA compliance:
