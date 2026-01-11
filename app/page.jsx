@@ -183,20 +183,23 @@ export default function App() {
   // Don't render anything until mounted to prevent hydration mismatch
   if (!isMounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Modern Gradient Overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-violet-600/20 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-600/20 via-transparent to-transparent" />
       {/* Animated Background Elements - Client Side Only */}
       <div className="absolute inset-0 overflow-hidden">
         {backgroundParticles.map((particle) => (
           <div
             key={`bg-element-${particle.id}`}
-            className="absolute w-2 h-2 bg-white/20 rounded-full animate-float"
+            className="absolute w-2 h-2 bg-gradient-to-br from-violet-400/30 to-blue-400/30 rounded-full animate-float blur-sm"
             style={{
               left: `${particle.left}%`,
               top: `${particle.top}%`,
@@ -205,6 +208,9 @@ export default function App() {
             }}
           />
         ))}
+        {/* Additional decorative elements */}
+        <div className="absolute top-20 right-20 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
       {/* Navigation */}
@@ -425,8 +431,8 @@ export default function App() {
 
         {/* Enhanced CTA Section */}
         <div className="py-20 text-center">
-          <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-12 max-w-3xl mx-auto relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 group-hover:from-purple-500/30 group-hover:to-pink-500/30 transition-all duration-500" />
+          <div className="bg-gradient-to-br from-violet-500/20 to-purple-500/20 backdrop-blur-lg rounded-3xl border border-violet-400/30 p-12 max-w-3xl mx-auto relative overflow-hidden group shadow-2xl shadow-violet-500/20">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-violet-600/20 to-blue-600/20 group-hover:from-purple-600/30 group-hover:via-violet-600/30 group-hover:to-blue-600/30 transition-all duration-500" />
             <div className="relative z-10">
               <Zap className="h-16 w-16 text-yellow-400 mx-auto mb-6 animate-pulse" />
               <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">

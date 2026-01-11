@@ -767,42 +767,44 @@ export default function DashboardPage() {
 
         {/* Main Temperature Card - Mobile Optimized */}
         <div className={`mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 delay-200 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-          <Card className="border-0 shadow-2xl bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 text-white overflow-hidden relative">
-            {/* overlay: inherit card radius, full size and non-interactive to avoid overflow */}
-            <div className="absolute inset-0 w-full h-full box-border bg-white/10 backdrop-blur-sm rounded-2xl sm:rounded-3xl pointer-events-none" />
+          <Card className="border-0 shadow-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 text-white overflow-hidden relative group hover:shadow-cyan-500/50 transition-all duration-500">
+            {/* Enhanced gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/20 via-transparent to-pink-500/20" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent" />
+            <div className="absolute inset-0 w-full h-full box-border bg-white/5 backdrop-blur-sm rounded-2xl sm:rounded-3xl pointer-events-none" />
             <CardContent className="p-3 sm:p-5 md:p-7 relative z-10">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-5 w-full sm:w-auto">
                 <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 w-full sm:w-auto">
-                  <div className="p-3 sm:p-5 bg-white/20 rounded-2xl sm:rounded-3xl backdrop-blur-md">
+                  <div className="p-3 sm:p-5 bg-white/25 rounded-2xl sm:rounded-3xl backdrop-blur-md shadow-lg ring-2 ring-white/30 group-hover:scale-105 transition-transform duration-300">
                     {weatherData?.weather[0]?.icon ? (
                       <img 
                         src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@4x.png`}
                         alt={weatherData.weather[0].description}
-                        className="h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20"
+                        className="h-14 w-14 sm:h-18 sm:w-18 md:h-20 md:w-20 drop-shadow-lg"
                       />
                     ) : (
-                      <Cloud className="h-14 w-14 sm:h-18 sm:w-18 animate-pulse" />
+                      <Cloud className="h-14 w-14 sm:h-18 sm:w-18 animate-pulse drop-shadow-lg" />
                     )}
                   </div>
                   <div className="text-center sm:text-left">
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 drop-shadow-lg">
                       {loading ? '--' : formatTemp(weatherData?.main.temp || 0)}°{isCelsius ? 'C' : 'F'}
                     </h2>
-                    <p className="text-sm sm:text-base md:text-lg opacity-90 capitalize">
+                    <p className="text-sm sm:text-base md:text-lg text-white/95 font-medium capitalize drop-shadow-md">
                       {loading ? 'Loading live data...' : weatherData?.weather[0]?.description || 'N/A'}
                     </p>
-                    <p className="text-xs sm:text-sm opacity-75 mt-1 sm:mt-2">
+                    <p className="text-xs sm:text-sm text-cyan-100 mt-1 sm:mt-2 font-medium">
                       Feels like {loading ? '--' : formatTemp(weatherData?.main.feels_like || 0)}°{isCelsius ? 'C' : 'F'}
                     </p>
                     {weatherData?.main && (
-                      <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 mt-1 sm:mt-2 text-xs sm:text-sm opacity-90">
-                        <span className="flex items-center gap-1">
-                          <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                          {formatTemp(weatherData.main.temp_max)}°
+                      <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 mt-1 sm:mt-2 text-xs sm:text-sm text-white/95">
+                        <span className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-lg backdrop-blur-sm">
+                          <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-red-200" />
+                          <span className="font-semibold">{formatTemp(weatherData.main.temp_max)}°</span>
                         </span>
-                        <span className="flex items-center gap-1">
-                          <TrendingDown className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                          {formatTemp(weatherData.main.temp_min)}°
+                        <span className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-lg backdrop-blur-sm">
+                          <TrendingDown className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-200" />
+                          <span className="font-semibold">{formatTemp(weatherData.main.temp_min)}°</span>
                         </span>
                       </div>
                     )}
@@ -810,16 +812,16 @@ export default function DashboardPage() {
                 </div>
                 
                 <div className="text-center sm:text-right w-full sm:w-auto">
-                  <Badge className="bg-white/30 text-white text-xs sm:text-sm md:text-base px-2 sm:px-3 py-1 sm:py-1.5 mb-1 sm:mb-2">
+                  <Badge className="bg-gradient-to-r from-white/40 to-white/30 text-white shadow-lg text-xs sm:text-sm md:text-base px-2 sm:px-3 py-1 sm:py-1.5 mb-1 sm:mb-2 border-white/40 font-semibold">
                     {loading ? 'Loading' : weatherData?.weather[0]?.main || 'N/A'}
                   </Badge>
                   {weatherData?.clouds && (
-                    <p className="text-xs sm:text-sm opacity-75 mb-0.5 sm:mb-1">
+                    <p className="text-xs sm:text-sm text-cyan-50 font-medium mb-0.5 sm:mb-1 drop-shadow">
                       ☁️ Cloud cover: {weatherData.clouds.all}%
                     </p>
                   )}
                   {weatherData?.dt && (
-                    <p className="text-xs sm:text-sm opacity-75">
+                    <p className="text-xs sm:text-sm text-cyan-100/90 drop-shadow">
                       Data from: {new Date(weatherData.dt * 1000).toLocaleTimeString()}
                     </p>
                   )}
