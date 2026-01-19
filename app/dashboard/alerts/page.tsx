@@ -1,439 +1,67 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
 import { 
-  AlertTriangle, 
-  Bell, 
-  Clock, 
-  MapPin, 
-  Info, 
-  X, 
-  Filter,
-  Sun,
-  Moon,
+  AlertTriangle,
+  Bell,
+  BellOff,
+  MapPin,
   Search,
   Target,
-  RefreshCw,
   Loader2,
   CloudRain,
   Wind,
   Snowflake,
   Zap,
-  CloudFog,
-  Thermometer
+  Thermometer,
+  AlertCircle,
+  Info,
+  CheckCircle,
+  Clock,
+  Calendar,
+  MapPinned,
+  Radio,
+  Shield,
+  Sun,
+  Moon
 } from "lucide-react"
 
 interface WeatherAlert {
   id: string
-  type: "warning" | "watch" | "advisory"
-  severity: "extreme" | "severe" | "moderate" | "minor"
-  title: string
-  description: string
-  location: string
-  startTime: Date
-  endTime: Date
-  issued: Date
-  dismissed: boolean
-  urgent: boolean
   event: string
-  sender: string
+  headline: string
+  description: string
+  severity: "Extreme" | "Severe" | "Moderate" | "Minor" | "Unknown"
+  urgency: "Immediate" | "Expected" | "Future" | "Past" | "Unknown"
+  start: number
+  end: number
+  senderName: string
   tags: string[]
 }
 
 interface AlertsData {
   alerts: WeatherAlert[]
-  summary: {
-    total: number
-    urgent: number
-    active: number
-  }
   location: string
   country: string
+  coord: { lat: number; lon: number }
+  lastUpdated: string
 }
 
-export default function WeatherAlertsPage() {
+export default function AlertsPage() {
   const [alertsData, setAlertsData] = useState<AlertsData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const [filterType, setFilterType] = useState("all")
-  const [showDismissed, setShowDismissed] = useState(false)
   const [searchCity, setSearchCity] = useState("")
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationStatus, setLocationStatus] = useState<'loading' | 'success' | 'error' | 'denied'>('loading')
-  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set())
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
 
-  const fetchWeatherAlerts = async (lat: number, lon: number) => {
-    setLoading(true)
-    try {
-      // Fetch location name
-      const locationResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}`
-      )
-      
-      if (!locationResponse.ok) throw new Error('Failed to fetch location')
-      const locationData = await locationResponse.json()
-
-      // Fetch current weather to generate alerts based on conditions
-      const currentWeatherResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=metric`
-      )
-      
-      if (!currentWeatherResponse.ok) throw new Error('Failed to fetch current weather')
-      const currentWeather = await currentWeatherResponse.json()
-
-      // Fetch forecast for upcoming conditions
-      const forecastResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=metric`
-      )
-      
-      if (!forecastResponse.ok) throw new Error('Failed to fetch forecast')
-      const forecastData = await forecastResponse.json()
-
-      // Try to fetch actual alerts from One Call API
-      let actualAlerts: any[] = []
-      try {
-        const oneCallResponse = await fetch(
-          `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}`
-        )
-        if (oneCallResponse.ok) {
-          const oneCallData = await oneCallResponse.json()
-          actualAlerts = oneCallData.alerts || []
-        }
-      } catch (error) {
-        console.log('One Call API not available, generating alerts from weather data')
-      }
-
-      // Generate alerts based on weather conditions
-      const generatedAlerts: WeatherAlert[] = []
-      let alertId = 1
-
-      // Check current weather conditions
-      const temp = currentWeather.main.temp
-      const windSpeed = currentWeather.wind.speed * 3.6 // Convert to km/h
-      const visibility = currentWeather.visibility / 1000 // Convert to km
-      const weatherMain = currentWeather.weather[0].main.toLowerCase()
-      const weatherDesc = currentWeather.weather[0].description
-
-      // Temperature alerts
-      if (temp > 35) {
-        generatedAlerts.push({
-          id: `alert-${alertId++}`,
-          type: "warning",
-          severity: "severe",
-          title: "Extreme Heat Warning",
-          description: `Dangerous heat conditions with temperatures reaching ${Math.round(temp)}°C. Heat exhaustion and heat stroke are possible. Stay hydrated and avoid prolonged outdoor exposure.`,
-          location: locationData.name,
-          startTime: new Date(),
-          endTime: new Date(Date.now() + 8 * 60 * 60 * 1000),
-          issued: new Date(),
-          dismissed: false,
-          urgent: true,
-          event: "Extreme Heat",
-          sender: "Weather Service",
-          tags: ["heat", "health"]
-        })
-      } else if (temp < -10) {
-        generatedAlerts.push({
-          id: `alert-${alertId++}`,
-          type: "warning",
-          severity: "severe",
-          title: "Extreme Cold Warning",
-          description: `Dangerously cold temperatures of ${Math.round(temp)}°C. Frostbite and hypothermia possible with prolonged exposure. Dress warmly in layers.`,
-          location: locationData.name,
-          startTime: new Date(),
-          endTime: new Date(Date.now() + 12 * 60 * 60 * 1000),
-          issued: new Date(),
-          dismissed: false,
-          urgent: true,
-          event: "Extreme Cold",
-          sender: "Weather Service",
-          tags: ["cold", "health"]
-        })
-      }
-
-      // Wind alerts
-      if (windSpeed > 50) {
-        generatedAlerts.push({
-          id: `alert-${alertId++}`,
-          type: "warning",
-          severity: "severe",
-          title: "High Wind Warning",
-          description: `Dangerous winds up to ${Math.round(windSpeed)} km/h. Secure loose objects, avoid travel if possible, and stay away from trees and power lines.`,
-          location: locationData.name,
-          startTime: new Date(),
-          endTime: new Date(Date.now() + 6 * 60 * 60 * 1000),
-          issued: new Date(),
-          dismissed: false,
-          urgent: true,
-          event: "High Wind",
-          sender: "Weather Service",
-          tags: ["wind", "safety"]
-        })
-      } else if (windSpeed > 30) {
-        generatedAlerts.push({
-          id: `alert-${alertId++}`,
-          type: "watch",
-          severity: "moderate",
-          title: "Wind Advisory",
-          description: `Strong winds up to ${Math.round(windSpeed)} km/h expected. Secure loose objects and use caution when driving, especially in high-profile vehicles.`,
-          location: locationData.name,
-          startTime: new Date(),
-          endTime: new Date(Date.now() + 4 * 60 * 60 * 1000),
-          issued: new Date(),
-          dismissed: false,
-          urgent: false,
-          event: "Wind",
-          sender: "Weather Service",
-          tags: ["wind"]
-        })
-      }
-
-      // Visibility alerts
-      if (visibility < 1) {
-        generatedAlerts.push({
-          id: `alert-${alertId++}`,
-          type: "advisory",
-          severity: "moderate",
-          title: "Dense Fog Advisory",
-          description: `Very low visibility of ${visibility.toFixed(1)} km due to dense fog. Reduce speed, use low-beam headlights, and allow extra travel time.`,
-          location: locationData.name,
-          startTime: new Date(),
-          endTime: new Date(Date.now() + 3 * 60 * 60 * 1000),
-          issued: new Date(),
-          dismissed: false,
-          urgent: false,
-          event: "Dense Fog",
-          sender: "Weather Service",
-          tags: ["fog", "visibility"]
-        })
-      }
-
-      // Weather condition alerts
-      if (weatherMain === 'thunderstorm') {
-        generatedAlerts.push({
-          id: `alert-${alertId++}`,
-          type: "warning",
-          severity: "severe",
-          title: "Severe Thunderstorm Warning",
-          description: `Severe thunderstorms in the area with ${weatherDesc}. Seek shelter immediately. Avoid open areas and stay away from windows.`,
-          location: locationData.name,
-          startTime: new Date(),
-          endTime: new Date(Date.now() + 4 * 60 * 60 * 1000),
-          issued: new Date(),
-          dismissed: false,
-          urgent: true,
-          event: "Thunderstorm",
-          sender: "Weather Service",
-          tags: ["thunderstorm", "lightning", "safety"]
-        })
-      } else if (weatherMain === 'rain' && currentWeather.rain?.['1h'] > 10) {
-        generatedAlerts.push({
-          id: `alert-${alertId++}`,
-          type: "warning",
-          severity: "moderate",
-          title: "Heavy Rain Warning",
-          description: `Heavy rainfall with ${weatherDesc}. Potential for localized flooding in low-lying areas. Avoid driving through flooded roads.`,
-          location: locationData.name,
-          startTime: new Date(),
-          endTime: new Date(Date.now() + 6 * 60 * 60 * 1000),
-          issued: new Date(),
-          dismissed: false,
-          urgent: false,
-          event: "Heavy Rain",
-          sender: "Weather Service",
-          tags: ["rain", "flooding"]
-        })
-      } else if (weatherMain === 'snow') {
-        generatedAlerts.push({
-          id: `alert-${alertId++}`,
-          type: "watch",
-          severity: "moderate",
-          title: "Winter Weather Advisory",
-          description: `Snowfall with ${weatherDesc}. Expect slippery road conditions. Reduce speed and allow extra travel time.`,
-          location: locationData.name,
-          startTime: new Date(),
-          endTime: new Date(Date.now() + 8 * 60 * 60 * 1000),
-          issued: new Date(),
-          dismissed: false,
-          urgent: false,
-          event: "Snow",
-          sender: "Weather Service",
-          tags: ["snow", "winter"]
-        })
-      }
-
-      // Check forecast for upcoming conditions
-      forecastData.list.slice(0, 8).forEach((forecast: any) => {
-        const forecastTemp = forecast.main.temp
-        const forecastWind = forecast.wind.speed * 3.6
-        const forecastWeather = forecast.weather[0].main.toLowerCase()
-        
-        if (forecastTemp > 38 && !generatedAlerts.some(a => a.event === "Extreme Heat")) {
-          generatedAlerts.push({
-            id: `alert-${alertId++}`,
-            type: "watch",
-            severity: "severe",
-            title: "Heat Watch",
-            description: `Extreme heat expected with temperatures reaching ${Math.round(forecastTemp)}°C. Heat-related illnesses possible. Plan ahead and stay hydrated.`,
-            location: locationData.name,
-            startTime: new Date(forecast.dt * 1000),
-            endTime: new Date(forecast.dt * 1000 + 12 * 60 * 60 * 1000),
-            issued: new Date(),
-            dismissed: false,
-            urgent: false,
-            event: "Heat Watch",
-            sender: "Weather Service",
-            tags: ["heat", "forecast"]
-          })
-        }
-
-        if (forecastWind > 60 && !generatedAlerts.some(a => a.event === "High Wind")) {
-          generatedAlerts.push({
-            id: `alert-${alertId++}`,
-            type: "watch",
-            severity: "severe",
-            title: "High Wind Watch",
-            description: `Very strong winds up to ${Math.round(forecastWind)} km/h expected. Potential for downed trees and power outages.`,
-            location: locationData.name,
-            startTime: new Date(forecast.dt * 1000),
-            endTime: new Date(forecast.dt * 1000 + 6 * 60 * 60 * 1000),
-            issued: new Date(),
-            dismissed: false,
-            urgent: false,
-            event: "High Wind Watch",
-            sender: "Weather Service",
-            tags: ["wind", "forecast"]
-          })
-        }
-      })
-
-      // Process actual alerts from One Call API if available
-      actualAlerts.forEach((alert: any) => {
-        const severity = 
-          alert.tags?.includes('Extreme') ? 'extreme' :
-          alert.tags?.includes('Severe') ? 'severe' :
-          alert.tags?.includes('Moderate') ? 'moderate' : 'minor'
-        
-        const type = 
-          alert.event?.toLowerCase().includes('warning') ? 'warning' :
-          alert.event?.toLowerCase().includes('watch') ? 'watch' : 'advisory'
-
-        generatedAlerts.push({
-          id: `api-alert-${alertId++}`,
-          type,
-          severity,
-          title: alert.event || 'Weather Alert',
-          description: alert.description || 'Weather conditions require attention.',
-          location: locationData.name,
-          startTime: new Date(alert.start * 1000),
-          endTime: new Date(alert.end * 1000),
-          issued: new Date(),
-          dismissed: false,
-          urgent: severity === 'extreme' || severity === 'severe',
-          event: alert.event,
-          sender: alert.sender_name || 'Weather Service',
-          tags: alert.tags || []
-        })
-      })
-
-      // If no alerts, create a placeholder
-      if (generatedAlerts.length === 0) {
-        generatedAlerts.push({
-          id: 'no-alerts',
-          type: 'advisory',
-          severity: 'minor',
-          title: 'No Active Alerts',
-          description: 'Weather conditions are currently normal for your area. Continue to monitor for updates.',
-          location: locationData.name,
-          startTime: new Date(),
-          endTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
-          issued: new Date(),
-          dismissed: false,
-          urgent: false,
-          event: 'All Clear',
-          sender: 'Weather Service',
-          tags: ['normal']
-        })
-      }
-
-      // Apply dismissed status from local state
-      const alertsWithDismissed = generatedAlerts.map(alert => ({
-        ...alert,
-        dismissed: dismissedAlerts.has(alert.id)
-      }))
-
-      const activeAlerts = alertsWithDismissed.filter(a => !a.dismissed)
-      const urgentAlerts = activeAlerts.filter(a => a.urgent)
-
-      setAlertsData({
-        alerts: alertsWithDismissed,
-        summary: {
-          total: alertsWithDismissed.length,
-          urgent: urgentAlerts.length,
-          active: activeAlerts.length
-        },
-        location: locationData.name,
-        country: locationData.sys.country
-      })
-
-      setLocationStatus('success')
-    } catch (error) {
-      console.error('Error fetching weather alerts:', error)
-      setLocationStatus('error')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const getUserLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationStatus('error')
-      fetchWeatherAlerts(51.5074, -0.1278) // Default to London
-      return
-    }
-
-    setLocationStatus('loading')
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        setCurrentLocation({ lat: latitude, lon: longitude })
-        fetchWeatherAlerts(latitude, longitude)
-      },
-      (error) => {
-        console.error('Location error:', error)
-        setLocationStatus(error.code === 1 ? 'denied' : 'error')
-        fetchWeatherAlerts(51.5074, -0.1278) // Fallback to London
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    )
-  }
-
-  const handleSearchCity = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!searchCity.trim()) return
-
-    setLoading(true)
-    try {
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(searchCity)}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}`
-      )
-      
-      if (!response.ok) throw new Error('City not found')
-      
-      const data = await response.json()
-      setCurrentLocation({ lat: data.coord.lat, lon: data.coord.lon })
-      await fetchWeatherAlerts(data.coord.lat, data.coord.lon)
-      setSearchCity('')
-    } catch (error) {
-      alert('City not found. Please try again.')
-      setLoading(false)
-    }
-  }
-
+  // Get user's location on component mount
   useEffect(() => {
     // Load dark mode preference
     const savedDarkMode = localStorage.getItem("weatherAlertsDarkMode")
@@ -441,14 +69,26 @@ export default function WeatherAlertsPage() {
       setIsDarkMode(savedDarkMode === "true")
     }
 
-    // Load dismissed alerts
-    const savedDismissed = localStorage.getItem("dismissedWeatherAlerts")
-    if (savedDismissed) {
-      setDismissedAlerts(new Set(JSON.parse(savedDismissed)))
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          setCurrentLocation({ lat: latitude, lon: longitude })
+          setLocationStatus('success')
+          fetchAlerts(latitude, longitude)
+        },
+        (error) => {
+          console.error("Error getting location:", error)
+          setLocationStatus(error.code === 1 ? 'denied' : 'error')
+          // Fallback to default location (New York)
+          fetchAlerts(40.7128, -74.0060)
+        }
+      )
+    } else {
+      setLocationStatus('error')
+      // Fallback to default location
+      fetchAlerts(40.7128, -74.0060)
     }
-
-    // Get user location
-    getUserLocation()
   }, [])
 
   const toggleDarkMode = () => {
@@ -457,502 +97,592 @@ export default function WeatherAlertsPage() {
     localStorage.setItem("weatherAlertsDarkMode", String(newDarkMode))
   }
 
-  const alertTypes = [
-    { id: "all", name: "All Alerts" },
-    { id: "warning", name: "Warnings" },
-    { id: "watch", name: "Watches" },
-    { id: "advisory", name: "Advisories" }
-  ]
-
-  const getSeverityColor = (severity: WeatherAlert['severity'], dark: boolean) => {
-    if (severity === 'extreme') return {
-      bg: dark ? "bg-red-500/20 border-red-400/30" : "bg-red-100 border-red-300",
-      text: dark ? "text-red-300" : "text-red-800",
-      badge: "bg-red-600"
-    }
-    if (severity === 'severe') return {
-      bg: dark ? "bg-orange-500/20 border-orange-400/30" : "bg-orange-100 border-orange-300",
-      text: dark ? "text-orange-300" : "text-orange-800",
-      badge: "bg-orange-500"
-    }
-    if (severity === 'moderate') return {
-      bg: dark ? "bg-yellow-500/20 border-yellow-400/30" : "bg-yellow-100 border-yellow-300",
-      text: dark ? "text-yellow-300" : "text-yellow-800",
-      badge: "bg-yellow-500"
-    }
-    return {
-      bg: dark ? "bg-blue-500/20 border-blue-400/30" : "bg-blue-100 border-blue-300",
-      text: dark ? "text-blue-300" : "text-blue-800",
-      badge: "bg-blue-500"
-    }
-  }
-
-  const getTypeIcon = (type: WeatherAlert['type']) => {
-    switch(type) {
-      case "warning": return <AlertTriangle className="h-5 w-5" />
-      case "watch": return <Clock className="h-5 w-5" />
-      case "advisory": return <Info className="h-5 w-5" />
-    }
-  }
-
-  const getEventIcon = (event: string) => {
-    const eventLower = event.toLowerCase()
-    if (eventLower.includes('rain') || eventLower.includes('flood')) return <CloudRain className="h-5 w-5" />
-    if (eventLower.includes('wind')) return <Wind className="h-5 w-5" />
-    if (eventLower.includes('snow') || eventLower.includes('winter')) return <Snowflake className="h-5 w-5" />
-    if (eventLower.includes('thunder') || eventLower.includes('storm')) return <Zap className="h-5 w-5" />
-    if (eventLower.includes('fog')) return <CloudFog className="h-5 w-5" />
-    if (eventLower.includes('heat') || eventLower.includes('cold')) return <Thermometer className="h-5 w-5" />
-    return <AlertTriangle className="h-5 w-5" />
-  }
-
-  const dismissAlert = (alertId: string) => {
-    const newDismissed = new Set(dismissedAlerts)
-    newDismissed.add(alertId)
-    setDismissedAlerts(newDismissed)
-    localStorage.setItem("dismissedWeatherAlerts", JSON.stringify(Array.from(newDismissed)))
-    
-    if (alertsData) {
-      const updatedAlerts = alertsData.alerts.map(alert => 
-        alert.id === alertId ? { ...alert, dismissed: true } : alert
+  const fetchAlerts = async (lat: number, lon: number) => {
+    setLoading(true)
+    try {
+      // Fetch current weather to get location name
+      const weatherResponse = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 'ca695dcbc66c5fa3d0cb955033fd918f'}`
       )
       
-      const activeAlerts = updatedAlerts.filter(a => !a.dismissed)
-      const urgentAlerts = activeAlerts.filter(a => a.urgent)
+      if (!weatherResponse.ok) throw new Error('Failed to fetch weather data')
+      const weatherData = await weatherResponse.json()
+
+      // Fetch weather alerts using One Call API
+      const alertsResponse = await fetch(
+        `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 'ca695dcbc66c5fa3d0cb955033fd918f'}`
+      )
+      
+      let alerts: WeatherAlert[] = []
+      
+      if (alertsResponse.ok) {
+        const alertsApiData = await alertsResponse.json()
+        
+        if (alertsApiData.alerts && alertsApiData.alerts.length > 0) {
+          alerts = alertsApiData.alerts.map((alert: any, index: number) => ({
+            id: `${alert.start}-${index}`,
+            event: alert.event || "Weather Alert",
+            headline: alert.event || "Weather Alert",
+            description: alert.description || "No description available",
+            severity: alert.tags?.[0] || "Unknown",
+            urgency: "Expected",
+            start: alert.start,
+            end: alert.end,
+            senderName: alert.sender_name || "Weather Service",
+            tags: alert.tags || []
+          }))
+        }
+      }
 
       setAlertsData({
-        ...alertsData,
-        alerts: updatedAlerts,
-        summary: {
-          ...alertsData.summary,
-          active: activeAlerts.length,
-          urgent: urgentAlerts.length
-        }
+        alerts: alerts,
+        location: weatherData.name,
+        country: weatherData.sys.country,
+        coord: { lat, lon },
+        lastUpdated: new Date().toISOString()
       })
+      
+      setCurrentLocation({ lat, lon })
+    } catch (error) {
+      console.error("Error fetching alerts:", error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  if (loading && !alertsData) {
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!searchCity.trim()) return
+
+    setLoading(true)
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(searchCity)}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 'ca695dcbc66c5fa3d0cb955033fd918f'}`
+      )
+      
+      if (!response.ok) throw new Error('City not found')
+      
+      const data = await response.json()
+      await fetchAlerts(data.coord.lat, data.coord.lon)
+      setSearchCity("")
+    } catch (error) {
+      console.error("Error searching city:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUseCurrentLocation = () => {
+    if (currentLocation) {
+      fetchAlerts(currentLocation.lat, currentLocation.lon)
+    }
+  }
+
+  const getSeverityColor = (severity: string): string => {
+    switch (severity.toLowerCase()) {
+      case 'extreme':
+        return 'destructive'
+      case 'severe':
+        return 'destructive'
+      case 'moderate':
+        return 'default'
+      case 'minor':
+        return 'secondary'
+      default:
+        return 'outline'
+    }
+  }
+
+  const getSeverityIcon = (severity: string) => {
+    switch (severity.toLowerCase()) {
+      case 'extreme':
+      case 'severe':
+        return <AlertTriangle className="h-5 w-5" />
+      case 'moderate':
+        return <AlertCircle className="h-5 w-5" />
+      case 'minor':
+        return <Info className="h-5 w-5" />
+      default:
+        return <Bell className="h-5 w-5" />
+    }
+  }
+
+  const getAlertIcon = (event: string) => {
+    const eventLower = event.toLowerCase()
+    if (eventLower.includes('rain') || eventLower.includes('flood')) return <CloudRain className="h-6 w-6" />
+    if (eventLower.includes('wind') || eventLower.includes('gale')) return <Wind className="h-6 w-6" />
+    if (eventLower.includes('snow') || eventLower.includes('ice')) return <Snowflake className="h-6 w-6" />
+    if (eventLower.includes('thunder') || eventLower.includes('lightning')) return <Zap className="h-6 w-6" />
+    if (eventLower.includes('heat') || eventLower.includes('temperature')) return <Thermometer className="h-6 w-6" />
+    return <AlertTriangle className="h-6 w-6" />
+  }
+
+  const formatDate = (timestamp: number): string => {
+    return new Date(timestamp * 1000).toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const getTimeRemaining = (endTimestamp: number): string => {
+    const now = Date.now() / 1000
+    const remaining = endTimestamp - now
+    
+    if (remaining < 0) return "Expired"
+    
+    const hours = Math.floor(remaining / 3600)
+    const days = Math.floor(hours / 24)
+    
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} remaining`
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} remaining`
+    
+    const minutes = Math.floor(remaining / 60)
+    return `${minutes} minute${minutes > 1 ? 's' : ''} remaining`
+  }
+
+  if (loading) {
     return (
-      <div className={`min-h-screen ${
+      <div className={`flex items-center justify-center h-[600px] ${
         isDarkMode 
-          ? 'bg-gradient-to-br from-slate-900 via-red-900 to-orange-950' 
-          : 'bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50'
-      } p-6 flex items-center justify-center transition-colors duration-500`}>
-        <div className="text-center">
-          <Loader2 className={`h-16 w-16 ${
-            isDarkMode ? 'text-white' : 'text-red-600'
-          } animate-spin mx-auto mb-4`} />
-          <p className={`text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Loading weather alerts...
-          </p>
+          ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950' 
+          : 'bg-gradient-to-b from-slate-50 via-blue-50/30 to-slate-50'
+      } transition-colors duration-500`}>
+        <div className="text-center space-y-4">
+          <div className="inline-flex p-4 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
+            <Loader2 className="h-8 w-8 animate-spin text-white" />
+          </div>
+          <p className={`font-medium ${
+            isDarkMode ? 'text-white' : 'text-slate-700'
+          }`}>Loading weather alerts...</p>
         </div>
       </div>
     )
   }
 
-  if (!alertsData) return null
-
-  const filteredAlerts = alertsData.alerts.filter(alert => {
-    const typeMatch = filterType === "all" || alert.type === filterType
-    const dismissMatch = showDismissed || !alert.dismissed
-    return typeMatch && dismissMatch
-  })
-
-  const activeAlerts = alertsData.alerts.filter(alert => !alert.dismissed)
-  const urgentAlerts = activeAlerts.filter(alert => alert.urgent)
-
   return (
-    <div className={`min-h-screen ${
+    <div className={`flex-1 space-y-4 p-4 md:p-6 lg:p-8 ${
       isDarkMode 
-        ? 'bg-gradient-to-br from-slate-900 via-red-900 to-orange-950' 
-        : 'bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50'
-    } p-6 transition-colors duration-500`}>
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
+        ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950' 
+        : 'bg-gradient-to-b from-slate-50 via-blue-50/30 to-slate-50'
+    } transition-colors duration-500`}>
+      {/* Header Section - Sidebar Style */}
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl ${
-              isDarkMode 
-                ? 'bg-gradient-to-r from-red-500 to-orange-600' 
-                : 'bg-gradient-to-r from-red-400 to-orange-500'
-            }`}>
-              <AlertTriangle className="h-8 w-8 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
+              <AlertTriangle className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className={`text-4xl font-bold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                Weather Alerts
-              </h1>
-              <div className={`flex items-center gap-2 mt-1 text-sm ${
-                isDarkMode ? 'text-white/70' : 'text-gray-600'
-              }`}>
-                <MapPin className="h-4 w-4 text-red-500" />
-                <span>{alertsData.location}, {alertsData.country}</span>
-                {locationStatus === 'success' && (
-                  <Badge className={`${
-                    isDarkMode 
-                      ? 'bg-red-500/20 text-red-300 border-red-500/30' 
-                      : 'bg-red-100 text-red-700 border-red-300'
-                  }`}>
-                    📍 Your Location
-                  </Badge>
-                )}
-              </div>
+              <h1 className={`text-2xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-slate-800'
+              }`}>Weather Alerts</h1>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-white/70' : 'text-slate-600'
+              }`}>Stay informed about severe weather conditions</p>
             </div>
           </div>
-
-          {/* Controls */}
-          <div className="flex flex-wrap gap-2">
-            <form onSubmit={handleSearchCity} className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Search city..."
-                value={searchCity}
-                onChange={(e) => setSearchCity(e.target.value)}
-                className={`${
-                  isDarkMode 
-                    ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
-                }`}
-              />
-              <Button type="submit" size="icon" className="bg-red-600 hover:bg-red-700">
-                <Search className="h-4 w-4" />
-              </Button>
-            </form>
-            
-            <Button
-              onClick={getUserLocation}
-              size="icon"
-              className="bg-orange-600 hover:bg-orange-700"
-              title="Use My Location"
-            >
-              <Target className="h-4 w-4" />
-            </Button>
-
-            <Button
-              onClick={() => currentLocation && fetchWeatherAlerts(currentLocation.lat, currentLocation.lon)}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title="Refresh Data"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-
-            <Button
-              onClick={toggleDarkMode}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title={isDarkMode ? "Light Mode" : "Dark Mode"}
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-          </div>
-        </div>
-
-        {/* Alert Summary */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className={`text-center p-4 rounded-lg border ${
-                isDarkMode ? 'bg-red-500/20 border-red-400/30' : 'bg-red-100 border-red-300'
-              }`}>
-                <AlertTriangle className={`h-6 w-6 mx-auto mb-2 ${
-                  isDarkMode ? 'text-red-300' : 'text-red-600'
-                }`} />
-                <div className={`text-3xl font-bold ${
-                  isDarkMode ? 'text-red-300' : 'text-red-600'
-                }`}>{urgentAlerts.length}</div>
-                <div className={`text-sm ${
-                  isDarkMode ? 'text-white/80' : 'text-gray-600'
-                }`}>Urgent Alerts</div>
-              </div>
-              <div className={`text-center p-4 rounded-lg border ${
-                isDarkMode ? 'bg-orange-500/20 border-orange-400/30' : 'bg-orange-100 border-orange-300'
-              }`}>
-                <Bell className={`h-6 w-6 mx-auto mb-2 ${
-                  isDarkMode ? 'text-orange-300' : 'text-orange-600'
-                }`} />
-                <div className={`text-3xl font-bold ${
-                  isDarkMode ? 'text-orange-300' : 'text-orange-600'
-                }`}>
-                  {alertsData.alerts.filter(a => !a.dismissed && a.severity === "severe").length}
-                </div>
-                <div className={`text-sm ${
-                  isDarkMode ? 'text-white/80' : 'text-gray-600'
-                }`}>Severe Warnings</div>
-              </div>
-              <div className={`text-center p-4 rounded-lg border ${
-                isDarkMode ? 'bg-yellow-500/20 border-yellow-400/30' : 'bg-yellow-100 border-yellow-300'
-              }`}>
-                <Clock className={`h-6 w-6 mx-auto mb-2 ${
-                  isDarkMode ? 'text-yellow-300' : 'text-yellow-600'
-                }`} />
-                <div className={`text-3xl font-bold ${
-                  isDarkMode ? 'text-yellow-300' : 'text-yellow-600'
-                }`}>
-                  {alertsData.alerts.filter(a => !a.dismissed && a.type === "watch").length}
-                </div>
-                <div className={`text-sm ${
-                  isDarkMode ? 'text-white/80' : 'text-gray-600'
-                }`}>Active Watches</div>
-              </div>
-              <div className={`text-center p-4 rounded-lg border ${
-                isDarkMode ? 'bg-blue-500/20 border-blue-400/30' : 'bg-blue-100 border-blue-300'
-              }`}>
-                <Info className={`h-6 w-6 mx-auto mb-2 ${
-                  isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                }`} />
-                <div className={`text-3xl font-bold ${
-                  isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                }`}>
-                  {alertsData.alerts.filter(a => !a.dismissed && a.type === "advisory").length}
-                </div>
-                <div className={`text-sm ${
-                  isDarkMode ? 'text-white/80' : 'text-gray-600'
-                }`}>Advisories</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Filter Controls */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardContent className="p-4">
-            <div className="flex flex-wrap gap-2 items-center">
-              <Filter className="h-4 w-4" />
-              <span className="text-sm font-medium mr-2">Filter:</span>
-              {alertTypes.map((type) => (
-                <Button
-                  key={type.id}
-                  onClick={() => setFilterType(type.id)}
-                  variant={filterType === type.id ? "secondary" : "outline"}
-                  size="sm"
-                  className={
-                    filterType === type.id 
-                      ? isDarkMode 
-                        ? "bg-white text-slate-900" 
-                        : "bg-gray-900 text-white"
-                      : isDarkMode
-                        ? "bg-white/10 border-white/30 text-white hover:bg-white/20"
-                        : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-                  }
-                >
-                  {type.name}
-                </Button>
-              ))}
-              <Button
-                onClick={() => setShowDismissed(!showDismissed)}
-                variant="outline"
-                size="sm"
-                className={isDarkMode
-                  ? "bg-white/10 border-white/30 text-white hover:bg-white/20"
-                  : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-                }
-              >
-                {showDismissed ? "Hide Dismissed" : "Show Dismissed"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Alerts List */}
-        <div className="space-y-4">
-          {filteredAlerts.length === 0 ? (
-            <Card className={`${
+          <Button
+            onClick={toggleDarkMode}
+            size="icon"
+            variant="outline"
+            className={`${
               isDarkMode 
-                ? 'bg-white/10 border-white/20 text-white' 
-                : 'bg-white border-gray-200 text-gray-900'
-            } backdrop-blur-lg`}>
-              <CardContent className="p-8 text-center">
-                <Bell className={`h-16 w-16 mx-auto mb-4 ${
-                  isDarkMode ? 'text-white/50' : 'text-gray-400'
-                }`} />
-                <h3 className="text-xl font-semibold mb-2">No Active Alerts</h3>
-                <p className={isDarkMode ? 'text-white/70' : 'text-gray-600'}>
-                  There are currently no weather alerts for your area.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            filteredAlerts.map((alert) => {
-              const severityColors = getSeverityColor(alert.severity, isDarkMode)
-              const typeIcon = getTypeIcon(alert.type)
-              const eventIcon = getEventIcon(alert.event)
-              
-              return (
-                <Card 
-                  key={alert.id}
-                  className={`${
-                    isDarkMode 
-                      ? 'bg-white/10 border-white/20 text-white' 
-                      : 'bg-white border-gray-200 text-gray-900'
-                  } backdrop-blur-lg ${
-                    alert.urgent && !alert.dismissed ? "ring-2 ring-red-500 ring-opacity-50" : ""
-                  } ${alert.dismissed ? "opacity-60" : ""} transition-all duration-300`}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className={`p-2 rounded-full border ${severityColors.bg}`}>
-                          {eventIcon}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <h3 className="text-lg font-semibold">{alert.title}</h3>
-                            <Badge className={`${severityColors.badge} text-white capitalize`}>
-                              {alert.severity}
-                            </Badge>
-                            <Badge variant="outline" className={`capitalize ${
-                              isDarkMode ? 'border-white/30' : 'border-gray-300'
-                            }`}>
-                              {alert.type}
-                            </Badge>
-                            {alert.urgent && !alert.dismissed && (
-                              <Badge className="bg-red-600 text-white animate-pulse">
-                                URGENT
-                              </Badge>
-                            )}
-                            {alert.dismissed && (
-                              <Badge className="bg-gray-500 text-white">
-                                Dismissed
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap items-center gap-4 text-sm">
-                            <div className={`flex items-center gap-1 ${
-                              isDarkMode ? 'text-white/70' : 'text-gray-600'
-                            }`}>
-                              <MapPin className="h-3 w-3" />
-                              {alert.location}
-                            </div>
-                            <div className={`flex items-center gap-1 ${
-                              isDarkMode ? 'text-white/70' : 'text-gray-600'
-                            }`}>
-                              <Clock className="h-3 w-3" />
-                              Issued {alert.issued.toLocaleTimeString('en-US', { 
-                                hour: 'numeric', 
-                                minute: '2-digit' 
-                              })}
-                            </div>
-                            <div className={`flex items-center gap-1 ${
-                              isDarkMode ? 'text-white/70' : 'text-gray-600'
-                            }`}>
-                              <Info className="h-3 w-3" />
-                              {alert.sender}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {!alert.dismissed && alert.id !== 'no-alerts' && (
-                        <Button
-                          onClick={() => dismissAlert(alert.id)}
-                          variant="outline"
-                          size="sm"
-                          className={isDarkMode
-                            ? "bg-white/10 border-white/30 text-white hover:bg-white/20"
-                            : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-                          }
-                          title="Dismiss Alert"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-
-                    <p className={`mb-4 ${
-                      isDarkMode ? 'text-white/90' : 'text-gray-700'
-                    }`}>{alert.description}</p>
-
-                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg border ${
-                      isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'
-                    }`}>
-                      <div>
-                        <div className="text-sm font-medium mb-1">Valid From:</div>
-                        <div className={`text-sm ${
-                          isDarkMode ? 'text-white/70' : 'text-gray-600'
-                        }`}>
-                          {alert.startTime.toLocaleDateString()} at {alert.startTime.toLocaleTimeString('en-US', { 
-                            hour: 'numeric', 
-                            minute: '2-digit' 
-                          })}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium mb-1">Valid Until:</div>
-                        <div className={`text-sm ${
-                          isDarkMode ? 'text-white/70' : 'text-gray-600'
-                        }`}>
-                          {alert.endTime.toLocaleDateString()} at {alert.endTime.toLocaleTimeString('en-US', { 
-                            hour: 'numeric', 
-                            minute: '2-digit' 
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
-                    {alert.tags.length > 0 && (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {alert.tags.map((tag, index) => (
-                          <Badge 
-                            key={`tag-${index}`} 
-                            variant="outline"
-                            className={`text-xs ${
-                              isDarkMode ? 'border-white/30' : 'border-gray-300'
-                            }`}
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-
-                    {alert.urgent && !alert.dismissed && (
-                      <div className={`mt-4 p-3 rounded-lg border ${
-                        isDarkMode 
-                          ? 'bg-red-500/20 border-red-400/30' 
-                          : 'bg-red-100 border-red-300'
-                      }`}>
-                        <div className={`flex items-center gap-2 ${
-                          isDarkMode ? 'text-red-300' : 'text-red-700'
-                        }`}>
-                          <AlertTriangle className="h-4 w-4" />
-                          <span className="font-medium">Immediate Action Required</span>
-                        </div>
-                        <p className={`text-sm mt-1 ${
-                          isDarkMode ? 'text-white/90' : 'text-red-600'
-                        }`}>
-                          This is an urgent weather alert. Take appropriate safety measures immediately.
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )
-            })
-          )}
+                ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
+                : 'bg-white border-slate-300 text-slate-900 hover:bg-slate-100'
+            }`}
+            title={isDarkMode ? "Light Mode" : "Dark Mode"}
+          >
+            {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
+
+      <Separator className={`${
+        isDarkMode ? 'bg-white/20' : 'bg-slate-200'
+      }`} />
+
+      {/* Location & Search Controls - Sidebar Style */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Current Location Display */}
+        {alertsData && (
+          <Card className={`${
+            isDarkMode 
+              ? 'bg-white/10 border-white/20 text-white' 
+              : 'border-slate-200 bg-white text-slate-900'
+          } shadow-sm hover:shadow-md transition-all backdrop-blur-lg`}>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600">
+                  <MapPinned className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className={`text-sm font-medium ${
+                    isDarkMode ? 'text-white' : 'text-slate-700'
+                  }`}>{alertsData.location}, {alertsData.country}</p>
+                  <p className={`text-xs ${
+                    isDarkMode ? 'text-white/60' : 'text-slate-500'
+                  }`}>
+                    {new Date(alertsData.lastUpdated).toLocaleTimeString('en-US', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Notification Toggle */}
+        <Card className={`${
+          isDarkMode 
+            ? 'bg-white/10 border-white/20 text-white' 
+            : 'border-slate-200 bg-white text-slate-900'
+        } shadow-sm hover:shadow-md transition-all backdrop-blur-lg`}>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                  notificationsEnabled 
+                    ? "bg-gradient-to-br from-blue-500 to-blue-600" 
+                    : isDarkMode ? "bg-white/10" : "bg-slate-200"
+                }`}>
+                  {notificationsEnabled ? (
+                    <Bell className="h-5 w-5 text-white" />
+                  ) : (
+                    <BellOff className={`h-5 w-5 ${
+                      isDarkMode ? 'text-white/70' : 'text-slate-600'
+                    }`} />
+                  )}
+                </div>
+                <div>
+                  <p className={`text-sm font-medium ${
+                    isDarkMode ? 'text-white' : 'text-slate-700'
+                  }`}>Notifications</p>
+                  <p className={`text-xs ${
+                    isDarkMode ? 'text-white/60' : 'text-slate-500'
+                  }`}>
+                    {notificationsEnabled ? "Enabled" : "Disabled"}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                className={`${
+                  isDarkMode 
+                    ? 'bg-white/10 border-white/30 text-white hover:bg-white/20' 
+                    : 'border-slate-200 hover:bg-blue-50 hover:border-blue-300'
+                }`}
+              >
+                Toggle
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search Section - Sidebar Style */}
+      <Card className={`${
+        isDarkMode 
+          ? 'bg-white/10 border-white/20 text-white' 
+          : 'border-slate-200 bg-white text-slate-900'
+      } shadow-sm backdrop-blur-lg`}>
+        <CardHeader>
+          <CardTitle className={`text-base font-semibold ${
+            isDarkMode ? 'text-white' : 'text-slate-800'
+          }`}>Search Location</CardTitle>
+          <CardDescription className={`text-sm ${
+            isDarkMode ? 'text-white/70' : 'text-slate-600'
+          }`}>Find weather alerts for any city</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className={`absolute left-2.5 top-2.5 h-4 w-4 ${
+                isDarkMode ? 'text-white/50' : 'text-slate-400'
+              }`} />
+              <Input
+                type="text"
+                placeholder="Search for a city..."
+                value={searchCity}
+                onChange={(e) => setSearchCity(e.target.value)}
+                className={`pl-8 ${
+                  isDarkMode 
+                    ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50' 
+                    : 'bg-white border-slate-200'
+                } focus:border-blue-400 focus:ring-blue-400`}
+              />
+            </div>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-sm"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleUseCurrentLocation}
+              disabled={loading || locationStatus === 'denied'}
+              className={`${
+                isDarkMode 
+                  ? 'bg-white/10 border-white/30 text-white hover:bg-white/20' 
+                  : 'border-slate-200 hover:bg-blue-50 hover:border-blue-300'
+              }`}
+            >
+              <Target className="h-4 w-4 mr-2" />
+              Current
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Alerts Summary Cards - Sidebar Style */}
+      {alertsData && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className={`${
+            isDarkMode 
+              ? 'bg-white/10 border-white/20 text-white' 
+              : 'border-slate-200 bg-white text-slate-900'
+          } shadow-sm hover:shadow-md transition-all backdrop-blur-lg`}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className={`text-sm font-medium ${
+                  isDarkMode ? 'text-white' : 'text-slate-700'
+                }`}>Active Alerts</CardTitle>
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                  isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'
+                }`}>
+                  <AlertTriangle className={`h-4 w-4 ${
+                    isDarkMode ? 'text-blue-300' : 'text-blue-600'
+                  }`} />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-3xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-slate-800'
+              }`}>{alertsData.alerts.length}</div>
+              <p className={`text-xs mt-1 ${
+                isDarkMode ? 'text-white/60' : 'text-slate-500'
+              }`}>Current warnings</p>
+            </CardContent>
+          </Card>
+
+          <Card className={`${
+            isDarkMode 
+              ? 'bg-white/10 border-white/20 text-white' 
+              : 'border-slate-200 bg-white text-slate-900'
+          } shadow-sm hover:shadow-md transition-all backdrop-blur-lg`}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className={`text-sm font-medium ${
+                  isDarkMode ? 'text-white' : 'text-slate-700'
+                }`}>Severity Level</CardTitle>
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                  isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
+                }`}>
+                  <Shield className={`h-4 w-4 ${
+                    isDarkMode ? 'text-orange-300' : 'text-orange-600'
+                  }`} />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-3xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-slate-800'
+              }`}>
+                {alertsData.alerts.length > 0 ? alertsData.alerts[0].severity : "None"}
+              </div>
+              <p className={`text-xs mt-1 ${
+                isDarkMode ? 'text-white/60' : 'text-slate-500'
+              }`}>Highest level</p>
+            </CardContent>
+          </Card>
+
+          <Card className={`${
+            isDarkMode 
+              ? 'bg-white/10 border-white/20 text-white' 
+              : 'border-slate-200 bg-white text-slate-900'
+          } shadow-sm hover:shadow-md transition-all backdrop-blur-lg`}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className={`text-sm font-medium ${
+                  isDarkMode ? 'text-white' : 'text-slate-700'
+                }`}>Status</CardTitle>
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                  notificationsEnabled 
+                    ? (isDarkMode ? 'bg-green-500/20' : 'bg-green-100') 
+                    : (isDarkMode ? 'bg-white/10' : 'bg-slate-100')
+                }`}>
+                  <Radio className={`h-4 w-4 ${
+                    notificationsEnabled 
+                      ? (isDarkMode ? 'text-green-300' : 'text-green-600') 
+                      : (isDarkMode ? 'text-white/70' : 'text-slate-600')
+                  }`} />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-3xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-slate-800'
+              }`}>
+                {notificationsEnabled ? "Active" : "Inactive"}
+              </div>
+              <p className={`text-xs mt-1 ${
+                isDarkMode ? 'text-white/60' : 'text-slate-500'
+              }`}>Monitoring status</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Alerts List */}
+      {alertsData && alertsData.alerts.length > 0 ? (
+        <div className="space-y-4">
+          <h2 className={`text-xl font-semibold ${
+            isDarkMode ? 'text-white' : 'text-slate-900'
+          }`}>Active Weather Alerts</h2>
+          {alertsData.alerts.map((alert) => (
+            <Card key={alert.id} className={`border-l-4 border-l-destructive ${
+              isDarkMode 
+                ? 'bg-white/10 border-white/20 text-white' 
+                : 'bg-white border-slate-200 text-slate-900'
+            } backdrop-blur-lg`}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1">
+                      {getAlertIcon(alert.event)}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CardTitle className="text-lg">{alert.headline}</CardTitle>
+                        <Badge variant={getSeverityColor(alert.severity) as any}>
+                          {getSeverityIcon(alert.severity)}
+                          <span className="ml-1">{alert.severity}</span>
+                        </Badge>
+                      </div>
+                      <p className={`text-sm ${
+                        isDarkMode ? 'text-white/70' : 'text-muted-foreground'
+                      }`}>
+                        Issued by {alert.senderName}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="prose prose-sm max-w-none">
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {alert.description}
+                  </p>
+                </div>
+                
+                <div className={`grid gap-3 md:grid-cols-2 pt-4 border-t ${
+                  isDarkMode ? 'border-white/20' : 'border-slate-200'
+                }`}>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className={`h-4 w-4 ${
+                      isDarkMode ? 'text-white/70' : 'text-muted-foreground'
+                    }`} />
+                    <div>
+                      <p className="font-medium">Effective</p>
+                      <p className={`${
+                        isDarkMode ? 'text-white/70' : 'text-muted-foreground'
+                      }`}>{formatDate(alert.start)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className={`h-4 w-4 ${
+                      isDarkMode ? 'text-white/70' : 'text-muted-foreground'
+                    }`} />
+                    <div>
+                      <p className="font-medium">Expires</p>
+                      <p className={`${
+                        isDarkMode ? 'text-white/70' : 'text-muted-foreground'
+                      }`}>
+                        {formatDate(alert.end)} ({getTimeRemaining(alert.end)})
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {alert.tags && alert.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {alert.tags.map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card className={`${
+          isDarkMode 
+            ? 'bg-white/10 border-white/20 text-white' 
+            : 'bg-white border-slate-200 text-slate-900'
+        } backdrop-blur-lg`}>
+          <CardContent className="py-12">
+            <div className="text-center">
+              <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+              <h3 className="text-lg font-semibold mb-2">No Active Alerts</h3>
+              <p className={`${
+                isDarkMode ? 'text-white/70' : 'text-muted-foreground'
+              }`}>
+                There are currently no weather alerts for {alertsData?.location || 'this location'}.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Information Footer */}
+      <Card className={`${
+        isDarkMode 
+          ? 'bg-white/10 border-white/20 text-white' 
+          : 'bg-white border-slate-200 text-slate-900'
+      } backdrop-blur-lg`}>
+        <CardHeader>
+          <CardTitle className="text-sm">About Weather Alerts</CardTitle>
+        </CardHeader>
+        <CardContent className={`text-sm space-y-2 ${
+          isDarkMode ? 'text-white/80' : 'text-muted-foreground'
+        }`}>
+          <p>
+            Weather alerts are official warnings issued by meteorological services about potentially 
+            dangerous weather conditions. Stay informed and take necessary precautions when alerts are active.
+          </p>
+          <div className="grid gap-2 md:grid-cols-4 pt-4">
+            <div>
+              <p className="font-semibold text-destructive">Extreme</p>
+              <p className="text-xs">Severe threat to life</p>
+            </div>
+            <div>
+              <p className="font-semibold text-orange-500">Severe</p>
+              <p className="text-xs">Significant danger</p>
+            </div>
+            <div>
+              <p className="font-semibold text-yellow-500">Moderate</p>
+              <p className="text-xs">Possible disruption</p>
+            </div>
+            <div>
+              <p className="font-semibold text-blue-500">Minor</p>
+              <p className="text-xs">Minimal impact</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

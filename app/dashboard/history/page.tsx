@@ -530,15 +530,11 @@ export default function HistoryPage() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl ${
-              isDarkMode 
-                ? 'bg-gradient-to-r from-purple-500 to-indigo-600' 
-                : 'bg-gradient-to-r from-purple-400 to-indigo-500'
-            }`}>
-              <History className="h-8 w-8 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 shadow-md">
+              <History className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className={`text-4xl font-bold ${
+              <h1 className={`text-2xl font-bold ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
                 Weather History
