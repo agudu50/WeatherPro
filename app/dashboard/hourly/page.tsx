@@ -60,7 +60,6 @@ export default function HourlyForecastPage() {
   const [loading, setLoading] = useState(true)
   const [selectedHour, setSelectedHour] = useState<number | null>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [scrollPosition, setScrollPosition] = useState(0)
   const [isCelsius, setIsCelsius] = useState(true)
   const [isDarkMode, setIsDarkMode] = useState(false) // Default to light mode
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, delay: number}>>([])
@@ -198,20 +197,14 @@ export default function HourlyForecastPage() {
     return gradients[timeOfDay as keyof typeof gradients] || gradients.afternoon
   }
 
-  const scrollHourly = (direction: 'left' | 'right') => {
-    const container = document.getElementById('hourly-scroll')
-    if (!container) return
-    
-    const scrollAmount = direction === 'left' ? -300 : 300
-    container.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-  }
+  // Removed horizontal scroll controls; layout now uses a wrapping grid
 
   return (
     <div className={`min-h-screen ${
       isDarkMode 
         ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950' 
         : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
-    } relative overflow-hidden transition-colors duration-500`}>
+    } relative overflow-x-hidden min-w-0 transition-colors duration-500`}>
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((particle) => (
@@ -230,26 +223,26 @@ export default function HourlyForecastPage() {
         ))}
       </div>
 
-      <div className="relative z-10 p-4 md:p-6">
+      <div className="relative z-10 p-2 sm:p-4 md:p-6 max-w-7xl w-full mx-auto pb-24 sm:pb-12 box-border px-2 sm:px-4 md:px-6 min-w-0">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Card className={`${
             isDarkMode 
               ? 'bg-white/10 border-white/20 text-white' 
               : 'bg-white border-gray-200 text-gray-900'
           } backdrop-blur-xl transition-colors duration-500`}>
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-2 ${
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                    <div className={`p-1.5 sm:p-2 ${
                       isDarkMode 
                         ? 'bg-gradient-to-r from-blue-500 to-purple-600' 
                         : 'bg-gradient-to-r from-blue-400 to-purple-500'
-                    } rounded-xl`}>
-                      <Clock className="h-6 w-6 text-white" />
+                    } rounded-lg sm:rounded-xl`}>
+                      <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                     </div>
-                    <h1 className={`text-3xl md:text-4xl font-bold bg-gradient-to-r ${
+                    <h1 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r ${
                       isDarkMode 
                         ? 'from-blue-400 via-purple-400 to-pink-400' 
                         : 'from-blue-600 via-purple-600 to-pink-600'
@@ -257,38 +250,38 @@ export default function HourlyForecastPage() {
                       Hourly Forecast
                     </h1>
                   </div>
-                  <div className={`flex flex-wrap items-center gap-3 text-sm ${
+                  <div className={`flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm ${
                     isDarkMode ? 'text-white/70' : 'text-gray-600'
                   }`}>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4 text-red-500" />
-                      <span>{weatherData?.name || 'Loading...'}, {weatherData?.sys.country || ''}</span>
+                    <div className="flex items-center gap-1 min-w-0">
+                      <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 flex-shrink-0" />
+                      <span className="truncate">{weatherData?.name || 'Loading...'}{weatherData?.sys.country ? `, ${weatherData.sys.country}` : ''}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4 text-blue-500" />
-                      <span>{currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+                    <div className="hidden md:flex items-center gap-1 min-w-0">
+                      <Calendar className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                      <span className="truncate">{currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4 text-purple-500" />
+                    <div className="hidden lg:flex items-center gap-1">
+                      <Clock className="h-4 w-4 text-purple-500 flex-shrink-0" />
                       <span>{currentTime.toLocaleTimeString()}</span>
                     </div>
-                    <Badge className={`${
+                    <Badge className={`flex-shrink-0 ${
                       isDarkMode 
                         ? 'bg-green-500/20 text-green-300 border-green-500/30' 
                         : 'bg-green-100 text-green-700 border-green-300'
                     }`}>
                       <Activity className="h-3 w-3 mr-1 animate-pulse" />
-                      Live Updates
+                      Live
                     </Badge>
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap w-full sm:w-auto justify-start sm:justify-end">
                   <Button
                     onClick={toggleDarkMode}
                     variant="outline"
                     size="sm"
-                    className={`${
+                    className={`px-3 ${
                       isDarkMode 
                         ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
                         : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
@@ -300,7 +293,7 @@ export default function HourlyForecastPage() {
                     onClick={() => setIsCelsius(!isCelsius)}
                     variant="outline"
                     size="sm"
-                    className={`${
+                    className={`px-3 ${
                       isDarkMode 
                         ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
                         : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
@@ -311,10 +304,10 @@ export default function HourlyForecastPage() {
                   <Button
                     onClick={getUserLocation}
                     size="sm"
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
                   >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Refresh
+                    <RefreshCw className="h-4 w-4 mr-1.5" />
+                    <span className="hidden xs:inline sm:hidden md:inline">Refresh</span>
                   </Button>
                 </div>
               </div>
@@ -336,50 +329,23 @@ export default function HourlyForecastPage() {
         ) : (
           <>
             {/* Hourly Timeline Scroll */}
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
               <Card className={`${
                 isDarkMode 
                   ? 'bg-white/10 border-white/20 text-white' 
                   : 'bg-white border-gray-200 text-gray-900'
               } backdrop-blur-xl overflow-hidden`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock className={`h-5 w-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                      Next 24 Hours
+                <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+                      <Clock className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                      <span className="truncate">Next 24 Hours</span>
                     </CardTitle>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => scrollHourly('left')}
-                        size="icon"
-                        variant="ghost"
-                        className={`h-8 w-8 ${
-                          isDarkMode 
-                            ? 'text-white hover:bg-white/10' 
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                      >
-                        <ChevronLeft className="h-5 w-5" />
-                      </Button>
-                      <Button
-                        onClick={() => scrollHourly('right')}
-                        size="icon"
-                        variant="ghost"
-                        className={`h-8 w-8 ${
-                          isDarkMode 
-                            ? 'text-white hover:bg-white/10' 
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                      >
-                        <ChevronRight className="h-5 w-5" />
-                      </Button>
-                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div 
-                    id="hourly-scroll"
-                    className="flex gap-4 overflow-x-auto pb-4 px-6 scrollbar-hide scroll-smooth"
+                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 p-3 sm:p-6"
                   >
                     {hourlyData.map((hour, index) => {
                       const WeatherIcon = weatherIcons[hour.weather[0]?.main as keyof typeof weatherIcons] || Cloud
@@ -390,7 +356,7 @@ export default function HourlyForecastPage() {
                         <button
                           key={hour.dt}
                           onClick={() => setSelectedHour(index)}
-                          className={`flex-shrink-0 w-32 p-4 rounded-2xl transition-all duration-300 ${
+                          className={`w-full p-2 sm:p-3 md:p-4 rounded-xl sm:rounded-2xl transition-all duration-300 ${
                             isSelected
                               ? isDarkMode
                                 ? 'bg-white/20 scale-105 shadow-xl border-2 border-white/30'
@@ -400,25 +366,25 @@ export default function HourlyForecastPage() {
                                 : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
                           }`}
                         >
-                          <div className="text-center space-y-3">
-                            <p className="text-sm font-semibold">
+                          <div className="text-center space-y-1.5 sm:space-y-2 md:space-y-3">
+                            <p className="text-xs sm:text-sm font-semibold truncate">
                               {index === 0 ? 'Now' : formatTime(hour.dt)}
                             </p>
-                            <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${getGradientForTimeOfDay(timeOfDay)} p-2 flex items-center justify-center`}>
-                              <WeatherIcon className="h-8 w-8 text-white" />
+                            <div className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto rounded-lg sm:rounded-xl bg-gradient-to-br ${getGradientForTimeOfDay(timeOfDay)} p-1 sm:p-1.5 md:p-2 flex items-center justify-center`}>
+                              <WeatherIcon className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-white" />
                             </div>
                             <div>
-                              <p className="text-2xl font-bold">{formatTemp(hour.temp)}°</p>
-                              <p className={`text-xs ${isDarkMode ? 'text-white/60' : 'text-gray-500'} capitalize`}>
+                              <p className="text-lg sm:text-xl md:text-2xl font-bold">{formatTemp(hour.temp)}°</p>
+                              <p className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-white/60' : 'text-gray-500'} capitalize truncate`}>
                                 {hour.weather[0]?.description}
                               </p>
                             </div>
                             {hour.pop > 0 && (
-                              <div className={`flex items-center justify-center gap-1 ${
+                              <div className={`flex items-center justify-center gap-0.5 sm:gap-1 ${
                                 isDarkMode ? 'text-blue-300' : 'text-blue-600'
                               }`}>
-                                <CloudRain className="h-3 w-3" />
-                                <span className="text-xs">{Math.round(hour.pop)}%</span>
+                                <CloudRain className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                                <span className="text-[10px] sm:text-xs">{Math.round(hour.pop)}%</span>
                               </div>
                             )}
                           </div>
@@ -432,23 +398,25 @@ export default function HourlyForecastPage() {
 
             {/* Detailed Hour View */}
             {selectedHour !== null && hourlyData[selectedHour] && (
-              <div className="mb-6">
+              <div className="mb-4 sm:mb-6">
                 <Card className={`${
                   isDarkMode 
                     ? 'bg-white/10 border-white/20 text-white' 
                     : 'bg-white border-gray-200 text-gray-900'
                 } backdrop-blur-xl`}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className={`h-5 w-5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-                      Detailed Forecast - {formatTime(hourlyData[selectedHour].dt)}
-                    </CardTitle>
-                    <p className={`text-sm ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>
-                      {formatDate(hourlyData[selectedHour].dt)}
-                    </p>
+                  <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
+                    <div className="space-y-1">
+                      <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+                        <Activity className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                        <span className="truncate">Detailed - {formatTime(hourlyData[selectedHour].dt)}</span>
+                      </CardTitle>
+                      <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-white/60' : 'text-gray-500'} pl-6 sm:pl-7`}>
+                        {formatDate(hourlyData[selectedHour].dt)}
+                      </p>
+                    </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <CardContent className="px-3 sm:px-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                       {[
                         {
                           icon: Thermometer,
@@ -489,17 +457,17 @@ export default function HourlyForecastPage() {
                                 : 'bg-gray-50 border-gray-200'
                             } backdrop-blur-lg hover:scale-105 transition-transform duration-300`}
                           >
-                            <CardContent className="p-4">
-                              <div className={`w-10 h-10 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center mb-3`}>
-                                <Icon className="h-5 w-5 text-white" />
+                            <CardContent className="p-2.5 sm:p-3 md:p-4">
+                              <div className={`w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center mb-1.5 sm:mb-2 md:mb-3`}>
+                                <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />
                               </div>
-                              <p className={`text-sm ${isDarkMode ? 'text-white/60' : 'text-gray-500'} mb-1`}>
+                              <p className={`text-[10px] sm:text-xs md:text-sm ${isDarkMode ? 'text-white/60' : 'text-gray-500'} mb-0.5 sm:mb-1 truncate`}>
                                 {stat.label}
                               </p>
-                              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                              <p className={`text-base sm:text-lg md:text-xl lg:text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} truncate`}>
                                 {stat.value}
                               </p>
-                              <p className={`text-xs ${isDarkMode ? 'text-white/50' : 'text-gray-400'} mt-1`}>
+                              <p className={`text-[9px] sm:text-[10px] md:text-xs ${isDarkMode ? 'text-white/50' : 'text-gray-400'} mt-0.5 sm:mt-1 truncate`}>
                                 {stat.subValue}
                               </p>
                             </CardContent>
@@ -517,15 +485,15 @@ export default function HourlyForecastPage() {
               isDarkMode 
                 ? 'bg-white/10 border-white/20 text-white' 
                 : 'bg-white border-gray-200 text-gray-900'
-            } backdrop-blur-xl mb-6`}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className={`h-5 w-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
-                  Temperature Trend
+            } backdrop-blur-xl mb-4 sm:mb-6`}>
+              <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
+                  <TrendingUp className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
+                  <span className="truncate">Temperature Trend</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="relative h-48">
+              <CardContent className="px-3 sm:px-6">
+                <div className="relative h-32 sm:h-40 md:h-48">
                   <svg className="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="none">
                     {/* Grid lines */}
                     {[0, 1, 2, 3, 4].map((i) => (
@@ -599,11 +567,11 @@ export default function HourlyForecastPage() {
                   </svg>
                   
                   {/* Labels */}
-                  <div className={`absolute bottom-0 left-0 right-0 flex justify-between px-2 text-xs ${
+                  <div className={`absolute bottom-0 left-0 right-0 flex justify-between px-1 sm:px-2 text-[10px] sm:text-xs ${
                     isDarkMode ? 'text-white/60' : 'text-gray-500'
                   }`}>
                     {hourlyData.slice(0, 8).map((hour, i) => (
-                      <span key={i}>{formatTime(hour.dt)}</span>
+                      <span key={i} className="truncate">{formatTime(hour.dt)}</span>
                     ))}
                   </div>
                 </div>
@@ -612,7 +580,7 @@ export default function HourlyForecastPage() {
 
             {/* Sun Times */}
             {weatherData?.sys && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <Card className={`${
                   isDarkMode 
                     ? 'bg-gradient-to-br from-orange-500/20 to-yellow-500/20 border-orange-500/30' 
