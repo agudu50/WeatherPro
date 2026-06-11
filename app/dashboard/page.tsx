@@ -151,7 +151,163 @@ interface UVIndexData {
   date: number
 }
 
+const mockWeatherData: WeatherData = {
+  name: "Medina Estates",
+  coord: { lat: 5.6515, lon: -0.1856 },
+  main: {
+    temp: 27.7, // 27.7°C ~ 81.86°F (rounds to 82°F)
+    feels_like: 29.5,
+    humidity: 78,
+    pressure: 1012,
+    temp_min: 26.0,
+    temp_max: 29.0
+  },
+  weather: [{
+    main: "Clear",
+    description: "clear sky",
+    icon: "01d"
+  }],
+  wind: { speed: 4.1, deg: 180 },
+  visibility: 10000,
+  clouds: { all: 10 },
+  sys: { country: "GH", sunrise: 1765104000, sunset: 1765147200 },
+  dt: 1775858930,
+  timezone: 0
+}
+
+const mockHourlyForecast: ForecastItem[] = [
+  {
+    dt: 1775854800,
+    dt_txt: "2026-06-10 21:00:00",
+    main: { temp: 27.7, temp_min: 27.7, temp_max: 27.7, humidity: 78, pressure: 1012 },
+    weather: [{ icon: "01n", description: "clear sky", main: "Clear" }],
+    wind: { speed: 4.1, deg: 180 },
+    pop: 0.1
+  },
+  {
+    dt: 1775865600,
+    dt_txt: "2026-06-11 00:00:00",
+    main: { temp: 26.5, temp_min: 26.5, temp_max: 26.5, humidity: 82, pressure: 1013 },
+    weather: [{ icon: "01n", description: "clear sky", main: "Clear" }],
+    wind: { speed: 3.8, deg: 175 },
+    pop: 0.05
+  },
+  {
+    dt: 1775876400,
+    dt_txt: "2026-06-11 03:00:00",
+    main: { temp: 25.8, temp_min: 25.8, temp_max: 25.8, humidity: 85, pressure: 1012 },
+    weather: [{ icon: "03n", description: "scattered clouds", main: "Clouds" }],
+    wind: { speed: 3.2, deg: 170 },
+    pop: 0.15
+  },
+  {
+    dt: 1775887200,
+    dt_txt: "2026-06-11 06:00:00",
+    main: { temp: 26.0, temp_min: 26.0, temp_max: 26.0, humidity: 80, pressure: 1013 },
+    weather: [{ icon: "02d", description: "few clouds", main: "Clouds" }],
+    wind: { speed: 3.5, deg: 175 },
+    pop: 0.2
+  },
+  {
+    dt: 1775898000,
+    dt_txt: "2026-06-11 09:00:00",
+    main: { temp: 28.5, temp_min: 28.5, temp_max: 28.5, humidity: 72, pressure: 1014 },
+    weather: [{ icon: "01d", description: "clear sky", main: "Clear" }],
+    wind: { speed: 4.5, deg: 185 },
+    pop: 0.1
+  },
+  {
+    dt: 1775908800,
+    dt_txt: "2026-06-11 12:00:00",
+    main: { temp: 30.2, temp_min: 30.2, temp_max: 30.2, humidity: 65, pressure: 1013 },
+    weather: [{ icon: "01d", description: "clear sky", main: "Clear" }],
+    wind: { speed: 5.0, deg: 190 },
+    pop: 0.05
+  },
+  {
+    dt: 1775919600,
+    dt_txt: "2026-06-11 15:00:00",
+    main: { temp: 29.8, temp_min: 29.8, temp_max: 29.8, humidity: 68, pressure: 1012 },
+    weather: [{ icon: "03d", description: "scattered clouds", main: "Clouds" }],
+    wind: { speed: 4.8, deg: 185 },
+    pop: 0.25
+  },
+  {
+    dt: 1775930400,
+    dt_txt: "2026-06-11 18:00:00",
+    main: { temp: 28.0, temp_min: 28.0, temp_max: 28.0, humidity: 75, pressure: 1012 },
+    weather: [{ icon: "02d", description: "few clouds", main: "Clouds" }],
+    wind: { speed: 4.2, deg: 180 },
+    pop: 0.15
+  }
+]
+
+const mockForecastData: ForecastItem[] = [
+  {
+    dt: 1775908800,
+    dt_txt: "2026-06-11 12:00:00",
+    main: { temp: 30.2, temp_min: 26.0, temp_max: 31.0, humidity: 65, pressure: 1013 },
+    weather: [{ icon: "01d", description: "clear sky", main: "Clear" }],
+    wind: { speed: 5.0, deg: 190 },
+    pop: 0.1
+  },
+  {
+    dt: 1775995200,
+    dt_txt: "2026-06-12 12:00:00",
+    main: { temp: 29.5, temp_min: 25.5, temp_max: 30.5, humidity: 70, pressure: 1012 },
+    weather: [{ icon: "02d", description: "few clouds", main: "Clouds" }],
+    wind: { speed: 4.8, deg: 185 },
+    pop: 0.2
+  },
+  {
+    dt: 1776081600,
+    dt_txt: "2026-06-13 12:00:00",
+    main: { temp: 28.0, temp_min: 25.0, temp_max: 29.0, humidity: 78, pressure: 1011 },
+    weather: [{ icon: "10d", description: "light rain", main: "Rain" }],
+    wind: { speed: 4.5, deg: 175 },
+    pop: 0.6
+  },
+  {
+    dt: 1776168000,
+    dt_txt: "2026-06-14 12:00:00",
+    main: { temp: 28.5, temp_min: 24.8, temp_max: 29.5, humidity: 75, pressure: 1012 },
+    weather: [{ icon: "02d", description: "few clouds", main: "Clouds" }],
+    wind: { speed: 4.0, deg: 180 },
+    pop: 0.3
+  },
+  {
+    dt: 1776254400,
+    dt_txt: "2026-06-15 12:00:00",
+    main: { temp: 29.0, temp_min: 25.0, temp_max: 30.0, humidity: 72, pressure: 1013 },
+    weather: [{ icon: "01d", description: "clear sky", main: "Clear" }],
+    wind: { speed: 4.2, deg: 185 },
+    pop: 0.15
+  }
+]
+
+const mockAirQuality: AirQualityData = {
+  list: [{
+    main: { aqi: 2 },
+    components: {
+      co: 350.5,
+      no: 0.1,
+      no2: 4.5,
+      o3: 45.0,
+      so2: 1.2,
+      pm2_5: 12.5,
+      pm10: 22.0,
+      nh3: 0.5
+    }
+  }]
+}
+
+const mockUVIndex: UVIndexData = {
+  value: 4.5,
+  date: 1775855587
+}
+
 export default function DashboardPage() {
+  const [mounted, setMounted] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [particles, setParticles] = useState<Array<{id: number, left: number, top: number, delay: number}>>([])
@@ -160,26 +316,43 @@ export default function DashboardPage() {
   const clockTimerRef = useRef<NodeJS.Timeout | null>(null)
   
   const [userLocation, setUserLocation] = useState({
-    name: "Detecting your location...",
-    lat: null as number | null,
-    lon: null as number | null
+    name: "Medina Estates, GH",
+    lat: 5.6515,
+    lon: -0.1856
   })
 
-  const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
-  const [forecastData, setForecastData] = useState<ForecastItem[]>([])
-  const [hourlyForecast, setHourlyForecast] = useState<ForecastItem[]>([])
-  const [airQuality, setAirQuality] = useState<AirQualityData | null>(null)
-  const [uvIndexData, setUVIndexData] = useState<UVIndexData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(mockWeatherData)
+  const [forecastData, setForecastData] = useState<ForecastItem[]>(mockForecastData)
+  const [hourlyForecast, setHourlyForecast] = useState<ForecastItem[]>(mockHourlyForecast)
+  const [airQuality, setAirQuality] = useState<AirQualityData | null>(mockAirQuality)
+  const [uvIndexData, setUVIndexData] = useState<UVIndexData | null>(mockUVIndex)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [isCelsius, setIsCelsius] = useState(true)
+  const [isCelsius, setIsCelsius] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const [weatherMessage, setWeatherMessage] = useState("")
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [recommendations, setRecommendations] = useState<string[]>([])
+  const [weatherMessage, setWeatherMessage] = useState("🌞 It's getting warm! Stay hydrated.")
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(new Date("2026-06-10T22:08:50Z"))
+  const [recommendations, setRecommendations] = useState<string[]>([
+    "Drink plenty of water throughout the day",
+    "Wear light, loose-fitting clothes",
+    "Use sunscreen if spending time outdoors",
+    "💧 High humidity - may feel warmer than actual temperature"
+  ])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   // ✅ Utility functions
+  const formatClientTime = (date: Date | number | null | undefined, options?: Intl.DateTimeFormatOptions) => {
+    if (!mounted || !date) return ""
+    const d = typeof date === 'number' ? new Date(date * 1000) : date
+    return d.toLocaleTimeString('en-US', options)
+  }
+
+  const formatClientDate = (date: Date | number | null | undefined, options?: Intl.DateTimeFormatOptions) => {
+    if (!mounted || !date) return ""
+    const d = typeof date === 'number' ? new Date(date * 1000) : date
+    return d.toLocaleDateString('en-US', options)
+  }
+
   const kelvinToCelsius = (kelvin: number) => (kelvin - 273.15)
   const celsiusToFahrenheit = (celsius: number) => (celsius * 9/5 + 32)
   const metersPerSecondToKmh = (ms: number) => (ms * 3.6)
@@ -308,10 +481,16 @@ export default function DashboardPage() {
 
   // ✅ Load preferences and initialize app
   useEffect(() => {
+    setMounted(true)
     setIsLoaded(true)
     
     const savedDarkMode = localStorage.getItem("darkMode") === "true"
     setIsDarkMode(savedDarkMode)
+    if (savedDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
     
     const savedPrefs = localStorage.getItem("weatherPreferences")
     if (savedPrefs) {
@@ -615,6 +794,11 @@ export default function DashboardPage() {
     const newDarkMode = !isDarkMode
     setIsDarkMode(newDarkMode)
     localStorage.setItem("darkMode", String(newDarkMode))
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
   }
 
   const handleVoiceSearch = () => {
@@ -669,41 +853,53 @@ export default function DashboardPage() {
       title: "Humidity",
       value: weatherData?.main.humidity.toString() || "0",
       unit: "%",
-      color: "text-white",
-      surface: "from-sky-400 via-blue-500 to-indigo-600",
-      description: `${weatherData?.main.humidity || 0}% relative humidity`
+      color: "text-slate-900 dark:text-white",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      description: `${weatherData?.main.humidity || 0}% relative humidity`,
+      cardBg: "bg-blue-100/60 dark:bg-blue-950/40 hover:bg-blue-200/40 dark:hover:bg-blue-900/50",
+      cardBorder: "border-blue-200 dark:border-blue-800/80 hover:border-blue-300 dark:hover:border-blue-600",
+      iconBg: "bg-blue-200/60 dark:bg-blue-900/50 border border-blue-300/40 dark:border-blue-800/60"
     },
     {
       icon: Wind,
       title: "Wind Speed",
       value: weatherData?.wind.speed ? (weatherData.wind.speed * 3.6).toFixed(1) : "0",
       unit: "km/h",
-      color: "text-white",
-      surface: "from-green-400 via-emerald-500 to-teal-600",
-      description: weatherData?.wind.deg ? `${getWindDirection(weatherData.wind.deg)} direction` : "No data"
+      color: "text-slate-900 dark:text-white",
+      iconColor: "text-teal-600 dark:text-teal-400",
+      description: weatherData?.wind.deg ? `${getWindDirection(weatherData.wind.deg)} direction` : "No data",
+      cardBg: "bg-teal-100/60 dark:bg-teal-950/40 hover:bg-teal-200/40 dark:hover:bg-teal-900/50",
+      cardBorder: "border-teal-200 dark:border-teal-800/80 hover:border-teal-300 dark:hover:border-teal-600",
+      iconBg: "bg-teal-200/60 dark:bg-teal-900/50 border border-teal-300/40 dark:border-teal-800/60"
     },
     {
       icon: Eye,
       title: "Visibility",
       value: weatherData?.visibility ? (weatherData.visibility / 1000).toFixed(1) : "0",
       unit: "km",
-      color: "text-white",
-      surface: "from-purple-400 via-violet-500 to-pink-600",
-      description: weatherData?.visibility ? (weatherData.visibility >= 10000 ? "Excellent" : weatherData.visibility >= 5000 ? "Good" : "Moderate") : "No data"
+      color: "text-slate-900 dark:text-white",
+      iconColor: "text-indigo-600 dark:text-indigo-400",
+      description: weatherData?.visibility ? (weatherData.visibility >= 10000 ? "Excellent" : weatherData.visibility >= 5000 ? "Good" : "Moderate") : "No data",
+      cardBg: "bg-indigo-100/60 dark:bg-indigo-950/40 hover:bg-indigo-200/40 dark:hover:bg-indigo-900/50",
+      cardBorder: "border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-300 dark:hover:border-indigo-600",
+      iconBg: "bg-indigo-200/60 dark:bg-indigo-900/50 border border-indigo-300/40 dark:border-indigo-800/60"
     },
     {
       icon: Gauge,
       title: "Pressure",
       value: weatherData?.main.pressure.toString() || "0",
       unit: "hPa",
-      color: "text-white",
-      surface: "from-red-400 via-orange-500 to-amber-600",
-      description: weatherData?.main.pressure ? (weatherData.main.pressure > 1013 ? "High" : weatherData.main.pressure < 1013 ? "Low" : "Normal") : "No data"
+      color: "text-slate-900 dark:text-white",
+      iconColor: "text-rose-600 dark:text-rose-450",
+      description: weatherData?.main.pressure ? (weatherData.main.pressure > 1013 ? "High" : weatherData.main.pressure < 1013 ? "Low" : "Normal") : "No data",
+      cardBg: "bg-rose-100/60 dark:bg-rose-950/40 hover:bg-rose-200/40 dark:hover:bg-rose-900/50",
+      cardBorder: "border-rose-200 dark:border-rose-800/80 hover:border-rose-300 dark:hover:border-rose-600",
+      iconBg: "bg-rose-200/60 dark:bg-rose-900/50 border border-rose-300/40 dark:border-rose-800/60"
     },
   ]
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'} relative overflow-x-hidden min-w-0 transition-colors duration-500`}>
+    <div className={`min-h-screen ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'} relative overflow-x-hidden min-w-0 transition-colors duration-500`}>
       {/* Animated Background Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((particle) => (
@@ -734,7 +930,7 @@ export default function DashboardPage() {
           {/* Sidebar Drawer */}
           <div 
             className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] ${
-              isDarkMode ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900' : 'bg-gradient-to-br from-white via-blue-50 to-indigo-50'
+              isDarkMode ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'
             } shadow-2xl z-50 transition-all duration-300 ease-out overflow-y-auto ${
               isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
             }`}
@@ -744,7 +940,7 @@ export default function DashboardPage() {
           >
             {/* Sidebar Header */}
             <div className={`sticky top-0 ${
-              isDarkMode ? 'bg-gradient-to-r from-blue-900/95 to-indigo-900/95' : 'bg-gradient-to-r from-blue-500 to-indigo-600'
+              isDarkMode ? 'bg-slate-900/95' : 'bg-blue-600'
             } backdrop-blur-lg p-4 flex items-center justify-between border-b ${
               isDarkMode ? 'border-blue-800' : 'border-blue-400'
             } z-10 shadow-lg`}>
@@ -774,7 +970,7 @@ export default function DashboardPage() {
               isDarkMode ? 'border-gray-700' : 'border-gray-200'
             }`}>
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full">
+                <div className="p-3 bg-blue-600 rounded-full">
                   <User className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
@@ -843,7 +1039,7 @@ export default function DashboardPage() {
                         item.active
                           ? isDarkMode
                             ? 'bg-blue-900/60 text-white shadow-lg'
-                            : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                            : 'bg-blue-600 text-white shadow-lg'
                           : isDarkMode
                           ? 'text-gray-300 hover:bg-white/10 hover:text-white'
                           : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
@@ -851,7 +1047,7 @@ export default function DashboardPage() {
                     >
                       {/* Hover effect background */}
                       <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-                        isDarkMode ? 'bg-gradient-to-r from-blue-600/20 to-indigo-600/20' : 'bg-gradient-to-r from-blue-100/50 to-indigo-100/50'
+                        isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
                       }`} />
                       
                       <Icon className={`h-5 w-5 transition-transform group-hover:scale-110 relative z-10 ${
@@ -959,7 +1155,7 @@ export default function DashboardPage() {
                   handleLogout()
                   setIsSidebarOpen(false)
                 }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
               >
                 <LogOut className="h-5 w-5" />
                 <span>Sign Out</span>
@@ -978,7 +1174,7 @@ export default function DashboardPage() {
                   {lastUpdated && (
                     <p className="flex items-center justify-center gap-1">
                       <Clock className="h-3 w-3" />
-                      Last update: {lastUpdated.toLocaleTimeString()}
+                      Last update: {formatClientTime(lastUpdated)}
                     </p>
                   )}
                   <p className="text-[10px] opacity-75">© 2026 All rights reserved</p>
@@ -1013,13 +1209,13 @@ export default function DashboardPage() {
                
                 
               <div className="flex-1">
-                <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2`}>
-                  Live Weather Dashboard
+                <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-2`}>
+                  <span className="text-blue-600 dark:text-blue-400">Live Weather</span> Dashboard
                 </h1>
                 <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} text-sm sm:text-base md:text-lg`}>Real-time weather data from your location</p>
                 
                 {weatherMessage && !loading && (
-                  <div className={`mt-2 sm:mt-3 px-3 sm:px-4 py-2 sm:py-2.5 ${isDarkMode ? 'bg-gradient-to-r from-blue-900/60 to-purple-900/60 border border-blue-700/50' : 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200'} rounded-xl shadow-lg backdrop-blur-sm hover:shadow-xl transition-all duration-300 inline-block`}>
+                  <div className={`mt-2 sm:mt-3 px-3 sm:px-4 py-2 sm:py-2.5 ${isDarkMode ? 'bg-blue-950/60 border border-blue-800' : 'bg-blue-50 border border-blue-200'} rounded-xl shadow-lg backdrop-blur-sm hover:shadow-xl transition-all duration-300 inline-block`}>
                     <div className="flex items-center gap-2">
                       <div className="animate-pulse">
                         <AlertCircle className={`h-4 w-4 sm:h-5 sm:w-5 ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`} />
@@ -1050,12 +1246,12 @@ export default function DashboardPage() {
                   </div>
                   <div className={`flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                     <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
-                    <span className="hidden sm:inline">{currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
-                    <span className="sm:hidden">{currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    <span className="hidden sm:inline">{formatClientDate(currentTime, { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+                    <span className="sm:hidden">{formatClientDate(currentTime, { month: 'short', day: 'numeric' })}</span>
                   </div>
                   {lastUpdated && (
                     <Badge variant="secondary" className="text-[10px] sm:text-xs">
-                      Updated: {lastUpdated.toLocaleTimeString()}
+                      Updated: {formatClientTime(lastUpdated)}
                     </Badge>
                   )}
                 </div>
@@ -1067,7 +1263,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-1.5 sm:gap-2 order-2 sm:order-1">
                   <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600" />
                   <span className={`text-lg sm:text-xl md:text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                    {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    {formatClientTime(currentTime, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 </div>
                 
@@ -1124,7 +1320,7 @@ export default function DashboardPage() {
                     onClick={handleRefresh}
                     disabled={loading}
                     size="sm"
-                    className="flex-1 sm:flex-none min-w-[36px] bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                    className="flex-1 sm:flex-none min-w-[36px] bg-blue-600 hover:bg-blue-700 text-white"
                     title="Refresh all data"
                   >
                     <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -1137,7 +1333,7 @@ export default function DashboardPage() {
 
         {/* Error State */}
         {error && (
-          <div className="mb-4 sm:mb-6 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300 text-red-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 flex items-start gap-2 sm:gap-3 shadow-lg animate-in slide-in-from-top duration-500">
+          <div className="mb-4 sm:mb-6 bg-red-50 dark:bg-red-950/40 border-2 border-red-300 dark:border-red-800 text-red-800 dark:text-red-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 flex items-start gap-2 sm:gap-3 shadow-lg animate-in slide-in-from-top duration-500">
             <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 mt-0.5 animate-pulse" />
             <div className="flex-1">
               <p className="font-bold text-sm sm:text-base mb-1">⚠️ Alert</p>
@@ -1158,7 +1354,7 @@ export default function DashboardPage() {
         {weatherData && !loading && (
           <>
             {weatherData.main.temp > 308.15 && ( // > 35°C
-              <div className="mb-4 sm:mb-6 bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-400 rounded-xl p-3 sm:p-4 shadow-lg">
+              <div className="mb-4 sm:mb-6 bg-orange-50 dark:bg-orange-950/40 border-2 border-orange-400 dark:border-orange-850 rounded-xl p-3 sm:p-4 shadow-lg">
                 <div className="flex items-start gap-2 sm:gap-3">
                   <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 flex-shrink-0 animate-pulse" />
                   <div>
@@ -1172,7 +1368,7 @@ export default function DashboardPage() {
             )}
             
             {weatherData.wind.speed > 15 && ( // > 54 km/h
-              <div className="mb-4 sm:mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-400 rounded-xl p-3 sm:p-4 shadow-lg">
+              <div className="mb-4 sm:mb-6 bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-400 dark:border-blue-800 rounded-xl p-3 sm:p-4 shadow-lg">
                 <div className="flex items-start gap-2 sm:gap-3">
                   <Wind className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 flex-shrink-0 animate-bounce" />
                   <div>
@@ -1186,7 +1382,7 @@ export default function DashboardPage() {
             )}
             
             {weatherData.visibility < 1000 && (
-              <div className="mb-4 sm:mb-6 bg-gradient-to-r from-gray-50 to-slate-50 border-2 border-gray-400 rounded-xl p-3 sm:p-4 shadow-lg">
+              <div className="mb-4 sm:mb-6 bg-slate-50 dark:bg-slate-900 border-2 border-slate-400 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-lg">
                 <div className="flex items-start gap-2 sm:gap-3">
                   <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 flex-shrink-0" />
                   <div>
@@ -1205,7 +1401,7 @@ export default function DashboardPage() {
         {weatherData && !loading && (
           <div className={`mb-4 sm:mb-6 transition-all duration-1000 delay-150 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-              <div className={`${isDarkMode ? 'bg-gradient-to-br from-blue-600 to-blue-700' : 'bg-gradient-to-br from-blue-400 to-blue-500'} rounded-xl p-3 sm:p-4 text-white shadow-lg hover:shadow-xl transition-shadow`}>
+              <div className={`${isDarkMode ? 'bg-blue-700' : 'bg-blue-500'} rounded-xl p-3 sm:p-4 text-white shadow-lg hover:shadow-xl transition-shadow`}>
                 <div className="flex items-center justify-between mb-2">
                   <Thermometer className="h-5 w-5 sm:h-6 sm:w-6" />
                   <Badge className="bg-white/20 text-white border-0 text-xs">Now</Badge>
@@ -1214,7 +1410,7 @@ export default function DashboardPage() {
                 <p className="text-xs sm:text-sm text-white/80">Temperature</p>
               </div>
               
-              <div className={`${isDarkMode ? 'bg-gradient-to-br from-cyan-600 to-cyan-700' : 'bg-gradient-to-br from-cyan-400 to-cyan-500'} rounded-xl p-3 sm:p-4 text-white shadow-lg hover:shadow-xl transition-shadow`}>
+              <div className={`${isDarkMode ? 'bg-cyan-700' : 'bg-cyan-500'} rounded-xl p-3 sm:p-4 text-white shadow-lg hover:shadow-xl transition-shadow`}>
                 <div className="flex items-center justify-between mb-2">
                   <Droplets className="h-5 w-5 sm:h-6 sm:w-6" />
                   <Badge className="bg-white/20 text-white border-0 text-xs">Live</Badge>
@@ -1223,7 +1419,7 @@ export default function DashboardPage() {
                 <p className="text-xs sm:text-sm text-white/80">Humidity</p>
               </div>
               
-              <div className={`${isDarkMode ? 'bg-gradient-to-br from-emerald-600 to-emerald-700' : 'bg-gradient-to-br from-emerald-400 to-emerald-500'} rounded-xl p-3 sm:p-4 text-white shadow-lg hover:shadow-xl transition-shadow`}>
+              <div className={`${isDarkMode ? 'bg-emerald-700' : 'bg-emerald-500'} rounded-xl p-3 sm:p-4 text-white shadow-lg hover:shadow-xl transition-shadow`}>
                 <div className="flex items-center justify-between mb-2">
                   <Wind className="h-5 w-5 sm:h-6 sm:w-6" />
                   <Badge className="bg-white/20 text-white border-0 text-xs">{getWindDirection(weatherData.wind.deg)}</Badge>
@@ -1232,7 +1428,7 @@ export default function DashboardPage() {
                 <p className="text-xs sm:text-sm text-white/80">Wind (km/h)</p>
               </div>
               
-              <div className={`${isDarkMode ? 'bg-gradient-to-br from-purple-600 to-purple-700' : 'bg-gradient-to-br from-purple-400 to-purple-500'} rounded-xl p-3 sm:p-4 text-white shadow-lg hover:shadow-xl transition-shadow`}>
+              <div className={`${isDarkMode ? 'bg-purple-700' : 'bg-purple-500'} rounded-xl p-3 sm:p-4 text-white shadow-lg hover:shadow-xl transition-shadow`}>
                 <div className="flex items-center justify-between mb-2">
                   <Cloud className="h-5 w-5 sm:h-6 sm:w-6" />
                   <Badge className="bg-white/20 text-white border-0 text-xs">Sky</Badge>
@@ -1246,11 +1442,8 @@ export default function DashboardPage() {
 
         {/* Main Temperature Card - Mobile Optimized */}
         <div className={`mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 delay-200 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-          <Card className="border-0 shadow-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 text-white overflow-hidden relative group hover:shadow-cyan-500/50 transition-all duration-500 hover:scale-[1.01]">
-            {/* Enhanced gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/20 via-transparent to-pink-500/20 animate-pulse" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent" />
-            <div className="absolute inset-0 w-full h-full box-border bg-white/5 backdrop-blur-sm rounded-2xl sm:rounded-3xl pointer-events-none" />
+          <Card className={`border shadow-2xl ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'} overflow-hidden relative group transition-all duration-500 hover:scale-[1.01]`}>
+            <div className={`absolute inset-0 w-full h-full box-border rounded-2xl sm:rounded-3xl pointer-events-none ${isDarkMode ? 'bg-slate-950/20' : 'bg-slate-50/20'}`} />
             
             {/* Animated weather icons in background */}
             <div className="absolute inset-0 overflow-hidden opacity-10">
@@ -1262,7 +1455,7 @@ export default function DashboardPage() {
             <CardContent className="p-3 sm:p-5 md:p-7 relative z-10">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-5 w-full sm:w-auto">
                 <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 w-full sm:w-auto">
-                  <div className="p-3 sm:p-5 bg-white/25 rounded-2xl sm:rounded-3xl backdrop-blur-md shadow-lg ring-2 ring-white/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                  <div className="p-3 sm:p-5 bg-blue-50 dark:bg-blue-950/40 rounded-2xl sm:rounded-3xl shadow-md border border-blue-100 dark:border-blue-900 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
                     {weatherData?.weather[0]?.icon ? (
                       <img 
                         src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@4x.png`}
@@ -1276,12 +1469,12 @@ export default function DashboardPage() {
                   </div>
                   <div className="text-center sm:text-left">
                     <div className="flex items-center gap-2 justify-center sm:justify-start">
-                      <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-1 sm:mb-2 drop-shadow-lg animate-in slide-in-from-bottom duration-700">
+                      <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-1 sm:mb-2 text-slate-900 dark:text-white drop-shadow-lg animate-in slide-in-from-bottom duration-700">
                         {loading ? '--' : formatTemp(weatherData?.main.temp || 0)}°{isCelsius ? 'C' : 'F'}
                       </h2>
                       {weatherData?.main && (
                         <div className="relative group/tooltip">
-                          <Info className="h-4 w-4 text-white/70 hover:text-white cursor-help transition-colors" />
+                          <Info className="h-4 w-4 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-help transition-colors" />
                           <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/tooltip:block w-48 bg-gray-900 text-white text-xs rounded-lg p-2 shadow-xl z-50">
                             <p className="font-semibold mb-1">Temperature Details</p>
                             <p>Current: {formatTemp(weatherData.main.temp)}°</p>
@@ -1292,31 +1485,31 @@ export default function DashboardPage() {
                         </div>
                       )}
                     </div>
-                    <p className="text-sm sm:text-base md:text-lg text-white/95 font-medium capitalize drop-shadow-md flex items-center gap-2 justify-center sm:justify-start">
+                    <p className="text-sm sm:text-base md:text-lg text-slate-700 dark:text-slate-200 font-medium capitalize drop-shadow-md flex items-center gap-2 justify-center sm:justify-start">
                       {loading ? 'Loading live data...' : (
                         <>
                           <span>{weatherData?.weather[0]?.description || 'N/A'}</span>
-                          {weatherData?.weather[0]?.main === 'Rain' && <Umbrella className="h-4 w-4" />}
-                          {weatherData?.weather[0]?.main === 'Snow' && <Snowflake className="h-4 w-4" />}
-                          {weatherData?.weather[0]?.main === 'Clear' && <Sun className="h-4 w-4" />}
+                          {weatherData?.weather[0]?.main === 'Rain' && <Umbrella className="h-4 w-4 text-blue-500" />}
+                          {weatherData?.weather[0]?.main === 'Snow' && <Snowflake className="h-4 w-4 text-blue-300" />}
+                          {weatherData?.weather[0]?.main === 'Clear' && <Sun className="h-4 w-4 text-amber-500" />}
                         </>
                       )}
                     </p>
                     <div className="flex items-center gap-1 sm:gap-2 mt-1 sm:mt-2 justify-center sm:justify-start">
-                      <Thermometer className="h-3 w-3 sm:h-4 sm:w-4 text-cyan-100" />
-                      <p className="text-xs sm:text-sm text-cyan-100 font-medium">
+                      <Thermometer className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500 dark:text-blue-400" />
+                      <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
                         Feels like {loading ? '--' : formatTemp(weatherData?.main.feels_like || 0)}°{isCelsius ? 'C' : 'F'}
                       </p>
                     </div>
                     {weatherData?.main && (
-                      <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 mt-2 sm:mt-3 text-xs sm:text-sm text-white/95">
-                        <span className="flex items-center gap-1 bg-white/20 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg backdrop-blur-sm hover:bg-white/30 transition-colors">
-                          <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-red-200" />
-                          <span className="font-semibold">{formatTemp(weatherData.main.temp_max)}°</span>
+                      <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 mt-2 sm:mt-3 text-xs sm:text-sm">
+                        <span className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-slate-200 dark:border-slate-750">
+                          <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
+                          <span className="font-semibold text-slate-800 dark:text-slate-100">{formatTemp(weatherData.main.temp_max)}°</span>
                         </span>
-                        <span className="flex items-center gap-1 bg-white/20 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg backdrop-blur-sm hover:bg-white/30 transition-colors">
-                          <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-blue-200" />
-                          <span className="font-semibold">{formatTemp(weatherData.main.temp_min)}°</span>
+                        <span className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-slate-200 dark:border-slate-750">
+                          <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
+                          <span className="font-semibold text-slate-800 dark:text-slate-100">{formatTemp(weatherData.main.temp_min)}°</span>
                         </span>
                       </div>
                     )}
@@ -1324,24 +1517,24 @@ export default function DashboardPage() {
                 </div>
                 
                 <div className="text-center sm:text-right w-full sm:w-auto">
-                  <Badge className="bg-gradient-to-r from-white/40 to-white/30 text-white shadow-lg text-xs sm:text-sm md:text-base px-3 sm:px-4 py-1.5 sm:py-2 mb-2 sm:mb-3 border-white/40 font-semibold hover:scale-105 transition-transform">
+                  <Badge className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200/50 dark:border-blue-800 text-xs sm:text-sm md:text-base px-3 sm:px-4 py-1.5 sm:py-2 mb-2 sm:mb-3 font-semibold hover:scale-105 transition-transform border">
                     {loading ? 'Loading' : weatherData?.weather[0]?.main || 'N/A'}
                   </Badge>
                   {weatherData?.clouds && (
-                    <p className="text-xs sm:text-sm text-cyan-50 font-medium mb-1 sm:mb-2 drop-shadow flex items-center gap-1 justify-center sm:justify-end">
-                      <Cloud className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium mb-1 sm:mb-2 flex items-center gap-1 justify-center sm:justify-end">
+                      <Cloud className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400" />
                       Cloud cover: {weatherData.clouds.all}%
                     </p>
                   )}
                   {weatherData?.visibility && (
-                    <p className="text-xs sm:text-sm text-cyan-100/90 drop-shadow flex items-center gap-1 justify-center sm:justify-end">
-                      <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 flex items-center gap-1 justify-center sm:justify-end">
+                      <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-slate-400" />
                       Visibility: {(weatherData.visibility / 1000).toFixed(1)} km
                     </p>
                   )}
                   {weatherData?.dt && (
-                    <p className="text-xs text-cyan-100/80 drop-shadow mt-1 sm:mt-2">
-                      📡 Updated: {new Date(weatherData.dt * 1000).toLocaleTimeString()}
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 sm:mt-2">
+                      📡 Updated: {formatClientTime(weatherData.dt)}
                     </p>
                   )}
                 </div>
@@ -1353,7 +1546,7 @@ export default function DashboardPage() {
         {/* Weather Recommendations */}
         {recommendations.length > 0 && !loading && (
           <div className={`mb-4 sm:mb-6 transition-all duration-1000 delay-250 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <Card className={`border-0 shadow-xl ${isDarkMode ? 'bg-gradient-to-br from-indigo-900/80 to-purple-900/80' : 'bg-gradient-to-br from-indigo-50 to-purple-50'} backdrop-blur-lg`}>
+            <Card className={`border shadow-xl ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'}`}>
               <CardHeader className="p-3 sm:p-4">
                 <CardTitle className={`flex items-center gap-2 text-sm sm:text-base ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                   <Info className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
@@ -1365,7 +1558,7 @@ export default function DashboardPage() {
                   {recommendations.map((rec, index) => (
                     <div
                       key={index}
-                      className={`flex items-start gap-2 p-2 sm:p-3 rounded-lg ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-white/60 hover:bg-white/80'} backdrop-blur-sm transition-colors border ${isDarkMode ? 'border-white/10' : 'border-indigo-100'}`}
+                      className={`flex items-start gap-2 p-2 sm:p-3 rounded-lg ${isDarkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-white/60 hover:bg-white/80'} backdrop-blur-sm transition-colors border ${isDarkMode ? 'border-white/10' : 'border-slate-100 dark:border-slate-800'}`}
                     >
                       <CheckCircle2 className={`h-4 w-4 flex-shrink-0 mt-0.5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
                       <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
@@ -1389,37 +1582,28 @@ export default function DashboardPage() {
                 className={`transition-all duration-1000 min-w-0 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
                 style={{ transitionDelay: `${300 + index * 100}ms` }}
               >
-                <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${card.surface} text-white cursor-pointer active:scale-100`}>
-                  {/* Animated gradient border */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/20 via-white/10 to-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                  
-                  {/* Glassmorphism layers */}
-                  <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-                  <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-                  <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
-                  
-                  {/* Animated shine effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                <Card className={`relative overflow-hidden border ${card.cardBorder} ${card.cardBg} hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl cursor-pointer active:scale-100`}>
+                  <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
 
                   <div className="relative z-10">
                     <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-4">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-xs sm:text-sm font-semibold text-white group-hover:scale-105 transition-transform origin-left">
+                        <CardTitle className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 group-hover:scale-105 transition-transform origin-left">
                           {card.title}
                         </CardTitle>
-                        <div className={`p-2 sm:p-2.5 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 shadow-lg ring-1 ring-white/25 group-hover:ring-2 group-hover:ring-white/50`}>
-                          <Icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white drop-shadow group-hover:drop-shadow-lg" />
+                        <div className={`p-2 sm:p-2.5 rounded-xl ${card.iconBg} group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 shadow border ${card.cardBorder}`}>
+                          <Icon className={`h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 ${card.iconColor} drop-shadow group-hover:drop-shadow-lg`} />
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="p-3 sm:p-4 pt-0">
                       <div className="flex items-baseline gap-1 sm:gap-1.5 mb-1 sm:mb-2 group-hover:scale-110 transition-transform origin-left">
-                        <span className={`text-2xl sm:text-3xl md:text-4xl font-bold ${card.color} group-hover:text-shadow-lg transition-all`}>
+                        <span className={`text-2xl sm:text-3xl md:text-4xl font-bold ${card.color} transition-all`}>
                           {loading ? '--' : card.value}
                         </span>
-                        <span className="text-white/80 text-xs sm:text-sm md:text-base font-medium group-hover:text-white transition-colors">{card.unit}</span>
+                        <span className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm md:text-base font-medium">{card.unit}</span>
                       </div>
-                      <p className="text-[10px] sm:text-xs text-white/80 line-clamp-2 font-medium group-hover:text-white/95 transition-colors">
+                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 line-clamp-2 font-medium group-hover:text-slate-700 dark:group-hover:text-slate-350 transition-colors">
                         {card.description}
                       </p>
                     </CardContent>
@@ -1434,22 +1618,14 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
           {/* UV Index */}
           {uvIndexData && (
-            <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-yellow-600 via-amber-700 to-orange-800' : 'from-yellow-400 via-amber-500 to-orange-600'} text-white cursor-pointer active:scale-100`}>
-              {/* Animated gradient border */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-orange-300/30 via-yellow-200/20 to-amber-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-              
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-              <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
-              
-              {/* Animated shine effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            <Card className={`relative overflow-hidden border border-amber-200 dark:border-amber-800/80 bg-amber-100/60 dark:bg-amber-950/40 hover:bg-amber-200/40 dark:hover:bg-amber-900/50 hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl cursor-pointer active:scale-100`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
               
               <div className="relative z-10">
                 <CardHeader className="p-3 sm:p-4">
-                  <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-white">
-                    <div className="p-1.5 sm:p-2 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-125 group-hover:rotate-180 transition-all duration-700 ring-1 ring-white/25 group-hover:ring-2">
-                      <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-white animate-pulse" />
+                  <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">
+                    <div className="p-1.5 sm:p-2 rounded-xl bg-amber-200/60 dark:bg-amber-900/50 group-hover:scale-125 group-hover:rotate-180 transition-all duration-700 ring-1 ring-amber-350 dark:ring-amber-800 border border-amber-300 dark:border-amber-700">
+                      <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500 animate-pulse" />
                     </div>
                     UV Index
                   </CardTitle>
@@ -1457,16 +1633,16 @@ export default function DashboardPage() {
                 <CardContent className="p-3 sm:p-4 pt-0">
                   <div className="space-y-1 sm:space-y-2">
                     <div className="flex items-baseline gap-1.5 sm:gap-2 group-hover:scale-105 transition-transform origin-left">
-                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white drop-shadow-lg">{uvIndexData.value.toFixed(1)}</span>
+                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">{uvIndexData.value.toFixed(1)}</span>
                       <Badge className={`${getUVDescription(uvIndexData.value).bgColor} ${getUVDescription(uvIndexData.value).color} border-0 text-xs font-semibold shadow-lg group-hover:scale-110 transition-transform`}>
                         {getUVDescription(uvIndexData.value).label}
                       </Badge>
                     </div>
                     <div className="relative">
-                      <Progress value={(uvIndexData.value / 11) * 100} className="h-1.5 sm:h-2 bg-white/20 group-hover:h-2.5 transition-all" />
-                      <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-white/40 via-white/20 to-transparent rounded-full" style={{width: `${(uvIndexData.value / 11) * 100}%`}} />
+                      <Progress value={(uvIndexData.value / 11) * 100} className="h-1.5 sm:h-2 bg-slate-200 dark:bg-slate-700 group-hover:h-2.5 transition-all" />
+                      <div className="absolute top-0 left-0 h-full bg-amber-500 rounded-full" style={{width: `${(uvIndexData.value / 11) * 100}%`}} />
                     </div>
-                    <p className="text-[10px] sm:text-xs text-white/80 font-medium group-hover:text-white transition-colors">
+                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium transition-colors">
                       {uvIndexData.value <= 2 ? "Minimal sun protection required" :
                        uvIndexData.value <= 5 ? "Moderate sun protection needed" :
                        uvIndexData.value <= 7 ? "High sun protection required" :
@@ -1480,22 +1656,14 @@ export default function DashboardPage() {
 
           {/* Air Quality */}
           {airQuality && (
-            <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-green-600 via-emerald-700 to-teal-800' : 'from-green-400 via-emerald-500 to-teal-600'} text-white cursor-pointer active:scale-100`}>
-              {/* Animated gradient border */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-emerald-300/30 via-green-200/20 to-teal-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-              
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-              <div className="absolute inset-0 border border-white/20 rounded-2xl group-hover:border-white/40 transition-colors" />
-              
-              {/* Animated shine effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            <Card className={`relative overflow-hidden border border-emerald-200 dark:border-emerald-800/80 bg-emerald-100/60 dark:bg-emerald-950/40 hover:bg-emerald-200/40 dark:hover:bg-emerald-900/50 hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl cursor-pointer active:scale-100`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
               
               <div className="relative z-10">
                 <CardHeader className="p-3 sm:p-4">
-                  <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-white">
-                    <div className="p-1.5 sm:p-2 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-125 transition-all duration-500 ring-1 ring-white/25 group-hover:ring-2">
-                      <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-white group-hover:animate-pulse" />
+                  <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">
+                    <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-200/60 dark:bg-emerald-900/50 group-hover:scale-125 transition-all duration-500 ring-1 ring-emerald-350 dark:ring-emerald-800 border border-emerald-300 dark:border-emerald-700">
+                      <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500 group-hover:animate-pulse" />
                     </div>
                     Air Quality
                   </CardTitle>
@@ -1503,16 +1671,16 @@ export default function DashboardPage() {
                 <CardContent className="p-3 sm:p-4 pt-0">
                   <div className="space-y-1 sm:space-y-2">
                     <div className="flex items-baseline gap-1.5 sm:gap-2 group-hover:scale-105 transition-transform origin-left">
-                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white drop-shadow-lg">{airQuality.list[0].main.aqi}</span>
+                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">{airQuality.list[0].main.aqi}</span>
                       <Badge className={`${getAQIDescription(airQuality.list[0].main.aqi).bgColor} ${getAQIDescription(airQuality.list[0].main.aqi).color} border-0 text-xs font-semibold shadow-lg group-hover:scale-110 transition-transform`}>
                         {getAQIDescription(airQuality.list[0].main.aqi).label}
                       </Badge>
                     </div>
                     <div className="relative">
-                      <Progress value={(airQuality.list[0].main.aqi / 5) * 100} className="h-1.5 sm:h-2 bg-white/20 group-hover:h-2.5 transition-all" />
-                      <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-white/40 via-white/20 to-transparent rounded-full" style={{width: `${(airQuality.list[0].main.aqi / 5) * 100}%`}} />
+                      <Progress value={(airQuality.list[0].main.aqi / 5) * 100} className="h-1.5 sm:h-2 bg-slate-200 dark:bg-slate-700 group-hover:h-2.5 transition-all" />
+                      <div className="absolute top-0 left-0 h-full bg-emerald-500 rounded-full" style={{width: `${(airQuality.list[0].main.aqi / 5) * 100}%`}} />
                     </div>
-                    <div className="text-[10px] sm:text-xs space-y-0.5 sm:space-y-1 text-white/80 font-medium group-hover:text-white transition-colors">
+                    <div className="text-[10px] sm:text-xs space-y-0.5 sm:space-y-1 text-slate-500 dark:text-slate-400 font-medium transition-colors">
                       <p>PM2.5: {airQuality.list[0].components.pm2_5.toFixed(1)} μg/m³</p>
                       <p>PM10: {airQuality.list[0].components.pm10.toFixed(1)} μg/m³</p>
                     </div>
@@ -1524,48 +1692,40 @@ export default function DashboardPage() {
 
           {/* Sunrise/Sunset */}
           {weatherData?.sys && (
-            <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-rose-600 via-pink-700 to-purple-800' : 'from-rose-400 via-pink-500 to-purple-500'} text-white cursor-pointer active:scale-100`}>
-              {/* Animated gradient border */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-rose-300/30 via-pink-200/20 to-purple-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-              
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-              <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
-              
-              {/* Animated shine effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            <Card className={`relative overflow-hidden border border-orange-200 dark:border-orange-850/80 bg-orange-100/60 dark:bg-orange-950/40 hover:bg-orange-200/40 dark:hover:bg-orange-900/50 hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl cursor-pointer active:scale-100`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
               
               <div className="relative z-10">
                 <CardHeader className="p-3 sm:p-4">
-                  <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-white">
-                    <div className="p-1.5 sm:p-2 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-125 transition-all duration-500 ring-1 ring-white/25 group-hover:ring-2">
-                      <Sunrise className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">
+                    <div className="p-1.5 sm:p-2 rounded-xl bg-orange-200/60 dark:bg-orange-900/50 group-hover:scale-125 transition-all duration-500 ring-1 ring-orange-350 dark:ring-orange-850 border border-orange-300/85 dark:border-orange-750">
+                      <Sunrise className="h-4 w-4 sm:h-5 sm:w-5 text-rose-500" />
                     </div>
                     Sun Times
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 sm:p-4 pt-0">
                   <div className="space-y-2 sm:space-y-3 group-hover:scale-105 transition-transform origin-left">
-                    <div className="flex items-center justify-between group/item hover:bg-white/10 p-1 rounded transition-colors">
+                    <div className="flex items-center justify-between group/item hover:bg-slate-50 dark:hover:bg-slate-800/55 p-1 rounded transition-colors">
                       <div className="flex items-center gap-1 sm:gap-1.5">
-                        <Sunrise className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-200 group-hover/item:scale-125 transition-transform" />
-                        <span className="text-xs sm:text-sm font-medium text-white/80">Sunrise</span>
+                        <Sunrise className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-500 group-hover/item:scale-125 transition-transform" />
+                        <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Sunrise</span>
                       </div>
-                      <span className="font-bold text-sm sm:text-base text-white drop-shadow">
-                        {new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
+                        {formatClientTime(weatherData.sys.sunrise, { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between group/item hover:bg-white/10 p-1 rounded transition-colors">
+                    <div className="flex items-center justify-between group/item hover:bg-slate-50 dark:hover:bg-slate-800/55 p-1 rounded transition-colors">
                       <div className="flex items-center gap-1 sm:gap-1.5">
-                        <Sunset className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-200 group-hover/item:scale-125 transition-transform" />
-                        <span className="text-xs sm:text-sm font-medium text-white/80">Sunset</span>
+                        <Sunset className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-500 group-hover/item:scale-125 transition-transform" />
+                        <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Sunset</span>
                       </div>
-                      <span className="font-bold text-sm sm:text-base text-white drop-shadow">
-                        {new Date(weatherData.sys.sunset * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
+                        {formatClientTime(weatherData.sys.sunset, { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <div className="pt-1 border-t border-white/20 group-hover:border-white/30 transition-colors">
-                      <p className="text-[10px] sm:text-xs text-white/80 font-medium group-hover:text-white transition-colors">
+                    <div className="pt-1 border-t border-slate-200 dark:border-slate-800 transition-colors">
+                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
                         Daylight: {(((weatherData.sys.sunset - weatherData.sys.sunrise) / 3600)).toFixed(1)} hours
                       </p>
                     </div>
@@ -1579,19 +1739,14 @@ export default function DashboardPage() {
         {/* Hourly Forecast - Mobile Optimized */}
         {hourlyForecast.length > 0 && (
           <div className={`mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 delay-300 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-indigo-600 via-purple-700 to-pink-800' : 'from-indigo-400 via-purple-500 to-pink-600'} text-white group`}>
-              {/* Animated gradient border */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-indigo-300/30 via-purple-200/20 to-pink-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-              
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-              <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
+            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'} rounded-2xl group`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/20' : 'bg-slate-50/10'}`} />
               
               <div className="relative z-10">
                 <CardHeader className="p-2 sm:p-3 md:p-4">
-                  <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base text-white group-hover:scale-105 transition-transform origin-left">
-                    <div className="p-1.5 rounded-lg bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-110 transition-all duration-500">
-                      <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:animate-pulse" />
+                  <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base text-slate-900 dark:text-white group-hover:scale-105 transition-transform origin-left">
+                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 group-hover:scale-110 transition-all duration-500">
+                      <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-500 dark:text-indigo-400 group-hover:animate-pulse" />
                     </div>
                     Hourly Forecast
                   </CardTitle>
@@ -1601,11 +1756,10 @@ export default function DashboardPage() {
                   <div className="overflow-x-auto pb-2">
                     <div className="flex gap-1.5 sm:gap-2 md:gap-3 px-1 sm:px-3 md:px-4 pb-1 snap-x snap-mandatory overflow-y-hidden">
                       {hourlyForecast.map((hour, index) => {
-                        const time = new Date(hour.dt * 1000)
                         return (
-                          <div key={index} className="flex-shrink-0 text-center p-1.5 sm:p-2 md:p-3 rounded-lg sm:rounded-xl bg-white/15 backdrop-blur-sm min-w-[60px] sm:min-w-[75px] md:min-w-[90px] snap-center hover:bg-white/30 hover:scale-110 hover:shadow-xl transition-all duration-300 border border-white/20 hover:border-white/40 cursor-pointer group/hour">
-                            <p className="text-[10px] sm:text-xs md:text-sm font-semibold mb-0.5 sm:mb-1 text-white/90 group-hover/hour:text-white group-hover/hour:scale-105 transition-all">
-                              {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          <div key={index} className="flex-shrink-0 text-center p-1.5 sm:p-2 md:p-3 rounded-lg sm:rounded-xl bg-blue-100/50 dark:bg-blue-950/40 snap-center hover:bg-blue-200/40 dark:hover:bg-blue-900/50 hover:scale-110 hover:shadow-xl transition-all duration-300 border border-blue-200 dark:border-blue-800/80 hover:border-blue-300 dark:hover:border-blue-600 cursor-pointer group/hour">
+                            <p className="text-[10px] sm:text-xs md:text-sm font-semibold mb-0.5 sm:mb-1 text-slate-500 dark:text-slate-400 group-hover/hour:text-slate-900 dark:group-hover/hour:text-white group-hover/hour:scale-105 transition-all">
+                              {formatClientTime(hour.dt, { hour: '2-digit', minute: '2-digit' })}
                             </p>
                             <div className="relative">
                               <img 
@@ -1614,12 +1768,12 @@ export default function DashboardPage() {
                                 className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 mx-auto group-hover/hour:scale-125 group-hover/hour:drop-shadow-lg transition-all duration-300"
                               />
                             </div>
-                            <p className="text-sm sm:text-base md:text-lg font-bold mt-0.5 sm:mt-1 text-white drop-shadow group-hover/hour:scale-110 transition-transform">
+                            <p className="text-sm sm:text-base md:text-lg font-bold mt-0.5 sm:mt-1 text-slate-900 dark:text-white group-hover/hour:scale-110 transition-transform">
                               {formatTemp(hour.main.temp)}°
                             </p>
                             <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1 group-hover/hour:scale-105 transition-transform">
-                              <Droplets className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-blue-200 group-hover/hour:animate-pulse" />
-                              <span className="text-[10px] sm:text-xs text-white/80 group-hover/hour:text-white font-medium transition-colors">
+                              <Droplets className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-blue-500 group-hover/hour:animate-pulse" />
+                              <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium transition-colors">
                                 {(hour.pop * 100).toFixed(0)}%
                               </span>
                             </div>
@@ -1637,19 +1791,14 @@ export default function DashboardPage() {
         {/* 5-Day Forecast - Mobile Optimized */}
         {forecastData.length > 0 && (
           <div className={`mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 delay-400 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-cyan-600 via-blue-700 to-indigo-800' : 'from-cyan-400 via-blue-500 to-indigo-600'} text-white group`}>
-              {/* Animated gradient border */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-300/30 via-blue-200/20 to-indigo-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-              
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-              <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
+            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'} rounded-2xl group`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/20' : 'bg-slate-50/10'}`} />
               
               <div className="relative z-10">
                 <CardHeader className="p-2 sm:p-3 md:p-4">
-                  <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base text-white group-hover:scale-105 transition-transform origin-left">
-                    <div className="p-1.5 rounded-lg bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-110 transition-all duration-500">
-                      <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:animate-pulse" />
+                  <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base text-slate-900 dark:text-white group-hover:scale-105 transition-transform origin-left">
+                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 group-hover:scale-110 transition-all duration-500">
+                      <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500 dark:text-blue-400 group-hover:animate-pulse" />
                     </div>
                     5-Day Forecast
                   </CardTitle>
@@ -1657,13 +1806,12 @@ export default function DashboardPage() {
                 <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
                     {forecastData.map((day, index) => {
-                      const date = new Date(day.dt * 1000)
-                      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
-                      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      const dayName = formatClientDate(day.dt, { weekday: 'short' })
+                      const dateStr = formatClientDate(day.dt, { month: 'short', day: 'numeric' })
                       return (
-                        <div key={index} className="text-center p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-white/15 backdrop-blur-sm hover:bg-white/30 hover:scale-105 hover:shadow-xl transition-all duration-300 border border-white/20 hover:border-white/40 min-w-0 cursor-pointer group/day">
-                          <p className="font-semibold mb-0.5 text-xs sm:text-sm text-white group-hover/day:scale-105 transition-transform">{dayName}</p>
-                          <p className="text-[10px] sm:text-xs mb-0.5 sm:mb-1 text-white/80 group-hover/day:text-white transition-colors">{dateStr}</p>
+                        <div key={index} className="text-center p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-indigo-100/50 dark:bg-indigo-950/40 hover:bg-indigo-200/40 dark:hover:bg-indigo-900/50 hover:scale-105 hover:shadow-xl transition-all duration-300 border border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-300 dark:hover:border-indigo-600 min-w-0 cursor-pointer group/day">
+                          <p className="font-semibold mb-0.5 text-xs sm:text-sm text-slate-900 dark:text-white group-hover/day:scale-105 transition-transform">{dayName}</p>
+                          <p className="text-[10px] sm:text-xs mb-0.5 sm:mb-1 text-slate-500 dark:text-slate-400 transition-colors">{dateStr}</p>
                           <div className="relative">
                             <img 
                               src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
@@ -1671,23 +1819,23 @@ export default function DashboardPage() {
                               className="h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 mx-auto group-hover/day:scale-125 group-hover/day:drop-shadow-lg transition-all duration-300"
                             />
                           </div>
-                          <p className="text-lg sm:text-xl font-bold mt-0.5 sm:mt-1 text-white drop-shadow group-hover/day:scale-110 transition-transform">
+                          <p className="text-lg sm:text-xl font-bold mt-0.5 sm:mt-1 text-slate-900 dark:text-white group-hover/day:scale-110 transition-transform">
                             {formatTemp(day.main.temp)}°
                           </p>
-                          <p className="text-[10px] sm:text-xs capitalize mt-0.5 sm:mt-1 text-white/80 line-clamp-2 group-hover/day:text-white transition-colors">
+                          <p className="text-[10px] sm:text-xs capitalize mt-0.5 sm:mt-1 text-slate-500 dark:text-slate-400 line-clamp-2 transition-colors">
                             {day.weather[0].description}
                           </p>
                           <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1 text-[10px] sm:text-xs group-hover/day:scale-105 transition-transform">
-                            <span className="text-white/80 group-hover/day:text-white transition-colors flex items-center gap-0.5">
-                              <TrendingUp className="h-2 w-2 sm:h-2.5 sm:w-2.5 inline text-red-300" /> {formatTemp(day.main.temp_max)}°
+                            <span className="text-slate-500 dark:text-slate-400 transition-colors flex items-center gap-0.5">
+                              <TrendingUp className="h-2 w-2 sm:h-2.5 sm:w-2.5 inline text-red-500" /> {formatTemp(day.main.temp_max)}°
                             </span>
-                            <span className="text-white/80 group-hover/day:text-white transition-colors flex items-center gap-0.5">
-                              <TrendingDown className="h-2 w-2 sm:h-2.5 sm:w-2.5 inline text-blue-300" /> {formatTemp(day.main.temp_min)}°
+                            <span className="text-slate-500 dark:text-slate-400 transition-colors flex items-center gap-0.5">
+                              <TrendingDown className="h-2 w-2 sm:h-2.5 sm:w-2.5 inline text-blue-550" /> {formatTemp(day.main.temp_min)}°
                             </span>
                           </div>
                           <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1 group-hover/day:scale-105 transition-transform">
-                            <Droplets className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-blue-200 group-hover/day:animate-pulse" />
-                            <span className="text-[10px] sm:text-xs text-white/80 group-hover/day:text-white font-medium transition-colors">
+                            <Droplets className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-blue-500 group-hover/day:animate-pulse" />
+                            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium transition-colors">
                               {(day.pop * 100).toFixed(0)}%
                             </span>
                           </div>
@@ -1704,19 +1852,14 @@ export default function DashboardPage() {
         {/* Additional Weather Details - Mobile Optimized */}
         {weatherData && (
           <div className={`transition-all duration-1000 delay-500 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-violet-600 via-purple-700 to-fuchsia-800' : 'from-violet-400 via-purple-500 to-fuchsia-600'} text-white group`}>
-              {/* Animated gradient border */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-violet-300/30 via-purple-200/20 to-fuchsia-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-              
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-              <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-              <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
+            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'} hover:shadow-lg transition-all duration-500 rounded-2xl group`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/20' : 'bg-slate-50/10'}`} />
               
               <div className="relative z-10">
                 <CardHeader className="p-2 sm:p-3 md:p-4">
-                  <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base text-white group-hover:scale-105 transition-transform origin-left">
-                    <div className="p-1.5 rounded-lg bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-110 transition-all duration-500">
-                      <Thermometer className="h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:animate-pulse" />
+                  <CardTitle className={`flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base ${isDarkMode ? 'text-white' : 'text-slate-900'} group-hover:scale-105 transition-transform origin-left`}>
+                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 group-hover:scale-110 transition-all duration-500">
+                      <Thermometer className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-violet-500 dark:text-violet-400 group-hover:animate-pulse" />
                     </div>
                     Additional Details
                   </CardTitle>
@@ -1724,48 +1867,48 @@ export default function DashboardPage() {
                 <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                     {weatherData.wind.gust && (
-                      <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 hover:bg-white/30 hover:scale-105 hover:shadow-lg transition-all duration-300 min-w-0 cursor-pointer group/item">
+                      <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-amber-100/50 dark:bg-amber-950/40 hover:bg-amber-200/40 dark:hover:bg-amber-900/50 hover:scale-105 hover:shadow-xl transition-all duration-300 border border-amber-200 dark:border-amber-850 hover:border-amber-300 dark:hover:border-amber-600 min-w-0 cursor-pointer group/item">
                         <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1 group-hover/item:scale-105 transition-transform">
-                          <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-200 group-hover/item:animate-pulse" />
-                          <span className="text-xs sm:text-sm text-white/90 group-hover/item:text-white transition-colors">Wind Gust</span>
+                          <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-500 dark:text-amber-400 group-hover/item:animate-pulse" />
+                          <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">Wind Gust</span>
                         </div>
-                        <p className="text-sm sm:text-base md:text-lg font-bold text-white drop-shadow group-hover/item:scale-110 transition-transform">
+                        <p className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white group-hover/item:scale-110 transition-transform">
                           {(weatherData.wind.gust * 3.6).toFixed(1)} km/h
                         </p>
                       </div>
                     )}
                     
-                    <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 hover:bg-white/30 hover:scale-105 hover:shadow-lg transition-all duration-300 min-w-0 cursor-pointer group/item">
+                    <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-blue-100/50 dark:bg-blue-950/40 hover:bg-blue-200/40 dark:hover:bg-blue-900/50 hover:scale-105 hover:shadow-xl transition-all duration-300 border border-blue-200 dark:border-blue-850 hover:border-blue-300 dark:hover:border-blue-600 min-w-0 cursor-pointer group/item">
                       <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1 group-hover/item:scale-105 transition-transform">
-                        <Compass className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-blue-200 group-hover/item:rotate-180 transition-transform duration-700" />
-                        <span className="text-xs sm:text-sm text-white/90 group-hover/item:text-white transition-colors">Wind Dir</span>
+                        <Compass className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-blue-500 dark:text-blue-400 group-hover/item:rotate-180 transition-transform duration-700" />
+                        <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">Wind Dir</span>
                       </div>
-                      <p className="text-sm sm:text-base md:text-lg font-bold text-white drop-shadow group-hover/item:scale-110 transition-transform">
+                      <p className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white group-hover/item:scale-110 transition-transform">
                         {getWindDirection(weatherData.wind.deg)}
                       </p>
-                      <p className="text-[10px] sm:text-xs text-white/80 group-hover/item:text-white transition-colors">
+                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-450 group-hover/item:text-slate-700 dark:group-hover/item:text-slate-350 transition-colors">
                         ({weatherData.wind.deg}°)
                       </p>
                     </div>
 
                     {weatherData.rain && (
-                      <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 hover:bg-white/30 hover:scale-105 hover:shadow-lg transition-all duration-300 min-w-0 cursor-pointer group/item">
+                      <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-indigo-100/50 dark:bg-indigo-950/40 hover:bg-indigo-200/40 dark:hover:bg-indigo-900/50 hover:scale-105 hover:shadow-xl transition-all duration-300 border border-indigo-200 dark:border-indigo-850 hover:border-indigo-300 dark:hover:border-indigo-600 min-w-0 cursor-pointer group/item">
                         <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1 group-hover/item:scale-105 transition-transform">
-                          <CloudRain className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-blue-200 group-hover/item:animate-bounce" />
-                          <span className="text-xs sm:text-sm text-white/90 group-hover/item:text-white transition-colors">Rainfall</span>
+                          <CloudRain className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-indigo-500 dark:text-indigo-400 group-hover/item:animate-bounce" />
+                          <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">Rainfall</span>
                         </div>
-                        <p className="text-sm sm:text-base md:text-lg font-bold text-white drop-shadow group-hover/item:scale-110 transition-transform">
+                        <p className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white group-hover/item:scale-110 transition-transform">
                           {weatherData.rain["1h"] || weatherData.rain["3h"] || 0} mm
                         </p>
                       </div>
                     )}
 
-                    <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 hover:bg-white/30 hover:scale-105 hover:shadow-lg transition-all duration-300 min-w-0 cursor-pointer group/item">
+                    <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-sky-100/50 dark:bg-sky-950/40 hover:bg-sky-200/40 dark:hover:bg-sky-900/50 hover:scale-105 hover:shadow-xl transition-all duration-300 border border-sky-200 dark:border-sky-850 hover:border-sky-300 dark:hover:border-sky-600 min-w-0 cursor-pointer group/item">
                       <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1 group-hover/item:scale-105 transition-transform">
-                        <Cloud className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white/80 group-hover/item:text-white transition-colors" />
-                        <span className="text-xs sm:text-sm text-white/90 group-hover/item:text-white transition-colors">Cloudiness</span>
+                        <Cloud className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-400 dark:text-slate-500 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors" />
+                        <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">Cloudiness</span>
                       </div>
-                      <p className="text-sm sm:text-base md:text-lg font-bold text-white drop-shadow group-hover/item:scale-110 transition-transform">
+                      <p className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white group-hover/item:scale-110 transition-transform">
                         {weatherData.clouds.all}%
                       </p>
                     </div>
@@ -1779,11 +1922,11 @@ export default function DashboardPage() {
 
       {/* Mobile Bottom Action Bar */}
       <div className="lg:hidden fixed left-2 right-2 bottom-2 z-50">
-        <div className={`flex items-center justify-between gap-1 ${isDarkMode ? 'bg-gray-900/95' : 'bg-white/95'} backdrop-blur-xl rounded-full shadow-2xl px-2 py-1.5 border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+        <div className={`flex items-center justify-between gap-1 ${isDarkMode ? 'bg-slate-900' : 'bg-white'} backdrop-blur-xl rounded-full shadow-2xl px-2 py-1.5 border ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
           <button
             onClick={() => setIsSidebarOpen(true)}
             aria-label="Open menu"
-            className={`w-10 h-10 rounded-full flex items-center justify-center relative ${isDarkMode ? 'bg-gradient-to-r from-blue-600 to-indigo-600' : 'bg-gradient-to-r from-blue-500 to-indigo-600'} text-white shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95`}
+            className="w-10 h-10 rounded-full flex items-center justify-center relative bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
             title="Menu"
           >
             <Menu className="h-5 w-5" />
@@ -1796,7 +1939,7 @@ export default function DashboardPage() {
           <button
             onClick={() => requestUserLocation(true)}
             aria-label="Refresh location"
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} transition-colors`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-100'} transition-colors`}
             title="Refresh GPS"
           >
             <Navigation className={`h-4 w-4 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
@@ -1805,43 +1948,43 @@ export default function DashboardPage() {
           <button
             onClick={handleVoiceSearch}
             aria-label="Voice search"
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} transition-colors`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-100'} transition-colors`}
             title="Voice search"
           >
-            <Mic className={`h-4 w-4 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`} />
+            <Mic className={`h-4 w-4 ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`} />
           </button>
 
           <button
             onClick={toggleUnit}
             aria-label="Toggle unit"
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} transition-colors`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-100'} transition-colors`}
             title="Toggle °C/°F"
           >
-            <span className={`text-xs font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>{isCelsius ? '°C' : '°F'}</span>
+            <span className={`text-xs font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>{isCelsius ? '°C' : '°F'}</span>
           </button>
 
           <button
             onClick={toggleDarkMode}
             aria-label="Toggle dark mode"
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} transition-colors`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-100'} transition-colors`}
             title="Toggle theme"
           >
-            {isDarkMode ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-gray-700" />}
+            {isDarkMode ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-slate-700" />}
           </button>
 
           <button
             onClick={handleUserProfile}
             aria-label="User profile"
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} transition-colors`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-100'} transition-colors`}
             title="User profile"
           >
-            <User className={`h-4 w-4 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`} />
+            <User className={`h-4 w-4 ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`} />
           </button>
 
           <button
             onClick={handleRefresh}
             aria-label="Refresh all data"
-            className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all hover:scale-105"
             title="Refresh all data"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />

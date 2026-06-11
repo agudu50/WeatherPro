@@ -160,7 +160,7 @@ const WeatherCard = ({ weather, forecast, loading }) => {
       )}
 
       {/* Weather Tips */}
-      <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-lg bg-green-500/20 text-green-400">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

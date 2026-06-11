@@ -126,15 +126,15 @@ export default function DashboardLayout({ children }) {
         isCollapsed ? 'md:grid-cols-[70px_1fr]' : 'md:grid-cols-[260px_1fr] lg:grid-cols-[280px_1fr]'
       }`}>
         {/* Enhanced Desktop Sidebar */}
-        <div className={`hidden border-r bg-gradient-to-b from-slate-50 via-blue-50/30 to-slate-50 md:block transition-all duration-300 overflow-y-auto ${
+        <div className={`hidden border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 md:block transition-all duration-300 overflow-y-auto ${
           isCollapsed ? 'w-[70px]' : ''
         }`}>
           <div className="flex h-full max-h-screen flex-col">
             {/* Header with Logo and Collapse Button */}
-            <div className="flex h-14 items-center border-b px-3 lg:h-[60px] lg:px-4">
+            <div className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 px-3 lg:h-[60px] lg:px-4">
               {!isCollapsed && (
-                <Link href="/" className="flex items-center gap-2 font-semibold text-slate-800 transition-all">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
+                <Link href="/" className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 transition-all">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 shadow-sm">
                     <Cloud className="h-5 w-5 text-white" />
                   </div>
                   <span className="text-base">Weather Pro</span>
@@ -142,7 +142,7 @@ export default function DashboardLayout({ children }) {
               )}
               {isCollapsed && (
                 <Link href="/" className="flex items-center justify-center w-full">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 shadow-sm">
                     <Cloud className="h-5 w-5 text-white" />
                   </div>
                 </Link>
@@ -153,7 +153,7 @@ export default function DashboardLayout({ children }) {
                     variant="ghost"
                     size="icon"
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className={`h-8 w-8 text-slate-600 hover:bg-blue-100 hover:text-blue-600 transition-all ${
+                    className={`h-8 w-8 text-slate-600 dark:text-slate-400 hover:bg-blue-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all ${
                       isCollapsed ? 'ml-0' : 'ml-auto'
                     }`}
                   >
@@ -180,7 +180,7 @@ export default function DashboardLayout({ children }) {
                     placeholder="Search..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 h-9 bg-white border-slate-200 focus:border-blue-400 focus:ring-blue-400"
+                    className="pl-8 h-9 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus:border-blue-400 focus:ring-blue-400 text-slate-900 dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default function DashboardLayout({ children }) {
                 {filteredGroups.map((group, groupIndex) => (
                   <div key={group.title} className={groupIndex > 0 ? "mt-4" : ""}>
                     {!isCollapsed && (
-                      <h3 className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      <h3 className="px-3 mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                         {group.title}
                       </h3>
                     )}
@@ -208,13 +208,13 @@ export default function DashboardLayout({ children }) {
                             href={item.href}
                             className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
                               isActive
-                                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/20"
-                                : "text-slate-700 hover:bg-blue-50 hover:text-blue-600"
+                                ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                                : "text-slate-700 dark:text-slate-350 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400"
                             } ${isCollapsed ? "justify-center" : ""} ${
                               item.important && !isActive ? "text-orange-600 hover:text-orange-700" : ""
                             }`}
                           >
-                            <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive ? "text-white" : ""}`} />
+                            <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive ? "text-white" : "text-slate-500 dark:text-slate-400"}`} />
                             {!isCollapsed && (
                               <>
                                 <span className="flex-1">{item.name}</span>
@@ -228,7 +228,7 @@ export default function DashboardLayout({ children }) {
                                   </Badge>
                                 )}
                                 {item.shortcut && !isActive && (
-                                  <span className="text-xs text-slate-400">{item.shortcut}</span>
+                                  <span className="text-xs text-slate-400 dark:text-slate-500">{item.shortcut}</span>
                                 )}
                               </>
                             )}
@@ -259,8 +259,8 @@ export default function DashboardLayout({ children }) {
               {/* Quick Actions */}
               {!isCollapsed && (
                 <div className="mt-4 px-2 pb-4">
-                  <Separator className="mb-3" />
-                  <h3 className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <Separator className="mb-3 border-slate-200 dark:border-slate-800" />
+                  <h3 className="px-3 mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     Quick Actions
                   </h3>
                   <div className="flex gap-2">
@@ -270,9 +270,9 @@ export default function DashboardLayout({ children }) {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1 h-9 border-slate-200 hover:bg-blue-50 hover:border-blue-300"
+                            className="flex-1 h-9 border-slate-200 dark:border-slate-800 hover:bg-blue-50 dark:hover:bg-slate-800 hover:border-blue-300 dark:hover:border-blue-700 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900"
                           >
-                            <action.icon className="h-4 w-4" />
+                            <action.icon className="h-4 w-4 text-slate-500 dark:text-slate-450" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -287,7 +287,7 @@ export default function DashboardLayout({ children }) {
               {/* Bottom Info Card - Inside ScrollArea */}
               {!isCollapsed && (
                 <div className="px-2 pb-4">
-                  <Card className="bg-gradient-to-br from-blue-500 to-blue-600 border-0 shadow-lg">
+                  <Card className="bg-blue-600 border-0 shadow-lg">
                     <CardContent className="p-3">
                       <div className="flex items-start gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
@@ -310,13 +310,13 @@ export default function DashboardLayout({ children }) {
 
         {/* Enhanced Mobile Menu */}
         <div className="flex flex-col">
-          <header className="flex h-14 items-center gap-4 border-b bg-white/80 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6 sticky top-0 z-50">
+          <header className="flex h-14 items-center gap-4 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6 sticky top-0 z-50 text-slate-800 dark:text-slate-200">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="shrink-0 md:hidden border-slate-300 text-slate-600 hover:bg-slate-50"
+                  className="shrink-0 md:hidden border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-850"
                 >
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Toggle navigation menu</span>
@@ -324,15 +324,15 @@ export default function DashboardLayout({ children }) {
               </SheetTrigger>
               <SheetContent 
                 side="left" 
-                className="flex flex-col bg-gradient-to-b from-slate-50 via-blue-50/30 to-slate-50 p-0 w-[280px]"
+                className="flex flex-col bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-0 w-[280px]"
               >
                 {/* Mobile Header */}
-                <div className="flex items-center gap-2 px-4 py-4 border-b">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
+                <div className="flex items-center gap-2 px-4 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 shadow-md">
                     <Cloud className="h-6 w-6 text-white" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-semibold text-slate-800">Weather Pro</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-100">Weather Pro</span>
                   </div>
                 </div>
 
@@ -347,7 +347,7 @@ export default function DashboardLayout({ children }) {
                       placeholder="Search..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-8 h-9 bg-white border-slate-200"
+                      className="pl-8 h-9 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
                     />
                   </div>
                 </div>
@@ -370,8 +370,8 @@ export default function DashboardLayout({ children }) {
                                   href={item.href}
                                   className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all ${
                                     isActive
-                                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
-                                      : "text-slate-700 hover:bg-blue-50 hover:text-blue-600 active:scale-95"
+                                      ? "bg-blue-600 text-white shadow-md"
+                                      : "text-slate-700 dark:text-slate-350 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 active:scale-95"
                                   } ${item.important && !isActive ? "text-orange-600" : ""}`}
                                   onClick={() => setIsMobileMenuOpen(false)}
                                 >
@@ -396,8 +396,8 @@ export default function DashboardLayout({ children }) {
 
                     {/* Mobile Quick Actions */}
                     <div className="pb-4">
-                      <Separator className="mb-3" />
-                      <h3 className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      <Separator className="mb-3 border-slate-200 dark:border-slate-800" />
+                      <h3 className="px-3 mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                         Quick Actions
                       </h3>
                       <div className="grid grid-cols-2 gap-2">
@@ -406,7 +406,7 @@ export default function DashboardLayout({ children }) {
                             key={action.name}
                             variant="outline"
                             size="sm"
-                            className="justify-start gap-2 h-10 border-slate-200 hover:bg-blue-50"
+                            className="justify-start gap-2 h-10 border-slate-200 dark:border-slate-800 hover:bg-blue-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900"
                           >
                             <action.icon className="h-4 w-4" />
                             <span className="text-xs">{action.name}</span>
@@ -417,7 +417,7 @@ export default function DashboardLayout({ children }) {
 
                     {/* Mobile Footer - Inside ScrollArea */}
                     <div className="pb-4">
-                      <div className="p-4 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600">
+                      <div className="p-4 rounded-lg bg-blue-600">
                         <div className="flex items-center gap-3 text-white">
                           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
                             <Sparkles className="h-5 w-5" />
@@ -442,7 +442,7 @@ export default function DashboardLayout({ children }) {
                   <Input
                     type="search"
                     placeholder="Search weather data..."
-                    className="w-full pl-8 h-9 bg-white/50 backdrop-blur-sm border-slate-200 focus:border-blue-400 focus:ring-blue-400 md:w-2/3 lg:w-1/3"
+                    className="w-full pl-8 h-9 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm border-slate-200 dark:border-slate-800 focus:border-blue-400 focus:ring-blue-400 text-slate-900 dark:text-slate-100 md:w-2/3 lg:w-1/3"
                   />
                 </div>
               </form>
@@ -455,9 +455,9 @@ export default function DashboardLayout({ children }) {
                   <Button 
                     variant="outline" 
                     size="icon" 
-                    className="h-9 w-9 border-slate-200 hover:bg-slate-50 relative"
+                    className="h-9 w-9 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 relative"
                   >
-                    <Bell className="h-4 w-4" />
+                    <Bell className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                     <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">
                       2
                     </span>
@@ -473,7 +473,7 @@ export default function DashboardLayout({ children }) {
           </header>
 
           {/* Main Content */}
-          <main className="flex flex-1 flex-col bg-slate-50/50">
+          <main className="flex flex-1 flex-col bg-slate-50/50 dark:bg-slate-950/50">
             {children}
           </main>
         </div>
