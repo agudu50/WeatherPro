@@ -834,6 +834,32 @@ export default function DashboardPage() {
     return Math.round(displayTemp)
   }
 
+  const getSunPosition = () => {
+    if (!weatherData) return { x: 50, y: 38, isDay: true, ratio: 0.5 }
+    const now = Math.floor(currentTime.getTime() / 1000)
+    const sunrise = weatherData.sys.sunrise
+    const sunset = weatherData.sys.sunset
+    
+    const isDay = now >= sunrise && now <= sunset
+    
+    if (isDay) {
+      const ratio = Math.max(0, Math.min((now - sunrise) / (sunset - sunrise), 1))
+      const x = 5 + ratio * 90
+      const y = 38 - 30 * Math.sin(ratio * Math.PI)
+      return { x, y, isDay, ratio }
+    } else {
+      const nightDuration = 43200 // 12 hours fallback
+      let timeSinceSunset = now - sunset
+      if (timeSinceSunset < 0) {
+        timeSinceSunset = now + 43200 - sunrise
+      }
+      const ratio = Math.min(Math.max(timeSinceSunset / nightDuration, 0), 1)
+      const x = 5 + ratio * 90
+      const y = 38 - 30 * Math.sin(ratio * Math.PI)
+      return { x, y, isDay, ratio }
+    }
+  }
+
   const sidebarMenuItems = [
     { icon: Home, label: 'Dashboard', href: '/dashboard', active: true, badge: null },
     { icon: CloudSun, label: 'Weather', href: '/dashboard/weather', active: false, badge: 'Live' },
@@ -851,56 +877,6 @@ export default function DashboardPage() {
     { icon: Settings, label: 'Settings', href: '/dashboard/settings', active: false, badge: null },
   ]
 
-  const weatherCards = [
-    {
-      icon: Droplets,
-      title: "Humidity",
-      value: weatherData?.main.humidity.toString() || "0",
-      unit: "%",
-      color: "text-slate-900 dark:text-white",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      description: `${weatherData?.main.humidity || 0}% relative humidity`,
-      cardBg: "bg-blue-100/60 dark:bg-blue-950/40 hover:bg-blue-200/40 dark:hover:bg-blue-900/50",
-      cardBorder: "border-blue-200 dark:border-blue-800/80 hover:border-blue-300 dark:hover:border-blue-600",
-      iconBg: "bg-blue-200/60 dark:bg-blue-900/50 border border-blue-300/40 dark:border-blue-800/60"
-    },
-    {
-      icon: Wind,
-      title: "Wind Speed",
-      value: weatherData?.wind.speed ? (weatherData.wind.speed * 3.6).toFixed(1) : "0",
-      unit: "km/h",
-      color: "text-slate-900 dark:text-white",
-      iconColor: "text-teal-600 dark:text-teal-400",
-      description: weatherData?.wind.deg ? `${getWindDirection(weatherData.wind.deg)} direction` : "No data",
-      cardBg: "bg-teal-100/60 dark:bg-teal-950/40 hover:bg-teal-200/40 dark:hover:bg-teal-900/50",
-      cardBorder: "border-teal-200 dark:border-teal-800/80 hover:border-teal-300 dark:hover:border-teal-600",
-      iconBg: "bg-teal-200/60 dark:bg-teal-900/50 border border-teal-300/40 dark:border-teal-800/60"
-    },
-    {
-      icon: Eye,
-      title: "Visibility",
-      value: weatherData?.visibility ? (weatherData.visibility / 1000).toFixed(1) : "0",
-      unit: "km",
-      color: "text-slate-900 dark:text-white",
-      iconColor: "text-indigo-600 dark:text-indigo-400",
-      description: weatherData?.visibility ? (weatherData.visibility >= 10000 ? "Excellent" : weatherData.visibility >= 5000 ? "Good" : "Moderate") : "No data",
-      cardBg: "bg-indigo-100/60 dark:bg-indigo-950/40 hover:bg-indigo-200/40 dark:hover:bg-indigo-900/50",
-      cardBorder: "border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-300 dark:hover:border-indigo-600",
-      iconBg: "bg-indigo-200/60 dark:bg-indigo-900/50 border border-indigo-300/40 dark:border-indigo-800/60"
-    },
-    {
-      icon: Gauge,
-      title: "Pressure",
-      value: weatherData?.main.pressure.toString() || "0",
-      unit: "hPa",
-      color: "text-slate-900 dark:text-white",
-      iconColor: "text-rose-600 dark:text-rose-450",
-      description: weatherData?.main.pressure ? (weatherData.main.pressure > 1013 ? "High" : weatherData.main.pressure < 1013 ? "Low" : "Normal") : "No data",
-      cardBg: "bg-rose-100/60 dark:bg-rose-950/40 hover:bg-rose-200/40 dark:hover:bg-rose-900/50",
-      cardBorder: "border-rose-200 dark:border-rose-800/80 hover:border-rose-300 dark:hover:border-rose-600",
-      iconBg: "bg-rose-200/60 dark:bg-rose-900/50 border border-rose-300/40 dark:border-rose-800/60"
-    },
-  ]
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'} relative overflow-x-hidden min-w-0 transition-colors duration-500`}>
@@ -1578,163 +1554,389 @@ export default function DashboardPage() {
 
         {/* Weather Details Grid - Mobile Optimized */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
-          {weatherCards.map((card, index) => {
-            const Icon = card.icon
-            return (
-              <div
-                key={card.title}
-                className={`transition-all duration-1000 min-w-0 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-                style={{ transitionDelay: `${300 + index * 100}ms` }}
-              >
-                <Card className={`relative overflow-hidden border ${card.cardBorder} ${card.cardBg} hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl cursor-pointer active:scale-100`}>
-                  <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
-
-                  <div className="relative z-10">
-                    <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-4">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 group-hover:scale-105 transition-transform origin-left">
-                          {card.title}
-                        </CardTitle>
-                        <div className={`p-2 sm:p-2.5 rounded-xl ${card.iconBg} group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 shadow border ${card.cardBorder}`}>
-                          <Icon className={`h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 ${card.iconColor} drop-shadow group-hover:drop-shadow-lg`} />
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-3 sm:p-4 pt-0">
-                      <div className="flex items-baseline gap-1 sm:gap-1.5 mb-1 sm:mb-2 group-hover:scale-110 transition-transform origin-left">
-                        <span className={`text-2xl sm:text-3xl md:text-4xl font-bold ${card.color} transition-all`}>
-                          {loading ? '--' : card.value}
-                        </span>
-                        <span className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm md:text-base font-medium">{card.unit}</span>
-                      </div>
-                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 line-clamp-2 font-medium group-hover:text-slate-700 dark:group-hover:text-slate-350 transition-colors">
-                        {card.description}
-                      </p>
-                    </CardContent>
+          {/* Card 1: Humidity */}
+          <div
+            className={`transition-all duration-1000 min-w-0 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+            style={{ transitionDelay: '300ms' }}
+          >
+            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900/60 border-slate-800 text-white' : 'bg-blue-50/70 border-blue-200 text-slate-800'} hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-[1.03] group rounded-2xl cursor-pointer active:scale-100 shadow-md`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
+              <div className="relative z-10 p-3 sm:p-4 flex items-center justify-between h-full min-h-[140px]">
+                <div className="space-y-1.5 flex-1 min-w-0 pr-2">
+                  <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 group-hover:text-blue-500 transition-colors">Humidity</p>
+                  <div className="flex items-baseline gap-0.5">
+                    <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
+                      {loading ? '--' : (weatherData?.main.humidity || 0)}
+                    </span>
+                    <span className="text-slate-500 dark:text-slate-400 text-sm md:text-base font-semibold">%</span>
                   </div>
-                </Card>
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 line-clamp-2 font-medium">
+                    {weatherData?.main.humidity ? `${weatherData.main.humidity}% relative humidity` : 'No data'}
+                  </p>
+                </div>
+                
+                <div className="relative flex-shrink-0 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-slate-100/50 dark:bg-slate-850/50 rounded-full shadow-inner p-1">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="50%" cy="50%" r="28"
+                      className="stroke-slate-200 dark:stroke-slate-800 fill-none"
+                      strokeWidth="5"
+                    />
+                    <circle
+                      cx="50%" cy="50%" r="28"
+                      className="stroke-blue-500 dark:stroke-blue-400 fill-none transition-all duration-1000 ease-out"
+                      strokeWidth="5"
+                      strokeDasharray="175.9"
+                      strokeDashoffset={175.9 - (175.9 * (weatherData?.main.humidity || 0)) / 100}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute flex flex-col items-center justify-center">
+                    <span className="text-xl animate-float">💧</span>
+                  </div>
+                </div>
               </div>
-            )
-          })}
+            </Card>
+          </div>
+
+          {/* Card 2: Wind Speed & Direction */}
+          <div
+            className={`transition-all duration-1000 min-w-0 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+            style={{ transitionDelay: '400ms' }}
+          >
+            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900/60 border-slate-800 text-white' : 'bg-teal-50/70 border-teal-200 text-slate-800'} hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-[1.03] group rounded-2xl cursor-pointer active:scale-100 shadow-md`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
+              <div className="relative z-10 p-3 sm:p-4 flex items-center justify-between h-full min-h-[140px]">
+                <div className="space-y-1 flex-1 min-w-0 pr-2">
+                  <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 group-hover:text-teal-500 transition-colors">Wind Speed</p>
+                  <div className="flex items-baseline gap-0.5">
+                    <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
+                      {loading ? '--' : (weatherData ? (weatherData.wind.speed * 3.6).toFixed(1) : '0.0')}
+                    </span>
+                    <span className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-semibold">km/h</span>
+                  </div>
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                    {weatherData?.wind.deg ? `${getWindDirection(weatherData.wind.deg)} direction (${weatherData.wind.deg}°)` : 'Calm'}
+                  </p>
+                  {weatherData?.wind.gust && (
+                    <p className="text-[9px] sm:text-[10px] text-teal-600 dark:text-teal-400 font-semibold flex items-center gap-0.5 mt-0.5">
+                      <Zap className="h-2.5 w-2.5 animate-pulse" /> Gusts: {(weatherData.wind.gust * 3.6).toFixed(0)} km/h
+                    </p>
+                  )}
+                </div>
+
+                <div className="relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-slate-200/50 dark:bg-slate-850 rounded-full flex items-center justify-center border border-slate-300 dark:border-slate-700 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                  <span className="absolute top-0.5 text-[8px] font-extrabold text-slate-400">N</span>
+                  <span className="absolute right-0.5 text-[8px] font-extrabold text-slate-400">E</span>
+                  <span className="absolute bottom-0.5 text-[8px] font-extrabold text-slate-400">S</span>
+                  <span className="absolute left-0.5 text-[8px] font-extrabold text-slate-400">W</span>
+                  
+                  <div 
+                    className="w-1.5 h-10 sm:h-12 relative transition-transform duration-1000 ease-out"
+                    style={{ transform: `rotate(${(weatherData?.wind.deg || 0) + 180}deg)` }}
+                  >
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[3px] border-r-[3px] border-b-[20px] sm:border-b-[24px] border-b-red-500 border-l-transparent border-r-transparent" />
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[3px] border-r-[3px] border-t-[20px] sm:border-t-[24px] border-t-slate-400 dark:border-t-slate-500 border-l-transparent border-r-transparent" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-slate-800 dark:bg-slate-100 rounded-full border border-white" />
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Card 3: Visibility */}
+          <div
+            className={`transition-all duration-1000 min-w-0 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+            style={{ transitionDelay: '500ms' }}
+          >
+            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900/60 border-slate-800 text-white' : 'bg-indigo-50/70 border-indigo-200 text-slate-800'} hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-[1.03] group rounded-2xl cursor-pointer active:scale-100 shadow-md`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
+              <div className="relative z-10 p-3 sm:p-4 flex flex-col justify-between h-full min-h-[140px] space-y-2">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 group-hover:text-indigo-500 transition-colors">Visibility</p>
+                    <div className="p-1.5 rounded-lg bg-indigo-250/20 dark:bg-indigo-900/40 border border-indigo-300/20">
+                      <Eye className="h-3.5 w-3.5 text-indigo-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-0.5">
+                    <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
+                      {loading ? '--' : (weatherData ? (weatherData.visibility / 1000).toFixed(1) : '0.0')}
+                    </span>
+                    <span className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-semibold">km</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full relative overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-slate-400/80 via-blue-400 to-indigo-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${Math.min(((weatherData?.visibility || 0) / 10000) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
+                    <span>0 km</span>
+                    <Badge className="bg-indigo-100/80 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800 py-0 px-1.5 text-[9px] font-bold">
+                      {weatherData?.visibility ? (weatherData.visibility >= 10000 ? "Excellent" : weatherData.visibility >= 5000 ? "Good" : "Moderate") : "No data"}
+                    </Badge>
+                    <span>10+ km</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Card 4: Pressure */}
+          <div
+            className={`transition-all duration-1000 min-w-0 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+            style={{ transitionDelay: '600ms' }}
+          >
+            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900/60 border-slate-800 text-white' : 'bg-rose-50/70 border-rose-200 text-slate-800'} hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-[1.03] group rounded-2xl cursor-pointer active:scale-100 shadow-md`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
+              <div className="relative z-10 p-3 sm:p-4 flex items-center justify-between h-full min-h-[140px]">
+                <div className="space-y-1 flex-1 min-w-0 pr-2">
+                  <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 group-hover:text-rose-500 transition-colors">Barometer</p>
+                  <div className="flex items-baseline gap-0.5">
+                    <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
+                      {loading ? '--' : (weatherData?.main.pressure || 0)}
+                    </span>
+                    <span className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-semibold">hPa</span>
+                  </div>
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                    {weatherData?.main.pressure ? (weatherData.main.pressure > 1013 ? "High Pressure" : weatherData.main.pressure < 1013 ? "Low Pressure" : "Normal Pressure") : "No data"}
+                  </p>
+                </div>
+
+                <div className="relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-slate-200/50 dark:bg-slate-850 rounded-full flex items-center justify-center border border-slate-300 dark:border-slate-700 shadow-inner group-hover:scale-110 transition-transform duration-500 overflow-hidden">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center relative">
+                    <Gauge className="h-5 w-5 text-rose-500/80 animate-pulse" />
+                    
+                    <div 
+                      className="absolute inset-0 w-full h-full flex items-center justify-center transition-transform duration-1000 ease-out"
+                      style={{ transform: `rotate(${Math.min(Math.max(((weatherData?.main.pressure || 1013) - 1013) * 2.5, -90), 90)}deg)` }}
+                    >
+                      <div className="w-0.5 h-6 sm:h-8 bg-rose-550 -translate-y-2 relative rounded-full">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-rose-600" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
 
         {/* Additional Weather Info - Mobile Optimized */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
           {/* UV Index */}
           {uvIndexData && (
-            <Card className={`relative overflow-hidden border border-amber-200 dark:border-amber-800/80 bg-amber-100/60 dark:bg-amber-950/40 hover:bg-amber-200/40 dark:hover:bg-amber-900/50 hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl cursor-pointer active:scale-100`}>
+            <Card className={`relative overflow-hidden border border-amber-200 dark:border-amber-800/80 bg-amber-100/60 dark:bg-amber-950/40 hover:bg-amber-200/40 dark:hover:bg-amber-900/50 hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] group rounded-2xl cursor-pointer active:scale-100 shadow-md`}>
               <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
-              
-              <div className="relative z-10">
-                <CardHeader className="p-3 sm:p-4">
+              <div className="relative z-10 p-3 sm:p-4 flex flex-col justify-between h-full min-h-[160px] space-y-2.5">
+                <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">
-                    <div className="p-1.5 sm:p-2 rounded-xl bg-amber-200/60 dark:bg-amber-900/50 group-hover:scale-125 group-hover:rotate-180 transition-all duration-700 ring-1 ring-amber-350 dark:ring-amber-800 border border-amber-300 dark:border-amber-700">
-                      <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500 animate-pulse" />
+                    <div className="p-1.5 rounded-xl bg-amber-200/60 dark:bg-amber-900/50 group-hover:scale-110 transition-all duration-500">
+                      <Sun className="h-4 w-4 text-amber-500 animate-spin" style={{ animationDuration: '8s' }} />
                     </div>
                     UV Index
                   </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 sm:p-4 pt-0">
-                  <div className="space-y-1 sm:space-y-2">
-                    <div className="flex items-baseline gap-1.5 sm:gap-2 group-hover:scale-105 transition-transform origin-left">
-                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">{uvIndexData.value.toFixed(1)}</span>
-                      <Badge className={`${getUVDescription(uvIndexData.value).bgColor} ${getUVDescription(uvIndexData.value).color} border-0 text-xs font-semibold shadow-lg group-hover:scale-110 transition-transform`}>
-                        {getUVDescription(uvIndexData.value).label}
-                      </Badge>
-                    </div>
-                    <div className="relative">
-                      <Progress value={(uvIndexData.value / 11) * 100} className="h-1.5 sm:h-2 bg-slate-200 dark:bg-slate-700 group-hover:h-2.5 transition-all" />
-                      <div className="absolute top-0 left-0 h-full bg-amber-500 rounded-full" style={{width: `${(uvIndexData.value / 11) * 100}%`}} />
-                    </div>
-                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium transition-colors">
-                      {uvIndexData.value <= 2 ? "Minimal sun protection required" :
-                       uvIndexData.value <= 5 ? "Moderate sun protection needed" :
-                       uvIndexData.value <= 7 ? "High sun protection required" :
-                       "Extreme protection necessary"}
-                    </p>
+                  <Badge className={`${getUVDescription(uvIndexData.value).bgColor} ${getUVDescription(uvIndexData.value).color} border-0 text-[10px] sm:text-xs font-bold shadow-sm group-hover:scale-105 transition-transform`}>
+                    {getUVDescription(uvIndexData.value).label}
+                  </Badge>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-baseline gap-1.5 group-hover:scale-105 transition-transform origin-left">
+                    <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white leading-none">{uvIndexData.value.toFixed(1)}</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">of 11+</span>
                   </div>
-                </CardContent>
+
+                  <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-450 via-orange-500 via-red-500 to-purple-600 rounded-full" />
+                    <div 
+                      className="absolute top-0 bottom-0 w-1.5 bg-white border border-slate-400 shadow-md rounded-full transition-all duration-1000 ease-out animate-pulse" 
+                      style={{ left: `calc(${Math.min((uvIndexData.value / 11) * 100, 100)}% - 3px)` }} 
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-450 font-medium">
+                    {uvIndexData.value <= 2 ? "Minimal protection required" :
+                     uvIndexData.value <= 5 ? "Moderate sun protection needed" :
+                     uvIndexData.value <= 7 ? "High sun protection required" :
+                     "Extreme protection necessary"}
+                  </p>
+                </div>
+
+                {/* Recommendations Icons */}
+                <div className="flex items-center gap-2 pt-1.5 border-t border-amber-250/30 dark:border-amber-900/30">
+                  <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 mr-auto">Protection:</p>
+                  <div className="flex gap-1.5">
+                    <div className={`p-1.5 rounded-lg border text-xs transition-all ${uvIndexData.value >= 3 ? 'bg-amber-500/20 border-amber-500 text-amber-500 shadow-md scale-105 animate-pulse' : 'bg-slate-200/30 dark:bg-slate-800/30 border-transparent text-slate-400'}`} title="Sunglasses Recommendeded">
+                      <Glasses className="h-3.5 w-3.5" />
+                    </div>
+                    <div className={`p-1.5 rounded-lg border text-xs transition-all ${uvIndexData.value >= 3 ? 'bg-amber-500/20 border-amber-500 text-amber-500 shadow-md scale-105 animate-pulse' : 'bg-slate-200/30 dark:bg-slate-800/30 border-transparent text-slate-400'}`} title="Hat Recommendeded">
+                      <Shirt className="h-3.5 w-3.5" />
+                    </div>
+                    <div className={`p-1.5 rounded-lg border text-xs transition-all ${uvIndexData.value >= 3 ? 'bg-amber-500/20 border-amber-500 text-amber-500 shadow-md scale-105 animate-pulse' : 'bg-slate-200/30 dark:bg-slate-800/30 border-transparent text-slate-400'}`} title="Sunscreen Recommendeded">
+                      <Sun className="h-3.5 w-3.5" />
+                    </div>
+                    <div className={`p-1.5 rounded-lg border text-xs transition-all ${uvIndexData.value >= 6 ? 'bg-amber-500/20 border-amber-500 text-amber-500 shadow-md scale-105 animate-pulse' : 'bg-slate-200/30 dark:bg-slate-800/30 border-transparent text-slate-400'}`} title="Shade Recommendeded">
+                      <Umbrella className="h-3.5 w-3.5" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </Card>
           )}
 
           {/* Air Quality */}
           {airQuality && (
-            <Card className={`relative overflow-hidden border border-emerald-200 dark:border-emerald-800/80 bg-emerald-100/60 dark:bg-emerald-950/40 hover:bg-emerald-200/40 dark:hover:bg-emerald-900/50 hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl cursor-pointer active:scale-100`}>
+            <Card className={`relative overflow-hidden border border-emerald-200 dark:border-emerald-800/80 bg-emerald-100/60 dark:bg-emerald-950/40 hover:bg-emerald-200/40 dark:hover:bg-emerald-900/50 hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] group rounded-2xl cursor-pointer active:scale-100 shadow-md`}>
               <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
-              
-              <div className="relative z-10">
-                <CardHeader className="p-3 sm:p-4">
+              <div className="relative z-10 p-3 sm:p-4 flex flex-col justify-between h-full min-h-[160px] space-y-2">
+                <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">
-                    <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-200/60 dark:bg-emerald-900/50 group-hover:scale-125 transition-all duration-500 ring-1 ring-emerald-350 dark:ring-emerald-800 border border-emerald-300 dark:border-emerald-700">
-                      <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500 group-hover:animate-pulse" />
+                    <div className="p-1.5 rounded-xl bg-emerald-200/60 dark:bg-emerald-900/50 group-hover:scale-110 transition-all duration-500">
+                      <Activity className="h-4 w-4 text-emerald-500 animate-pulse" />
                     </div>
                     Air Quality
                   </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 sm:p-4 pt-0">
-                  <div className="space-y-1 sm:space-y-2">
-                    <div className="flex items-baseline gap-1.5 sm:gap-2 group-hover:scale-105 transition-transform origin-left">
-                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">{airQuality.list[0].main.aqi}</span>
-                      <Badge className={`${getAQIDescription(airQuality.list[0].main.aqi).bgColor} ${getAQIDescription(airQuality.list[0].main.aqi).color} border-0 text-xs font-semibold shadow-lg group-hover:scale-110 transition-transform`}>
-                        {getAQIDescription(airQuality.list[0].main.aqi).label}
-                      </Badge>
+                  <Badge className={`${getAQIDescription(airQuality.list[0].main.aqi).bgColor} ${getAQIDescription(airQuality.list[0].main.aqi).color} border-0 text-[10px] sm:text-xs font-bold shadow-sm group-hover:scale-105 transition-transform`}>
+                    {getAQIDescription(airQuality.list[0].main.aqi).label}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <div className="space-y-1">
+                    <div className="flex items-baseline gap-1 group-hover:scale-105 transition-transform origin-left">
+                      <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white leading-none">
+                        {airQuality.list[0].main.aqi}
+                      </span>
+                      <span className="text-slate-550 dark:text-slate-400 text-xs font-semibold">/ 5</span>
                     </div>
-                    <div className="relative">
-                      <Progress value={(airQuality.list[0].main.aqi / 5) * 100} className="h-1.5 sm:h-2 bg-slate-200 dark:bg-slate-700 group-hover:h-2.5 transition-all" />
-                      <div className="absolute top-0 left-0 h-full bg-emerald-500 rounded-full" style={{width: `${(airQuality.list[0].main.aqi / 5) * 100}%`}} />
-                    </div>
-                    <div className="text-[10px] sm:text-xs space-y-0.5 sm:space-y-1 text-slate-500 dark:text-slate-400 font-medium transition-colors">
-                      <p>PM2.5: {airQuality.list[0].components.pm2_5.toFixed(1)} μg/m³</p>
-                      <p>PM10: {airQuality.list[0].components.pm10.toFixed(1)} μg/m³</p>
-                    </div>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-400 font-medium leading-tight">
+                      Index scale (1 - 5)
+                    </p>
                   </div>
-                </CardContent>
+
+                  <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center bg-slate-100/50 dark:bg-slate-850/50 rounded-full shadow-inner p-1">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle cx="50%" cy="50%" r="18" className="stroke-slate-200 dark:stroke-slate-800 fill-none" strokeWidth="4" />
+                      <circle 
+                        cx="50%" cy="50%" r="18" 
+                        className={`fill-none transition-all duration-1000 ease-out ${
+                          airQuality.list[0].main.aqi === 1 ? 'stroke-green-500' :
+                          airQuality.list[0].main.aqi === 2 ? 'stroke-yellow-500' :
+                          airQuality.list[0].main.aqi === 3 ? 'stroke-orange-500' :
+                          airQuality.list[0].main.aqi === 4 ? 'stroke-red-500' :
+                          'stroke-purple-500'
+                        }`} 
+                        strokeWidth="4" 
+                        strokeDasharray="113.1" 
+                        strokeDashoffset={113.1 - (113.1 * airQuality.list[0].main.aqi) / 5}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span className="absolute text-[10px] font-bold text-slate-500 dark:text-slate-400">AQI</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-emerald-250/30 dark:border-emerald-900/30 text-[10px] font-semibold text-slate-505 dark:text-slate-400">
+                  <div className="bg-slate-200/30 dark:bg-slate-850/40 p-1 rounded-lg border border-slate-300/10 hover:scale-[1.02] hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all flex flex-col items-center">
+                    <div className="flex items-center gap-1">
+                      <div className={`w-1.5 h-1.5 rounded-full ${airQuality.list[0].components.pm2_5 <= 12 ? 'bg-green-500' : airQuality.list[0].components.pm2_5 <= 35 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                      <span>PM2.5</span>
+                    </div>
+                    <span className="text-slate-900 dark:text-white font-bold text-xs mt-0.5">{airQuality.list[0].components.pm2_5.toFixed(1)} <span className="text-[8px] font-normal text-slate-400">μg/m³</span></span>
+                  </div>
+
+                  <div className="bg-slate-200/30 dark:bg-slate-850/40 p-1 rounded-lg border border-slate-300/10 hover:scale-[1.02] hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all flex flex-col items-center">
+                    <div className="flex items-center gap-1">
+                      <div className={`w-1.5 h-1.5 rounded-full ${airQuality.list[0].components.pm10 <= 54 ? 'bg-green-500' : airQuality.list[0].components.pm10 <= 154 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                      <span>PM10</span>
+                    </div>
+                    <span className="text-slate-900 dark:text-white font-bold text-xs mt-0.5">{airQuality.list[0].components.pm10.toFixed(1)} <span className="text-[8px] font-normal text-slate-400">μg/m³</span></span>
+                  </div>
+                </div>
               </div>
             </Card>
           )}
 
           {/* Sunrise/Sunset */}
           {weatherData?.sys && (
-            <Card className={`relative overflow-hidden border border-orange-200 dark:border-orange-850/80 bg-orange-100/60 dark:bg-orange-950/40 hover:bg-orange-200/40 dark:hover:bg-orange-900/50 hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl cursor-pointer active:scale-100`}>
+            <Card className={`relative overflow-hidden border border-orange-200 dark:border-orange-850/80 bg-orange-100/60 dark:bg-orange-950/40 hover:bg-orange-200/40 dark:hover:bg-orange-900/50 hover:shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] group rounded-2xl cursor-pointer active:scale-100 shadow-md`}>
               <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/5' : 'bg-white/5'}`} />
               
-              <div className="relative z-10">
-                <CardHeader className="p-3 sm:p-4">
+              <div className="relative z-10 p-3 sm:p-4 flex flex-col justify-between h-full min-h-[160px] space-y-2">
+                <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">
-                    <div className="p-1.5 sm:p-2 rounded-xl bg-orange-200/60 dark:bg-orange-900/50 group-hover:scale-125 transition-all duration-500 ring-1 ring-orange-350 dark:ring-orange-850 border border-orange-300/85 dark:border-orange-750">
-                      <Sunrise className="h-4 w-4 sm:h-5 sm:w-5 text-rose-500" />
+                    <div className="p-1.5 rounded-xl bg-orange-200/60 dark:bg-orange-900/50 group-hover:scale-110 transition-all duration-500">
+                      <Sunrise className="h-4 w-4 text-orange-500" />
                     </div>
                     Sun Times
                   </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 sm:p-4 pt-0">
-                  <div className="space-y-2 sm:space-y-3 group-hover:scale-105 transition-transform origin-left">
-                    <div className="flex items-center justify-between group/item hover:bg-slate-50 dark:hover:bg-slate-800/55 p-1 rounded transition-colors">
-                      <div className="flex items-center gap-1 sm:gap-1.5">
-                        <Sunrise className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-500 group-hover/item:scale-125 transition-transform" />
-                        <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Sunrise</span>
-                      </div>
-                      <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
-                        {formatClientTime(weatherData.sys.sunrise, { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between group/item hover:bg-slate-50 dark:hover:bg-slate-800/55 p-1 rounded transition-colors">
-                      <div className="flex items-center gap-1 sm:gap-1.5">
-                        <Sunset className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-500 group-hover/item:scale-125 transition-transform" />
-                        <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Sunset</span>
-                      </div>
-                      <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
-                        {formatClientTime(weatherData.sys.sunset, { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <div className="pt-1 border-t border-slate-200 dark:border-slate-800 transition-colors">
-                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Daylight: {(((weatherData.sys.sunset - weatherData.sys.sunrise) / 3600)).toFixed(1)} hours
-                      </p>
-                    </div>
+                  <span className="text-[10px] bg-orange-200/60 dark:bg-orange-900/50 text-orange-700 dark:text-orange-350 px-2 py-0.5 rounded-full font-bold border border-orange-350/40">
+                    Daylight: {(((weatherData.sys.sunset - weatherData.sys.sunrise) / 3600)).toFixed(1)}h
+                  </span>
+                </div>
+
+                {/* Daylight Arc Visual */}
+                <div className="relative w-full h-12 mt-1">
+                  {(() => {
+                    const sunPos = getSunPosition();
+                    return (
+                      <svg viewBox="0 0 100 42" className="w-full h-full overflow-visible">
+                        {/* Sun Curve Path */}
+                        <path 
+                          d="M 5,38 Q 50,8 95,38" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          strokeWidth="1.2" 
+                          strokeDasharray="2,2" 
+                          className="text-slate-350 dark:text-slate-700" 
+                        />
+                        {/* Ground Horizon line */}
+                        <line 
+                          x1="0" 
+                          y1="38" 
+                          x2="100" 
+                          y2="38" 
+                          stroke="currentColor" 
+                          strokeWidth="0.8" 
+                          className="text-slate-200 dark:text-slate-800" 
+                        />
+                        {/* Animated Sun / Moon position */}
+                        <g 
+                          transform={`translate(${sunPos.x}, ${sunPos.y})`} 
+                          className="transition-all duration-1000 ease-out"
+                        >
+                          {sunPos.isDay ? (
+                            <>
+                              <circle r="4.5" fill="#f59e0b" className="animate-pulse" />
+                              <circle r="7.5" fill="none" stroke="#f59e0b" strokeWidth="0.6" className="animate-ping" style={{ animationDuration: '3s' }} />
+                            </>
+                          ) : (
+                            <>
+                              <circle r="4" fill="#60a5fa" />
+                              {/* Moon crescent shape overlap */}
+                              <circle cx="1.5" cy="-1.5" r="4" fill={isDarkMode ? '#0f172a' : '#f8fafc'} />
+                            </>
+                          )}
+                        </g>
+                      </svg>
+                    );
+                  })()}
+                </div>
+
+                <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 pt-1.5 border-t border-orange-250/30 dark:border-orange-900/30">
+                  <div className="flex flex-col items-start">
+                    <span className="text-[9px] font-semibold text-slate-450">Sunrise</span>
+                    <span className="text-slate-900 dark:text-white font-extrabold">{formatClientTime(weatherData.sys.sunrise, { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
-                </CardContent>
+                  <div className="flex flex-col items-end">
+                    <span className="text-[9px] font-semibold text-slate-450">Sunset</span>
+                    <span className="text-slate-900 dark:text-white font-extrabold">{formatClientTime(weatherData.sys.sunset, { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                </div>
               </div>
             </Card>
           )}

@@ -227,3 +227,13 @@ body {
   0%, 90%, 100% { opacity: 0.1; }
   5%, 10% { opacity: 0.8; }
 }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
