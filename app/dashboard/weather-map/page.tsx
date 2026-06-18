@@ -78,35 +78,35 @@ export default function WeatherMapPage() {
       id: "temperature", 
       name: "Temperature", 
       icon: Thermometer, 
-      color: "bg-gradient-to-r from-blue-500 via-yellow-500 to-red-500",
+      color: "bg-rose-500",
       description: "Real-time temperature data"
     },
     { 
       id: "precipitation", 
       name: "Precipitation", 
       icon: CloudRain, 
-      color: "bg-gradient-to-r from-green-400 to-blue-600",
+      color: "bg-blue-500",
       description: "Live rainfall data"
     },
     { 
       id: "clouds", 
       name: "Cloud Cover", 
       icon: Satellite, 
-      color: "bg-gradient-to-r from-gray-400 to-gray-700",
+      color: "bg-slate-500",
       description: "Cloud coverage percentage"
     },
     { 
       id: "pressure", 
       name: "Pressure", 
       icon: Gauge, 
-      color: "bg-gradient-to-r from-purple-500 to-pink-600",
+      color: "bg-violet-500",
       description: "Atmospheric pressure"
     },
     { 
       id: "wind", 
       name: "Wind Speed", 
       icon: Wind, 
-      color: "bg-gradient-to-r from-cyan-400 to-teal-600",
+      color: "bg-teal-500",
       description: "Wind speed and direction"
     }
   ]
@@ -265,665 +265,666 @@ export default function WeatherMapPage() {
   return (
     <div className={`min-h-screen ${
       isDarkMode 
-        ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950' 
-        : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
-    } relative overflow-hidden transition-colors duration-500`}>
-      {/* Animated Background */}
+        ? 'bg-slate-950 text-white' 
+        : 'bg-slate-50 text-slate-900'
+    } relative overflow-x-hidden min-w-0 transition-colors duration-500`}>
+      {/* Animated Background Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((particle) => (
           <div
             key={particle.id}
-            className={`absolute w-1 h-1 ${
-              isDarkMode ? 'bg-blue-400/30' : 'bg-blue-600/20'
+            className={`absolute w-1.5 h-1.5 ${
+              isDarkMode ? 'bg-blue-300/15' : 'bg-blue-500/10'
             } rounded-full animate-float`}
             style={{
               left: `${particle.x}%`,
               top: `${particle.y}%`,
               animationDelay: `${particle.delay}s`,
-              animationDuration: `${4 + Math.random() * 3}s`
+              animationDuration: `${5 + Math.random() * 4}s`
             }}
           />
         ))}
       </div>
 
-      <div className="relative z-10 p-4 md:p-6">
-        {/* Header */}
-        <div className="mb-6">
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-xl transition-colors duration-500`}>
-            <CardContent className="p-6">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-2 ${
-                      isDarkMode 
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600' 
-                        : 'bg-gradient-to-r from-blue-400 to-purple-500'
-                    } rounded-xl`}>
-                      <Satellite className="h-6 w-6 text-white" />
-                    </div>
-                    <h1 className={`text-3xl md:text-4xl font-bold bg-gradient-to-r ${
-                      isDarkMode 
-                        ? 'from-blue-400 via-purple-400 to-pink-400' 
-                        : 'from-blue-600 via-purple-600 to-pink-600'
-                    } bg-clip-text text-transparent`}>
-                      Live Weather Map
-                    </h1>
-                  </div>
-                  <div className={`flex flex-wrap items-center gap-3 text-sm ${
-                    isDarkMode ? 'text-white/70' : 'text-gray-600'
-                  }`}>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4 text-red-500" />
-                      <span>{weatherData?.name || 'Loading...'}, {weatherData?.sys.country || ''}</span>
-                    </div>
-                    {locationStatus === 'success' && (
-                      <Badge className="bg-blue-500/20 text-blue-600 border-blue-500/30">
-                        📍 Your Location
-                      </Badge>
-                    )}
-                    {locationStatus === 'denied' && (
-                      <Badge className="bg-amber-500/20 text-amber-600 border-amber-500/30">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        Location Denied
-                      </Badge>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4 text-blue-500" />
-                      <span>{currentTime.toLocaleTimeString()}</span>
-                    </div>
-                    <Badge className={`${
-                      isDarkMode 
-                        ? 'bg-green-500/20 text-green-300 border-green-500/30' 
-                        : 'bg-green-100 text-green-700 border-green-300'
-                    }`}>
-                      <Activity className="h-3 w-3 mr-1 animate-pulse" />
-                      Live Data
-                    </Badge>
-                  </div>
-                </div>
+      <div className="relative z-10 p-3 sm:p-5 md:p-7 max-w-7xl w-full mx-auto pb-12 box-border">
+        {/* Header Section */}
+        <div className={`mb-6 p-4 sm:p-6 rounded-3xl border transition-all duration-500 ${
+          isDarkMode 
+            ? 'bg-slate-900/40 border-white/10 shadow-2xl' 
+            : 'bg-white/40 border-white/30 shadow-xl'
+        } backdrop-blur-xl`}>
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div className="flex items-center gap-3 text-left">
+              <div className="p-2.5 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20 text-white animate-pulse">
+                <Satellite className="h-6 w-6" />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">
+                  <span className="text-indigo-600 dark:text-indigo-400">Live Radar</span> & Satellite Map
+                </h1>
+                <p className={`text-xs sm:text-sm font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mt-1`}>
+                  Doppler radar simulation and environmental satellite scans
+                </p>
+              </div>
+            </div>
 
-                {/* Search and Theme Toggle */}
-                <form onSubmit={handleSearchCity} className="flex gap-2">
-                  <Button
-                    type="button"
-                    onClick={toggleDarkMode}
-                    size="icon"
-                    variant="outline"
-                    className={`${
-                      isDarkMode 
-                        ? 'bg-white/10 border-white/20 hover:bg-white/20 text-white' 
-                        : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
-                    }`}
-                    title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                  >
-                    {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                  </Button>
+            {/* Actions Deck */}
+            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+              <form onSubmit={handleSearchCity} className="flex gap-2 flex-1 sm:flex-none w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-60">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
                     type="text"
-                    placeholder="Search city..."
+                    placeholder="Search coordinates or city..."
                     value={searchCity}
                     onChange={(e) => setSearchCity(e.target.value)}
-                    className={`${
+                    className={`pl-9 py-2 w-full rounded-2xl border transition-all ${
                       isDarkMode 
-                        ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50' 
-                        : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
+                        ? 'bg-slate-950/60 border-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500' 
+                        : 'bg-white/80 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-indigo-500'
                     }`}
                   />
-                  <Button type="submit" size="icon" className="bg-blue-600 hover:bg-blue-700 text-white">
-                    <Search className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    size="icon"
-                    onClick={getUserLocation}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                    title="Use My Location"
-                  >
-                    <Target className="h-4 w-4" />
-                  </Button>
-                </form>
+                </div>
+                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-4 shadow-md shadow-indigo-500/10">
+                  Search
+                </Button>
+                <Button
+                  type="button"
+                  onClick={getUserLocation}
+                  className="bg-violet-650 hover:bg-violet-750 text-white bg-violet-600 hover:bg-violet-700 rounded-2xl px-4 shadow-md shadow-violet-500/10"
+                  title="Locate via GPS"
+                >
+                  <Target className="h-4 w-4" />
+                </Button>
+              </form>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={toggleDarkMode}
+                  variant="outline"
+                  size="icon"
+                  className={`w-10 h-10 rounded-2xl ${
+                    isDarkMode ? 'bg-slate-900 border-slate-800 hover:bg-slate-850' : 'bg-white border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {isDarkMode ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-slate-700" />}
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar Controls */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* Layer Selection */}
-            <Card className={`${
+        {/* Map Container View */}
+        <div 
+          ref={mapRef}
+          className={`relative h-[650px] lg:h-[750px] w-full rounded-3xl border overflow-hidden shadow-2xl backdrop-blur-lg transition-all duration-500 ${
+            isDarkMode ? 'bg-slate-950 border-white/10' : 'bg-slate-100 border-white/30'
+          }`}
+        >
+          {/* Base Simulated Map Canvas */}
+          <div 
+            className="absolute inset-0 transition-all duration-500"
+            style={{
+              opacity: opacity[0] / 100,
+              transform: `scale(${1 + zoom * 0.05})`
+            }}
+          >
+            {/* Topographic Landmasses Grid Simulation */}
+            <div className={`absolute inset-0 bg-cover bg-center opacity-45 mix-blend-overlay ${
+              isDarkMode ? 'bg-[radial-gradient(#ffffff0a_1px,transparent_1px)]' : 'bg-[radial-gradient(#0000000a_1px,transparent_1px)]'
+            }`} style={{ backgroundSize: '20px 20px' }} />
+            
+            {/* Lat/Lon Grid lines overlay */}
+            <div className="absolute inset-0 pointer-events-none opacity-25">
+              <svg width="100%" height="100%" className="text-slate-400 dark:text-slate-600">
+                <line x1="0" y1="25%" x2="100%" y2="25%" stroke="currentColor" strokeWidth="0.5" strokeDasharray="5,5" />
+                <line x1="0" y1="50%" x2="100%" y2="50%" stroke="currentColor" strokeWidth="0.8" />
+                <line x1="0" y1="75%" x2="100%" y2="75%" stroke="currentColor" strokeWidth="0.5" strokeDasharray="5,5" />
+                <line x1="25%" y1="0" x2="25%" y2="100%" stroke="currentColor" strokeWidth="0.5" strokeDasharray="5,5" />
+                <line x1="50%" y1="0" x2="50%" y2="100%" stroke="currentColor" strokeWidth="0.8" />
+                <line x1="75%" y1="0" x2="75%" y2="100%" stroke="currentColor" strokeWidth="0.5" strokeDasharray="5,5" />
+                <text x="10" y="48%" className="text-[8px] fill-current font-mono opacity-80">0° Equator</text>
+                <text x="49%" y="20" className="text-[8px] fill-current font-mono opacity-80">0° Prime Meridian</text>
+              </svg>
+            </div>
+
+            {/* Base landmass styling */}
+            <div className={`absolute inset-0 transition-colors duration-500 ${
               isDarkMode 
-                ? 'bg-white/10 border-white/20 text-white' 
-                : 'bg-white border-gray-200 text-gray-900'
-            } backdrop-blur-xl`}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Layers className={`h-5 w-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                  Map Layers
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
+                ? 'bg-slate-950/90' 
+                : 'bg-slate-100/90'
+            }`} />
+
+            {/* 1. TEMPERATURE LAYER EFFECT */}
+            {activeLayer === 'temperature' && (
+              <div className={`absolute inset-0 transition-opacity duration-500 ${isAnimating ? 'animate-pulse' : ''}`}>
+                <div className={`absolute inset-0 ${
+                  isDarkMode 
+                    ? 'bg-rose-950/5' 
+                    : 'bg-rose-50/5'
+                }`} />
+                {/* Thermal cells */}
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute rounded-full blur-3xl transition-transform duration-1000"
+                    style={{
+                      left: `${20 + (i * 11) % 60}%`,
+                      top: `${20 + (i * 9) % 60}%`,
+                      width: `${120 + i * 15}px`,
+                      height: `${120 + i * 15}px`,
+                      background: `radial-gradient(circle, ${
+                        isDarkMode 
+                          ? ['rgba(244,63,94,0.15)', 'rgba(168,85,247,0.12)', 'rgba(99,102,241,0.15)'][i % 3]
+                          : ['rgba(244,63,94,0.2)', 'rgba(168,85,247,0.15)', 'rgba(99,102,241,0.2)'][i % 3]
+                      } 0%, transparent 80%)`,
+                      animation: isAnimating ? 'float 8s ease-in-out infinite' : 'none',
+                      animationDelay: `${i * 0.4}s`
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* 2. PRECIPITATION LAYER EFFECT */}
+            {activeLayer === 'precipitation' && (
+              <div className="absolute inset-0">
+                {/* Simulated falling drops */}
+                {isAnimating && Array.from({ length: 35 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute w-[1.5px] h-8 bg-indigo-500/70 rounded-full"
+                    style={{
+                      left: `${(i * 17) % 100}%`,
+                      top: `${(i * 13) % 100}%`,
+                      animation: 'fall 2.2s linear infinite',
+                      animationDelay: `${i * 0.08}s`
+                    }}
+                  />
+                ))}
+                {/* Splat ripples */}
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div 
+                    key={i}
+                    className="absolute rounded-full border border-blue-400/30 pointer-events-none"
+                    style={{
+                      left: `${20 + (i * 11) % 60}%`,
+                      top: `${30 + (i * 9) % 50}%`,
+                      width: '60px',
+                      height: '30px',
+                      animation: isAnimating ? 'ripple 3.5s ease-out infinite' : 'none',
+                      animationDelay: `${i * 0.4}s`
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* 3. CLOUDS LAYER EFFECT */}
+            {activeLayer === 'clouds' && (
+              <div className="absolute inset-0">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`absolute rounded-full blur-2xl opacity-60 pointer-events-none transition-all duration-1000 ${
+                      isDarkMode ? 'bg-white/10' : 'bg-gray-450/20'
+                    }`}
+                    style={{
+                      left: `${10 + (i * 15) % 80}%`,
+                      top: `${15 + (i * 11) % 70}%`,
+                      width: `${180 + i * 35}px`,
+                      height: `${110 + i * 20}px`,
+                      animation: isAnimating ? 'drift 22s ease-in-out infinite' : 'none',
+                      animationDelay: `${i * 0.8}s`
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* 4. WIND LAYER EFFECT */}
+            {activeLayer === 'wind' && (
+              <div className="absolute inset-0">
+                {Array.from({ length: 20 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`absolute h-0.5 rounded-full bg-teal-400/50 pointer-events-none`}
+                    style={{
+                      left: `${(i * 19) % 100}%`,
+                      top: `${(i * 11) % 100}%`,
+                      width: `${100 + i * 15}px`,
+                      transform: `rotate(${160 + (i * 3) % 40}deg)`,
+                      animation: isAnimating ? 'slide 4.5s linear infinite' : 'none',
+                      animationDelay: `${i * 0.15}s`
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* 5. PRESSURE LAYER EFFECT */}
+            {activeLayer === 'pressure' && (
+              <div className="absolute inset-0">
+                {/* Pressure centers isobars */}
+                {Array.from({ length: 3 }).map((_, cIdx) => {
+                  const x = cIdx === 0 ? 30 : cIdx === 1 ? 70 : 50;
+                  const y = cIdx === 0 ? 40 : cIdx === 1 ? 60 : 30;
+                  const isLow = cIdx % 2 === 0;
+                  return (
+                    <div key={cIdx} className="absolute" style={{ left: `${x}%`, top: `${y}%` }}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-sm shadow-md border ${
+                        isLow 
+                          ? 'bg-red-500/80 border-red-400 text-white animate-bounce' 
+                          : 'bg-blue-500/80 border-blue-400 text-white'
+                      }`} style={{ transform: 'translate(-50%, -50%)', animationDuration: '4s' }}>
+                        {isLow ? 'L' : 'H'}
+                      </div>
+                      {/* Concentric Isobar curves */}
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`absolute rounded-full border border-dashed ${
+                            isLow ? 'border-red-500/20' : 'border-blue-500/20'
+                          }`}
+                          style={{
+                            width: `${80 + i * 50}px`,
+                            height: `${80 + i * 50}px`,
+                            transform: 'translate(-50%, -50%)',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Doppler Satellite Radar Scan Sweep Animation */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] pointer-events-none">
+              <svg width="100%" height="100%" viewBox="0 0 100 100" className="overflow-visible">
+                {/* Grid Radar rings */}
+                <circle cx="50" cy="50" r="15" fill="none" stroke="currentColor" strokeWidth="0.15" className="text-slate-400/40" />
+                <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.15" className="text-slate-400/40" />
+                <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="0.15" className="text-slate-400/40" />
+                {/* Rotating scanning ray */}
+                {isAnimating && (
+                  <line 
+                    x1="50" y1="50" x2="50" y2="5" 
+                    stroke="url(#radarSweep)" strokeWidth="1.2" 
+                    className="origin-[50px_50px] animate-[spin_8s_linear_infinite]" 
+                  />
+                )}
+                <defs>
+                  <linearGradient id="radarSweep" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
+                    <stop offset="30%" stopColor="#3b82f6" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+
+            {/* Target Location Beacon Marker */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
+              <div className="relative flex items-center justify-center">
+                <div className="absolute w-12 h-12 bg-blue-500 rounded-full animate-ping opacity-60" />
+                <div className="absolute w-8 h-8 bg-blue-500 rounded-full animate-pulse opacity-40" />
+                <div className="relative bg-blue-600 dark:bg-blue-500 text-white rounded-full p-3.5 shadow-2xl border-2 border-white scale-105 hover:scale-110 active:scale-95 transition-transform duration-300">
+                  <Navigation className="h-5 w-5 rotate-45" />
+                </div>
+              </div>
+            </div>
+
+            {/* Adjacent micro-locations markers */}
+            {nearbyLocations.map((location, index) => {
+              const angles = [45, 135, 225, 315]
+              const angle = angles[index % 4] * (Math.PI / 180)
+              const radius = 220
+              const x = 50 + radius * Math.cos(angle) / 4
+              const y = 50 + radius * Math.sin(angle) / 4
+              
+              return (
+                <div
+                  key={index}
+                  className="absolute z-10 cursor-pointer group"
+                  style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
+                >
+                  <div className={`p-2 rounded-full border transition-all duration-300 group-hover:scale-110 shadow-md ${
+                    isDarkMode ? 'bg-slate-900 border-white/20' : 'bg-white border-slate-200'
+                  }`}>
+                    <MapPin className="h-3.5 w-3.5 text-blue-500 dark:text-blue-400 animate-pulse" />
+                  </div>
+                  
+                  {/* Hover tooltip card */}
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 pointer-events-none">
+                    <div className="bg-slate-900/95 border border-white/10 backdrop-blur-md rounded-xl p-2.5 shadow-xl text-left whitespace-nowrap">
+                      <p className="text-white font-extrabold text-xs">{location.name}</p>
+                      <p className="text-blue-400 font-bold text-[10px] mt-0.5">{location.temp}°C</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* FLOATING GLASS OVERLAY PANELS ON THE MAP CONTAINER */}
+
+          {/* Top Right: Fullscreen control button */}
+          <div className="absolute top-4 right-4 z-30">
+            <Button
+              onClick={toggleFullscreen}
+              size="icon"
+              variant="ghost"
+              className={`w-10 h-10 rounded-2xl shadow-lg border backdrop-blur-md hover:scale-105 active:scale-95 transition-transform ${
+                isDarkMode 
+                  ? 'bg-slate-900/80 border-white/10 text-white hover:bg-slate-800' 
+                  : 'bg-white/80 border-slate-200 text-slate-800 hover:bg-slate-50'
+              }`}
+            >
+              {isFullscreen ? <Minimize2 className="h-4.5 w-4.5" /> : <Maximize2 className="h-4.5 w-4.5" />}
+            </Button>
+          </div>
+
+          {/* Left Side Overlay Panel: Map Layer Selection Pod */}
+          <div className="absolute top-4 left-4 z-35 max-w-[200px] sm:max-w-[260px] w-full text-left">
+            <div className={`p-3 rounded-3xl border shadow-2xl backdrop-blur-xl ${
+              isDarkMode ? 'bg-slate-900/80 border-white/10' : 'bg-white/80 border-slate-200'
+            }`}>
+              <div className="flex items-center gap-2 mb-3 px-1">
+                <Layers className="h-4 w-4 text-blue-500" />
+                <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Map Layers</span>
+              </div>
+              <div className="space-y-1.5">
                 {mapLayers.map((layer) => {
                   const Icon = layer.icon
+                  const isActive = activeLayer === layer.id
                   return (
                     <button
                       key={layer.id}
                       onClick={() => setActiveLayer(layer.id)}
-                      className={`w-full p-3 rounded-xl transition-all duration-300 flex items-center gap-3 ${
-                        activeLayer === layer.id
+                      className={`w-full p-2.5 rounded-2xl flex items-center gap-2.5 transition-all text-left group ${
+                        isActive
                           ? isDarkMode
-                            ? 'bg-white/20 scale-105 shadow-lg'
-                            : 'bg-blue-100 scale-105 shadow-lg'
+                            ? 'bg-white/10 scale-[1.02] border border-white/10'
+                            : 'bg-blue-600 text-white scale-[1.02] shadow-md shadow-blue-500/10'
                           : isDarkMode
-                            ? 'bg-white/5 hover:bg-white/10'
-                            : 'bg-gray-50 hover:bg-gray-100'
+                            ? 'hover:bg-white/5 border border-transparent'
+                            : 'hover:bg-slate-100 border border-transparent'
                       }`}
                     >
-                      <div className={`p-2 rounded-lg ${layer.color}`}>
-                        <Icon className="h-5 w-5 text-white" />
+                      <div className={`p-1.5 rounded-xl flex-shrink-0 ${
+                        isActive 
+                          ? 'bg-white/20 text-white' 
+                          : layer.color
+                      } text-white`}>
+                        <Icon className="h-4 w-4" />
                       </div>
-                      <div className="text-left flex-1">
-                        <p className="font-semibold text-sm">{layer.name}</p>
-                        <p className={`text-xs ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-xs font-extrabold ${isActive ? 'text-white' : 'text-slate-800 dark:text-white'}`}>{layer.name}</p>
+                        <p className={`text-[9px] ${
+                          isActive 
+                            ? 'text-white/85' 
+                            : 'text-slate-400 dark:text-slate-500'
+                        } truncate font-semibold`}>
                           {layer.description}
                         </p>
                       </div>
                     </button>
                   )
                 })}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          </div>
 
-            {/* Controls */}
-            <Card className={`${
-              isDarkMode 
-                ? 'bg-white/10 border-white/20 text-white' 
-                : 'bg-white border-gray-200 text-gray-900'
-            } backdrop-blur-xl`}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Activity className={`h-5 w-5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-                  Controls
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Opacity */}
-                <div>
-                  <label className={`text-sm ${isDarkMode ? 'text-white/70' : 'text-gray-600'} mb-2 block`}>
-                    Layer Opacity: {opacity[0]}%
-                  </label>
-                  <Slider
-                    value={opacity}
-                    onValueChange={setOpacity}
-                    max={100}
-                    step={1}
-                    className="cursor-pointer"
-                  />
+          {/* Right Side Overlay Panel: Selected Station Weather Details */}
+          {weatherData && (
+            <div className="absolute top-16 sm:top-4 right-4 z-35 max-w-[200px] sm:max-w-[260px] w-full text-left animate-in slide-in-from-right duration-500">
+              <div className={`p-4 rounded-3xl border shadow-2xl backdrop-blur-xl ${
+                isDarkMode ? 'bg-slate-900/80 border-white/10' : 'bg-white/80 border-slate-200'
+              }`}>
+                <div className="flex items-center gap-2 mb-3 border-b border-white/10 pb-2.5">
+                  <MapPin className="h-4 w-4 text-rose-550 animate-bounce" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-black text-slate-800 dark:text-white truncate">{weatherData.name}</p>
+                    <p className="text-[9px] text-slate-450 dark:text-slate-500 font-semibold">{weatherData.sys.country}</p>
+                  </div>
                 </div>
 
-                {/* Zoom */}
-                <div>
-                  <label className={`text-sm ${isDarkMode ? 'text-white/70' : 'text-gray-600'} mb-2 block`}>
-                    Zoom Level: {zoom}x
-                  </label>
-                  <div className="flex gap-2">
+                <div className="space-y-3">
+                  {/* Temperature Info */}
+                  <div className="flex items-center gap-2">
+                    <div className="text-3xl font-black tracking-tight text-slate-905 dark:text-white">
+                      {Math.round(weatherData.main.temp)}°C
+                    </div>
+                    <div className="text-left leading-tight">
+                      <span className="text-[10px] text-slate-450 dark:text-slate-500 font-semibold uppercase block">Feels Like</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{Math.round(weatherData.main.feels_like)}°C</span>
+                    </div>
+                  </div>
+
+                  {/* Weather description */}
+                  <div className="flex items-center gap-2 py-1 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200/50 dark:border-white/5">
+                    {weatherData.weather[0]?.icon && (
+                      <img 
+                        src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}.png`} 
+                        alt="Weather status"
+                        className="h-6 w-6 object-contain"
+                      />
+                    )}
+                    <span className="text-xs font-bold capitalize text-slate-800 dark:text-slate-200 truncate">{weatherData.weather[0]?.description}</span>
+                  </div>
+
+                  {/* Info metrics grid */}
+                  <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-550 dark:text-slate-400">
+                    <div className="bg-slate-100/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-white/5 p-2 rounded-xl text-center">
+                      <Droplets className="h-3.5 w-3.5 mx-auto mb-1 text-blue-550" />
+                      <p className="text-slate-400 text-[8px] uppercase font-semibold">Humidity</p>
+                      <p className="text-slate-900 dark:text-white font-extrabold">{weatherData.main.humidity}%</p>
+                    </div>
+
+                    <div className="bg-slate-100/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-white/5 p-2 rounded-xl text-center">
+                      <Wind className="h-3.5 w-3.5 mx-auto mb-1 text-teal-500" />
+                      <p className="text-slate-400 text-[8px] uppercase font-semibold">Wind</p>
+                      <p className="text-slate-900 dark:text-white font-extrabold">{Math.round(weatherData.wind.speed * 3.6)} km/h</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bottom Float Panel: Temporal Slider, Legend, Playback Controls */}
+          <div className="absolute bottom-4 left-4 right-4 z-30">
+            <div className={`p-4 rounded-3xl border shadow-2xl backdrop-blur-xl ${
+              isDarkMode ? 'bg-slate-900/80 border-white/10' : 'bg-white/80 border-slate-200'
+            }`}>
+              <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+                
+                {/* 1. Playback controls */}
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={() => setIsAnimating(!isAnimating)}
+                    size="icon"
+                    className="w-10 h-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/10 flex-shrink-0"
+                    title={isAnimating ? "Pause scanning animation" : "Resume scanning animation"}
+                  >
+                    {isAnimating ? <Pause className="h-4.5 w-4.5" /> : <Play className="h-4.5 w-4.5 ml-0.5" />}
+                  </Button>
+                  
+                  <div className="text-left leading-tight">
+                    <p className="text-[10px] text-slate-450 dark:text-slate-550 font-bold uppercase tracking-wider">Radar Scan Rate</p>
+                    <p className="text-xs font-extrabold text-slate-900 dark:text-white">
+                      {isAnimating ? "Simulating Real-Time Doppler Sweeps" : "Radar Scan Paused"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Map Settings (Opacity & Zoom) */}
+                <div className="flex flex-1 items-center gap-4 max-w-md w-full">
+                  <div className="w-full text-left">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] text-slate-450 dark:text-slate-500 font-bold uppercase tracking-wider">Radar Layer Opacity</span>
+                      <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">{opacity[0]}%</span>
+                    </div>
+                    <Slider
+                      value={opacity}
+                      onValueChange={setOpacity}
+                      max={100}
+                      step={1}
+                      className="cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Zoom indicator block */}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
                     <Button
                       onClick={() => setZoom(Math.max(1, zoom - 1))}
-                      variant="outline"
-                      size="sm"
-                      className={`flex-1 ${
-                        isDarkMode 
-                          ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
-                          : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
-                      }`}
+                      variant="ghost"
+                      size="icon"
+                      className="w-8 h-8 rounded-xl bg-slate-200/50 dark:bg-slate-950/20 text-slate-650 dark:text-slate-300"
                     >
-                      <ZoomOut className="h-4 w-4" />
+                      <ZoomOut className="h-3.5 w-3.5" />
                     </Button>
+                    <span className="text-xs font-extrabold font-mono w-6 text-center">{zoom}x</span>
                     <Button
                       onClick={() => setZoom(Math.min(15, zoom + 1))}
-                      variant="outline"
-                      size="sm"
-                      className={`flex-1 ${
-                        isDarkMode 
-                          ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
-                          : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
-                      }`}
+                      variant="ghost"
+                      size="icon"
+                      className="w-8 h-8 rounded-xl bg-slate-200/50 dark:bg-slate-950/20 text-slate-650 dark:text-slate-300"
                     >
-                      <ZoomIn className="h-4 w-4" />
+                      <ZoomIn className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </div>
 
-                {/* Animation */}
-                <Button
-                  onClick={() => setIsAnimating(!isAnimating)}
-                  variant="outline"
-                  className={`w-full ${
-                    isDarkMode 
-                      ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
-                      : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
-                  }`}
-                >
-                  {isAnimating ? (
-                    <>
-                      <Pause className="mr-2 h-4 w-4" />
-                      Pause Animation
-                    </>
-                  ) : (
-                    <>
-                      <Play className="mr-2 h-4 w-4" />
-                      Play Animation
-                    </>
-                  )}
-                </Button>
-
-                {/* Reset */}
-                <Button
-                  onClick={() => {
-                    setZoom(5)
-                    setOpacity([70])
-                  }}
-                  variant="outline"
-                  className={`w-full ${
-                    isDarkMode 
-                      ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
-                      : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
-                  }`}
-                >
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  Reset View
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Live Stats */}
-            {weatherData && (
-              <Card className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white' 
-                  : 'bg-white border-gray-200 text-gray-900'
-              } backdrop-blur-xl`}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <TrendingUp className={`h-5 w-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    Live Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className={`text-sm ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>Temperature</span>
-                    <span className="font-bold">{Math.round(weatherData.main.temp)}°C</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-sm ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>Humidity</span>
-                    <span className="font-bold">{weatherData.main.humidity}%</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-sm ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>Wind Speed</span>
-                    <span className="font-bold">{Math.round(weatherData.wind.speed * 3.6)} km/h</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className={`text-sm ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>Pressure</span>
-                    <span className="font-bold">{weatherData.main.pressure} hPa</span>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Legend */}
-            <Card className={`${
-              isDarkMode 
-                ? 'bg-white/10 border-white/20 text-white' 
-                : 'bg-white border-gray-200 text-gray-900'
-            } backdrop-blur-xl`}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Info className={`h-5 w-5 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`} />
-                  Legend
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+                {/* 3. Color Legend mapping */}
                 {currentLayerInfo && (
-                  <div className="space-y-3">
-                    <div className={`h-4 rounded-full ${currentLayerInfo.color}`} />
-                    <div className={`flex justify-between text-xs ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>
+                  <div className="w-full md:w-48 text-left">
+                    <p className="text-[10px] text-slate-455 dark:text-slate-500 font-bold uppercase tracking-wider mb-1.5">
+                      {currentLayerInfo.name} Legend
+                    </p>
+                    <div className="flex gap-1 mb-1.5">
+                      <div className={`h-2 rounded-l-full flex-1 ${currentLayerInfo.color} opacity-20`} />
+                      <div className={`h-2 flex-1 ${currentLayerInfo.color} opacity-40`} />
+                      <div className={`h-2 flex-1 ${currentLayerInfo.color} opacity-60`} />
+                      <div className={`h-2 flex-1 ${currentLayerInfo.color} opacity-80`} />
+                      <div className={`h-2 rounded-r-full flex-1 ${currentLayerInfo.color}`} />
+                    </div>
+                    <div className="flex justify-between text-[9px] font-bold text-slate-400 dark:text-slate-500 font-mono leading-none">
                       <span>Low</span>
-                      <span>Medium</span>
+                      <span>Mid</span>
                       <span>High</span>
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+
+              </div>
+            </div>
           </div>
 
-          {/* Map Display */}
-          <div className="lg:col-span-3 space-y-4">
-            {/* Interactive Map */}
-            <Card 
-              ref={mapRef}
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white' 
-                  : 'bg-white border-gray-200 text-gray-900'
-              } backdrop-blur-xl overflow-hidden`}
-            >
-              <div className="absolute top-4 right-4 z-10 flex gap-2">
-                <Button
-                  onClick={toggleFullscreen}
-                  size="sm"
-                  variant="outline"
-                  className={`${
-                    isDarkMode 
-                      ? 'bg-white/10 border-white/20 hover:bg-white/20 text-white' 
-                      : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
-                  } backdrop-blur-xl`}
-                >
-                  {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                </Button>
+          {/* Central loading indicator */}
+          {loading && (
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40">
+              <div className={`p-6 rounded-3xl border shadow-2xl flex flex-col items-center gap-4 text-center max-w-[280px] ${
+                isDarkMode ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'
+              }`}>
+                <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+                <div>
+                  <p className="font-extrabold text-sm text-slate-900 dark:text-white">Syncing Radar Feeds</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Connecting to live weather grid...</p>
+                </div>
               </div>
+            </div>
+          )}
+        </div>
 
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Satellite className="h-5 w-5" />
-                  {currentLayerInfo?.name} Map
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent>
-                <div className="relative h-[600px] lg:h-[700px] overflow-hidden rounded-xl">
-                  {/* Animated Map Visualization */}
-                  <div 
-                    className="absolute inset-0 transition-all duration-500"
-                    style={{
-                      opacity: opacity[0] / 100,
-                      transform: `scale(${1 + zoom * 0.05})`
-                    }}
-                  >
-                    {/* Base layer */}
-                    <div className={`absolute inset-0 ${
-                      isDarkMode 
-                        ? 'bg-gradient-to-br from-blue-900/50 via-indigo-900/50 to-purple-900/50' 
-                        : 'bg-gradient-to-br from-blue-100/80 via-indigo-100/80 to-purple-100/80'
-                    }`} />
-
-                    {/* Active Layer Visualization */}
-                    {activeLayer === 'temperature' && (
-                      <div className={`absolute inset-0 ${isAnimating ? 'animate-pulse' : ''}`}>
-                        <div className={`absolute inset-0 ${
-                          isDarkMode 
-                            ? 'bg-gradient-to-r from-blue-400/30 via-yellow-400/30 to-red-400/30' 
-                            : 'bg-gradient-to-r from-blue-300/40 via-yellow-300/40 to-red-300/40'
-                        }`} />
-                        {Array.from({ length: 15 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className="absolute rounded-full blur-xl"
-                            style={{
-                              left: `${Math.random() * 100}%`,
-                              top: `${Math.random() * 100}%`,
-                              width: `${50 + Math.random() * 100}px`,
-                              height: `${50 + Math.random() * 100}px`,
-                              background: `radial-gradient(circle, ${
-                                isDarkMode 
-                                  ? ['rgba(239,68,68,0.3)', 'rgba(251,191,36,0.3)', 'rgba(59,130,246,0.3)'][Math.floor(Math.random() * 3)]
-                                  : ['rgba(239,68,68,0.4)', 'rgba(251,191,36,0.4)', 'rgba(59,130,246,0.4)'][Math.floor(Math.random() * 3)]
-                              } 0%, transparent 70%)`,
-                              animation: isAnimating ? 'float 6s ease-in-out infinite' : 'none',
-                              animationDelay: `${Math.random() * 3}s`
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    {activeLayer === 'precipitation' && (
-                      <div className="absolute inset-0">
-                        {Array.from({ length: 30 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`absolute w-1 h-6 ${
-                              isDarkMode ? 'bg-blue-400/60' : 'bg-blue-500/70'
-                            } rounded-full`}
-                            style={{
-                              left: `${Math.random() * 100}%`,
-                              top: `${Math.random() * 100}%`,
-                              animation: isAnimating ? 'fall 2s linear infinite' : 'none',
-                              animationDelay: `${Math.random() * 2}s`
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    {activeLayer === 'clouds' && (
-                      <div className="absolute inset-0">
-                        {Array.from({ length: 10 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`absolute rounded-full blur-2xl ${
-                              isDarkMode ? 'bg-white/20' : 'bg-gray-400/30'
-                            }`}
-                            style={{
-                              left: `${Math.random() * 100}%`,
-                              top: `${Math.random() * 100}%`,
-                              width: `${100 + Math.random() * 200}px`,
-                              height: `${60 + Math.random() * 100}px`,
-                              animation: isAnimating ? 'drift 15s ease-in-out infinite' : 'none',
-                              animationDelay: `${Math.random() * 5}s`
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    {activeLayer === 'wind' && (
-                      <div className="absolute inset-0">
-                        {Array.from({ length: 25 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`absolute h-0.5 w-12 ${
-                              isDarkMode ? 'bg-cyan-400/50' : 'bg-cyan-500/60'
-                            }`}
-                            style={{
-                              left: `${Math.random() * 100}%`,
-                              top: `${Math.random() * 100}%`,
-                              transform: `rotate(${Math.random() * 360}deg)`,
-                              animation: isAnimating ? 'slide 3s linear infinite' : 'none',
-                              animationDelay: `${Math.random() * 3}s`
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    {activeLayer === 'pressure' && (
-                      <div className="absolute inset-0">
-                        {Array.from({ length: 8 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`absolute rounded-full border-2 ${
-                              isDarkMode ? 'border-purple-400/30' : 'border-purple-500/40'
-                            }`}
-                            style={{
-                              left: '50%',
-                              top: '50%',
-                              width: `${100 + i * 80}px`,
-                              height: `${100 + i * 80}px`,
-                              transform: 'translate(-50%, -50%)',
-                              animation: isAnimating ? 'ripple 4s ease-out infinite' : 'none',
-                              animationDelay: `${i * 0.5}s`
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Center Location Marker */}
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-75" style={{ width: '50px', height: '50px' }} />
-                        <div className="relative bg-blue-600 rounded-full p-4 shadow-2xl border-4 border-white/30">
-                          <Navigation className="h-6 w-6 text-white" />
-                        </div>
-                      </div>
-                      {weatherData && (
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 bg-black/80 backdrop-blur-lg rounded-lg px-4 py-2 whitespace-nowrap">
-                          <p className="text-white font-bold text-sm">{weatherData.name}</p>
-                          <p className="text-blue-300 text-xs">{Math.round(weatherData.main.temp)}°C</p>
-                        </div>
-                      )}
+        {/* Bottom geographical warnings tracker */}
+        {weatherData && (
+          <div className="mt-6">
+            <Card className={`border rounded-3xl overflow-hidden backdrop-blur-xl ${
+              isDarkMode ? 'bg-slate-900/40 border-white/10 text-white' : 'bg-white/40 border-white/30 text-slate-800'
+            }`}>
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 text-left">
+                    <div className="p-2 bg-yellow-500/10 rounded-xl text-yellow-500">
+                      <AlertCircle className="h-5 w-5 animate-pulse" />
                     </div>
-
-                    {/* Nearby Location Markers */}
-                    {nearbyLocations.map((location, index) => {
-                      const angle = (index * 90) * (Math.PI / 180)
-                      const radius = 150
-                      const x = 50 + radius * Math.cos(angle) / 3
-                      const y = 50 + radius * Math.sin(angle) / 3
-                      
-                      return (
-                        <div
-                          key={index}
-                          className="absolute z-10 cursor-pointer group"
-                          style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
-                        >
-                          <div className={`${
-                            isDarkMode ? 'bg-white/20' : 'bg-white/80'
-                          } backdrop-blur-lg rounded-full p-2 border ${
-                            isDarkMode ? 'border-white/30' : 'border-gray-300'
-                          } group-hover:scale-125 transition-transform`}>
-                            <MapPin className={`h-4 w-4 ${isDarkMode ? 'text-white' : 'text-blue-600'}`} />
-                          </div>
-                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-black/80 rounded px-2 py-1 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                            <p className="text-white font-semibold">{location.name}</p>
-                            <p className="text-blue-300">{location.temp}°C</p>
-                          </div>
-                        </div>
-                      )
-                    })}
-
-                    {/* Grid Overlay */}
-                    <div className="absolute inset-0 opacity-5">
-                      <div className="grid grid-cols-12 grid-rows-12 h-full">
-                        {Array.from({ length: 144 }).map((_, i) => (
-                          <div key={i} className={`border ${
-                            isDarkMode ? 'border-white/20' : 'border-gray-400/20'
-                          }`} />
-                        ))}
-                      </div>
+                    <div>
+                      <p className="font-extrabold text-sm">Doppler Monitoring Center</p>
+                      <p className="text-xs text-slate-450 dark:text-slate-500 mt-0.5">
+                        Active satellite radar is scanning coordinates {weatherData.coord.lat.toFixed(4)}°, {weatherData.coord.lon.toFixed(4)}°
+                      </p>
                     </div>
                   </div>
-
-                  {/* Loading Overlay */}
-                  {loading && (
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-30">
-                      <div className="text-center">
-                        <Loader2 className={`h-12 w-12 ${
-                          isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                        } animate-spin mx-auto mb-4`} />
-                        <p className="text-white font-semibold">Loading Live Weather Data...</p>
-                      </div>
-                    </div>
-                  )}
+                  <Badge variant="outline" className="text-xs py-1 px-3 border-yellow-500/30 text-yellow-600 dark:text-yellow-400 font-bold bg-yellow-500/5">
+                    Station Status: Active Scans
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
-
-            {/* Weather Stats Grid */}
-            {weatherData && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  { icon: Thermometer, label: "Temperature", value: `${Math.round(weatherData.main.temp)}°C`, color: "from-red-500 to-orange-500" },
-                  { icon: Droplets, label: "Humidity", value: `${weatherData.main.humidity}%`, color: "from-blue-500 to-cyan-500" },
-                  { icon: Wind, label: "Wind Speed", value: `${Math.round(weatherData.wind.speed * 3.6)} km/h`, color: "from-green-500 to-teal-500" },
-                  { icon: Eye, label: "Visibility", value: `${(weatherData.visibility / 1000).toFixed(1)} km`, color: "from-purple-500 to-pink-500" },
-                ].map((stat, index) => {
-                  const Icon = stat.icon
-                  return (
-                    <Card
-                      key={index}
-                      className={`${
-                        isDarkMode 
-                          ? 'bg-white/10 border-white/20 text-white' 
-                          : 'bg-white border-gray-200 text-gray-900'
-                      } backdrop-blur-xl hover:scale-105 transition-transform duration-300`}
-                    >
-                      <CardContent className="p-4">
-                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center mb-3`}>
-                          <Icon className="h-5 w-5 text-white" />
-                        </div>
-                        <div className="text-2xl font-bold mb-1">{stat.value}</div>
-                        <div className={`text-sm ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>
-                          {stat.label}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-              </div>
-            )}
           </div>
-        </div>
+        )}
       </div>
 
       <style jsx>{`
         @keyframes float {
           0%, 100% {
-            transform: translateY(0px);
-            opacity: 0.3;
+            transform: translateY(0px) translateX(0px);
+            opacity: 0.25;
           }
           50% {
-            transform: translateY(-20px);
-            opacity: 0.6;
+            transform: translateY(-15px) translateX(5px);
+            opacity: 0.5;
           }
         }
         @keyframes fall {
           0% {
-            transform: translateY(-10px);
+            transform: translateY(-20px);
             opacity: 0;
           }
-          50% {
-            opacity: 1;
+          20% {
+            opacity: 0.8;
+          }
+          80% {
+            opacity: 0.8;
           }
           100% {
-            transform: translateY(100px);
+            transform: translateY(300px);
             opacity: 0;
           }
         }
         @keyframes slide {
           0% {
-            transform: translateX(-100px);
+            transform: translateX(-150px);
             opacity: 0;
           }
-          50% {
-            opacity: 1;
+          10% {
+            opacity: 0.6;
+          }
+          90% {
+            opacity: 0.6;
           }
           100% {
-            transform: translateX(200px);
+            transform: translateX(350px);
             opacity: 0;
           }
         }
         @keyframes drift {
           0%, 100% {
-            transform: translateX(0px);
+            transform: translateX(0px) translateY(0px);
           }
           50% {
-            transform: translateX(50px);
+            transform: translateX(35px) translateY(-10px);
           }
         }
         @keyframes ripple {
           0% {
-            transform: translate(-50%, -50%) scale(0.5);
+            transform: translate(-50%, -50%) scale(0.3);
             opacity: 0.8;
           }
           100% {
-            transform: translate(-50%, -50%) scale(1.5);
+            transform: translate(-50%, -50%) scale(1.6);
             opacity: 0;
           }
         }
