@@ -1181,131 +1181,175 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Header Section - Mobile Optimized */}
-        <div className={`mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 ${isLoaded ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0'}`}>
-          <div className={`${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-lg rounded-2xl sm:rounded-3xl shadow-2xl p-3 sm:p-5 md:p-7 border ${isDarkMode ? 'border-gray-700' : 'border-white/20'} transition-colors duration-500`}>
-            <div className="flex flex-col gap-3 sm:gap-5">
-              <div className="flex items-start gap-3">
-               
-                
-              <div className="flex-1">
-                <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-2`}>
-                  <span className="text-blue-600 dark:text-blue-400">Live Weather</span> Dashboard
+        {/* Header Section - Premium Glassmorphic Hero */}
+        <div className={`mb-6 sm:mb-8 transition-all duration-1000 overflow-hidden rounded-3xl ${
+          isDarkMode ? 'bg-slate-900/40 border-white/10' : 'bg-white/40 border-white/30'
+        } backdrop-blur-2xl border p-4 sm:p-6 md:p-8 shadow-2xl relative group ${
+          isLoaded ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0'
+        }`}>
+          {/* Ambient glow effects inside the card */}
+          <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-tr from-blue-500/10 via-purple-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-gradient-to-tr from-indigo-500/10 via-cyan-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            {/* Left side - branding & warnings */}
+            <div className="space-y-3 sm:space-y-4 max-w-2xl text-left">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 bg-clip-text text-transparent">Live Weather</span> Dashboard
                 </h1>
-                <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} text-sm sm:text-base md:text-lg`}>Real-time weather data from your location</p>
-                
-                {weatherMessage && !loading && (
-                  <div className={`mt-2 sm:mt-3 px-3 sm:px-4 py-2 sm:py-2.5 ${isDarkMode ? 'bg-blue-950/60 border border-blue-800' : 'bg-blue-50 border border-blue-200'} rounded-xl shadow-lg backdrop-blur-sm hover:shadow-xl transition-all duration-300 inline-block`}>
-                    <div className="flex items-center gap-2">
-                      <div className="animate-pulse">
-                        <AlertCircle className={`h-4 w-4 sm:h-5 sm:w-5 ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`} />
-                      </div>
-                      <p className={`text-xs sm:text-sm font-semibold ${isDarkMode ? 'text-blue-100' : 'text-blue-900'}`}>{weatherMessage}</p>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 mt-2 sm:mt-3">
-                  <div className={`flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    {loading && !weatherData ? (
-                      <>
-                        <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 animate-spin" />
-                        <span className="font-semibold truncate max-w-[120px] sm:max-w-none">{userLocation.name}</span>
-                      </>
-                    ) : (
-                      <>
-                        <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 animate-pulse" />
-                        <span className="font-semibold truncate max-w-[120px] sm:max-w-none">{userLocation.name}</span>
-                        {userLocation.lat && userLocation.lon && (
-                          <Badge variant="outline" className="text-[10px] sm:text-xs hidden sm:inline-flex">
-                            GPS: {userLocation.lat.toFixed(4)}°, {userLocation.lon.toFixed(4)}°
-                          </Badge>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  <div className={`flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
-                    <span className="hidden sm:inline">{formatClientDate(currentTime, { weekday: 'long', month: 'short', day: 'numeric' })}</span>
-                    <span className="sm:hidden">{formatClientDate(currentTime, { month: 'short', day: 'numeric' })}</span>
-                  </div>
-                  {lastUpdated && (
-                    <Badge variant="secondary" className="text-[10px] sm:text-xs">
-                      Updated: {formatClientTime(lastUpdated)}
-                    </Badge>
-                  )}
+                <div className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider animate-pulse shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Live Feed
                 </div>
               </div>
-              </div>
+              <p className={`text-xs sm:text-sm md:text-base ${isDarkMode ? 'text-slate-350' : 'text-slate-600'} font-medium`}>
+                Real-time weather data & forecasts from your location
+              </p>
               
-              {/* Controls - Mobile Optimized */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 sm:gap-3">
-                <div className="flex items-center gap-1.5 sm:gap-2 order-2 sm:order-1">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600" />
-                  <span className={`text-lg sm:text-xl md:text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+              {weatherMessage && !loading && (
+                <div className="animate-in slide-in-from-top duration-500 py-1.5 px-3 rounded-2xl bg-white/20 dark:bg-white/5 border border-white/30 dark:border-white/10 shadow-lg backdrop-blur-md inline-flex items-center gap-2 group cursor-pointer hover:shadow-xl hover:bg-white/25 dark:hover:bg-white/10 transition-all">
+                  <div className="p-1 bg-blue-500/10 rounded-lg text-blue-500 group-hover:scale-110 transition-transform">
+                    <AlertCircle className="h-3.5 w-3.5" />
+                  </div>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{weatherMessage}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Right side - Controls & Local Clock */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+              {/* Local Clock Widget */}
+              <div className="bg-white/30 dark:bg-slate-950/20 border border-white/25 dark:border-white/5 p-3 rounded-2xl flex items-center gap-2.5 shadow-md backdrop-blur-md">
+                <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-500">
+                  <Clock className="h-5 w-5 animate-pulse" />
+                </div>
+                <div className="text-left">
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Local Time</p>
+                  <span className="text-lg font-black text-indigo-600 dark:text-indigo-400 tracking-tight tabular-nums">
                     {formatClientTime(currentTime, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 </div>
-                
-                <div className="flex flex-wrap gap-1 sm:gap-1.5 order-1 sm:order-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => requestUserLocation(true)}
-                    className={`flex-1 sm:flex-none min-w-[36px] ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
-                    title="Refresh GPS location"
-                  >
-                    <Navigation className="h-3 w-3 sm:h-4 sm:w-4" />
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleVoiceSearch}
-                    className={`flex-1 sm:flex-none min-w-[36px] ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
-                    title="Voice search"
-                  >
-                    <Mic className="h-3 w-3 sm:h-4 sm:w-4" />
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={toggleUnit}
-                    className={`flex-1 sm:flex-none min-w-[36px] ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
-                  >
-                    <span className="text-xs sm:text-sm">°{isCelsius ? 'C' : 'F'}</span>
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={toggleDarkMode}
-                    className={`flex-1 sm:flex-none min-w-[36px] ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
-                  >
-                    {isDarkMode ? <Sun className="h-3 w-3 sm:h-4 sm:w-4" /> : <Moon className="h-3 w-3 sm:h-4 sm:w-4" />}
-                  </Button>
+              </div>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleUserProfile}
-                    className={`flex-1 sm:flex-none min-w-[36px] ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' : ''}`}
-                    title="User profile"
-                  >
-                    <User className="h-3 w-3 sm:h-4 sm:w-4" />
-                  </Button>
-                  
-                  <Button
-                    onClick={handleRefresh}
-                    disabled={loading}
-                    size="sm"
-                    className="flex-1 sm:flex-none min-w-[36px] bg-blue-600 hover:bg-blue-700 text-white"
-                    title="Refresh all data"
-                  >
-                    <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${loading ? 'animate-spin' : ''}`} />
-                  </Button>
-                </div>
+              {/* Segmented Action Deck */}
+              <div className="flex flex-wrap items-center gap-1 bg-white/30 dark:bg-slate-950/25 border border-white/25 dark:border-white/5 p-1 rounded-2xl shadow-lg backdrop-blur-md">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => requestUserLocation(true)}
+                  className="w-9 h-9 p-0 rounded-xl bg-transparent hover:bg-white/40 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 hover:scale-105 active:scale-95 transition-all"
+                  title="Detect Location via GPS"
+                >
+                  <Navigation className="h-4 w-4 text-blue-500" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleVoiceSearch}
+                  className="w-9 h-9 p-0 rounded-xl bg-transparent hover:bg-white/40 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 hover:scale-105 active:scale-95 transition-all"
+                  title="Voice Command Search"
+                >
+                  <Mic className="h-4 w-4 text-purple-500" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleUnit}
+                  className="w-9 h-9 p-0 rounded-xl bg-transparent hover:bg-white/40 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 font-bold hover:scale-105 active:scale-95 transition-all text-xs"
+                  title="Switch Temperature Unit"
+                >
+                  °{isCelsius ? 'C' : 'F'}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleDarkMode}
+                  className="w-9 h-9 p-0 rounded-xl bg-transparent hover:bg-white/40 dark:hover:bg-white/10 hover:scale-105 active:scale-95 transition-all"
+                  title="Toggle Theme Mode"
+                >
+                  {isDarkMode ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-slate-700" />}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleUserProfile}
+                  className="w-9 h-9 p-0 rounded-xl bg-transparent hover:bg-white/40 dark:hover:bg-white/10 text-slate-650 dark:text-slate-300 hover:scale-105 active:scale-95 transition-all"
+                  title="My Profile Settings"
+                >
+                  <User className="h-4 w-4" />
+                </Button>
+
+                <div className="w-[1px] h-5 bg-slate-300 dark:bg-slate-800 mx-0.5" />
+
+                <Button
+                  onClick={handleRefresh}
+                  disabled={loading}
+                  size="sm"
+                  className="w-9 h-9 p-0 rounded-xl bg-blue-600 hover:bg-blue-700 text-white hover:scale-105 active:scale-95 shadow-md transition-all"
+                  title="Manually Sync Live Weather"
+                >
+                  <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Floating Modular Widgets Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6 pt-6 border-t border-white/20 dark:border-white/10">
+            {/* Widget 1: Location & Coordinates */}
+            <div className="bg-white/20 dark:bg-slate-900/30 border border-white/20 dark:border-white/5 rounded-2xl p-3.5 hover:shadow-md transition-all duration-300 flex items-center gap-3 group">
+              <div className="p-2.5 bg-rose-500/10 rounded-xl text-rose-500 group-hover:scale-110 transition-transform">
+                <MapPin className="h-5 w-5 animate-pulse" />
+              </div>
+              <div className="text-left min-w-0 flex-1">
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Target Region</p>
+                <p className="text-sm font-extrabold text-slate-900 dark:text-white truncate">
+                  {loading && !weatherData ? "Locating..." : userLocation.name || "Default Station"}
+                </p>
+                {userLocation.lat && userLocation.lon && (
+                  <p className="text-[10px] text-slate-450 dark:text-slate-500 font-medium truncate mt-0.5">
+                    GPS: {userLocation.lat.toFixed(4)}°, {userLocation.lon.toFixed(4)}°
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Widget 2: Current Date */}
+            <div className="bg-white/20 dark:bg-slate-900/30 border border-white/20 dark:border-white/5 rounded-2xl p-3.5 hover:shadow-md transition-all duration-300 flex items-center gap-3 group">
+              <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-500 group-hover:scale-110 transition-transform">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div className="text-left min-w-0 flex-1">
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Current Period</p>
+                <p className="text-sm font-extrabold text-slate-900 dark:text-white truncate">
+                  {formatClientDate(currentTime, { weekday: 'long', month: 'short', day: 'numeric' })}
+                </p>
+                <p className="text-[10px] text-slate-450 dark:text-slate-500 font-medium truncate mt-0.5">
+                  Year 2026 Season
+                </p>
+              </div>
+            </div>
+
+            {/* Widget 3: Cache sync & status */}
+            <div className="bg-white/20 dark:bg-slate-900/30 border border-white/20 dark:border-white/5 rounded-2xl p-3.5 hover:shadow-md transition-all duration-300 flex items-center gap-3 group">
+              <div className="p-2.5 bg-violet-500/10 rounded-xl text-violet-500 group-hover:scale-110 transition-transform">
+                <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+              </div>
+              <div className="text-left min-w-0 flex-1">
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Feed Integrity</p>
+                <p className="text-sm font-extrabold text-slate-900 dark:text-white truncate">
+                  {loading ? "Syncing..." : "Data Up To Date"}
+                </p>
+                {lastUpdated && (
+                  <p className="text-[10px] text-slate-450 dark:text-slate-500 font-medium truncate mt-0.5">
+                    Updated: {formatClientTime(lastUpdated)}
+                  </p>
+                )}
               </div>
             </div>
           </div>
