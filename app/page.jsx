@@ -44,6 +44,11 @@ export default function App() {
     const newDarkMode = !isDarkMode
     setIsDarkMode(newDarkMode)
     localStorage.setItem("darkMode", String(newDarkMode))
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
   }
   const [stats, setStats] = useState({
     users: 0,
@@ -131,7 +136,13 @@ export default function App() {
     // Load dark mode preference (defaults to false)
     const savedDarkMode = localStorage.getItem("darkMode")
     if (savedDarkMode !== null) {
-      setIsDarkMode(savedDarkMode === "true")
+      const mode = savedDarkMode === "true"
+      setIsDarkMode(mode)
+      if (mode) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
     }
     
     // Generate consistent particles for client-side only
@@ -207,7 +218,7 @@ export default function App() {
   return (
     <div className={`min-h-screen ${
       isDarkMode 
-        ? 'bg-slate-950 text-white' 
+        ? 'dark bg-slate-950 text-white' 
         : 'bg-slate-50 text-slate-900'
     } relative overflow-hidden transition-colors duration-500`}>
       {/* Animated Background Elements - Client Side Only */}

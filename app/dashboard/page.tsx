@@ -879,7 +879,7 @@ export default function DashboardPage() {
 
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'} relative overflow-x-hidden min-w-0 transition-colors duration-500`}>
+    <div className={`min-h-screen ${isDarkMode ? 'dark bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'} relative overflow-x-hidden min-w-0 transition-colors duration-500`}>
       {/* Animated Background Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((particle) => (

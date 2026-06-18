@@ -116,9 +116,15 @@ export default function WeatherMapPage() {
   // Initialize and fetch data
   useEffect(() => {
     // Load dark mode preference (defaults to false/light mode)
-    const savedDarkMode = localStorage.getItem("weatherMapDarkMode")
+    const savedDarkMode = localStorage.getItem("darkMode")
     if (savedDarkMode !== null) {
-      setIsDarkMode(savedDarkMode === "true")
+      const isDark = savedDarkMode === "true"
+      setIsDarkMode(isDark)
+      if (isDark) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
     }
 
     // Generate particles
@@ -151,7 +157,12 @@ export default function WeatherMapPage() {
   const toggleDarkMode = () => {
     const newDarkMode = !isDarkMode
     setIsDarkMode(newDarkMode)
-    localStorage.setItem("weatherMapDarkMode", String(newDarkMode))
+    localStorage.setItem("darkMode", String(newDarkMode))
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
   }
 
   const getUserLocation = () => {
@@ -671,7 +682,7 @@ export default function WeatherMapPage() {
             showLayersMobile ? 'top-16 left-4 block animate-in fade-in slide-in-from-top-4 duration-200' : 'hidden'
           } md:block md:top-4 md:left-4`}>
             <div className={`p-3 rounded-3xl border shadow-2xl backdrop-blur-xl ${
-              isDarkMode ? 'bg-slate-900/80 border-white/10' : 'bg-white/80 border-slate-200'
+              isDarkMode ? 'bg-slate-900/95 border-slate-800 text-white' : 'bg-white/95 border-slate-200 text-slate-800'
             }`}>
               <div className="flex items-center gap-2 mb-3 px-1">
                 <Layers className="h-4 w-4 text-indigo-500" />
@@ -706,11 +717,11 @@ export default function WeatherMapPage() {
                         <Icon className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className={`text-xs font-extrabold ${isActive ? 'text-white' : 'text-slate-800 dark:text-white'}`}>{layer.name}</p>
+                        <p className={`text-xs font-extrabold ${isActive ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}>{layer.name}</p>
                         <p className={`text-[9px] ${
                           isActive 
                             ? 'text-white/85' 
-                            : 'text-slate-400 dark:text-slate-500'
+                            : 'text-slate-500 dark:text-slate-400'
                         } truncate font-semibold`}>
                           {layer.description}
                         </p>
@@ -728,13 +739,13 @@ export default function WeatherMapPage() {
               showDetailsMobile ? 'top-16 right-4 block animate-in fade-in slide-in-from-top-4 duration-200' : 'hidden'
             } md:block md:top-4 md:right-4`}>
               <div className={`p-4 rounded-3xl border shadow-2xl backdrop-blur-xl ${
-                isDarkMode ? 'bg-slate-900/80 border-white/10' : 'bg-white/80 border-slate-200'
+                isDarkMode ? 'bg-slate-900/95 border-slate-800 text-white' : 'bg-white/95 border-slate-200 text-slate-800'
               }`}>
-                <div className="flex items-center gap-2 mb-3 border-b border-white/10 pb-2.5">
-                  <MapPin className="h-4 w-4 text-rose-550 animate-bounce" />
+                <div className="flex items-center gap-2 mb-3 border-b border-slate-200 dark:border-slate-800 pb-2.5">
+                  <MapPin className="h-4 w-4 text-rose-500 animate-bounce" />
                   <div className="min-w-0">
-                    <p className="text-xs font-black text-slate-800 dark:text-white truncate">{weatherData.name}</p>
-                    <p className="text-[9px] text-slate-450 dark:text-slate-500 font-semibold">{weatherData.sys.country}</p>
+                    <p className="text-xs font-black text-slate-900 dark:text-white truncate">{weatherData.name}</p>
+                    <p className="text-[9px] text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wide">{weatherData.sys.country}</p>
                   </div>
                 </div>
 
@@ -745,13 +756,13 @@ export default function WeatherMapPage() {
                       {Math.round(weatherData.main.temp)}°C
                     </div>
                     <div className="text-left leading-tight">
-                      <span className="text-[10px] text-slate-450 dark:text-slate-500 font-semibold uppercase block">Feels Like</span>
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{Math.round(weatherData.main.feels_like)}°C</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-extrabold uppercase block tracking-wide">Feels Like</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-250">{Math.round(weatherData.main.feels_like)}°C</span>
                     </div>
                   </div>
 
                   {/* Weather description */}
-                  <div className="flex items-center gap-2 py-1 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200/50 dark:border-white/5">
+                  <div className="flex items-center gap-2 py-1.5 px-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/50">
                     {weatherData.weather[0]?.icon && (
                       <img 
                         src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}.png`} 
@@ -759,21 +770,21 @@ export default function WeatherMapPage() {
                         className="h-6 w-6 object-contain"
                       />
                     )}
-                    <span className="text-xs font-bold capitalize text-slate-800 dark:text-slate-200 truncate">{weatherData.weather[0]?.description}</span>
+                    <span className="text-xs font-bold capitalize text-slate-800 dark:text-slate-250 truncate">{weatherData.weather[0]?.description}</span>
                   </div>
 
                   {/* Info metrics grid */}
-                  <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                    <div className="bg-slate-100/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-white/5 p-2 rounded-xl text-center">
-                      <Droplets className="h-3.5 w-3.5 mx-auto mb-1 text-blue-550" />
-                      <p className="text-slate-400 text-[8px] uppercase font-semibold">Humidity</p>
-                      <p className="text-slate-900 dark:text-white font-extrabold">{weatherData.main.humidity}%</p>
+                  <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-550 dark:text-slate-400">
+                    <div className="bg-slate-50 dark:bg-slate-950/45 border border-slate-200/50 dark:border-slate-800/50 p-2 rounded-xl text-center">
+                      <Droplets className="h-3.5 w-3.5 mx-auto mb-1 text-blue-500 dark:text-blue-400" />
+                      <p className="text-slate-500 dark:text-slate-400 text-[8px] uppercase font-bold tracking-wider">Humidity</p>
+                      <p className="text-slate-900 dark:text-white font-extrabold text-xs">{weatherData.main.humidity}%</p>
                     </div>
 
-                    <div className="bg-slate-100/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-white/5 p-2 rounded-xl text-center">
-                      <Wind className="h-3.5 w-3.5 mx-auto mb-1 text-teal-500" />
-                      <p className="text-slate-400 text-[8px] uppercase font-semibold">Wind</p>
-                      <p className="text-slate-900 dark:text-white font-extrabold">{Math.round(weatherData.wind.speed * 3.6)} km/h</p>
+                    <div className="bg-slate-50 dark:bg-slate-950/45 border border-slate-200/50 dark:border-slate-800/50 p-2 rounded-xl text-center">
+                      <Wind className="h-3.5 w-3.5 mx-auto mb-1 text-teal-500 dark:text-teal-400" />
+                      <p className="text-slate-500 dark:text-slate-400 text-[8px] uppercase font-bold tracking-wider">Wind</p>
+                      <p className="text-slate-900 dark:text-white font-extrabold text-xs">{Math.round(weatherData.wind.speed * 3.6)} km/h</p>
                     </div>
                   </div>
                 </div>
@@ -784,7 +795,7 @@ export default function WeatherMapPage() {
           {/* Bottom Float Panel: Temporal Slider, Legend, Playback Controls */}
           <div className="absolute bottom-4 left-4 right-4 z-30">
             <div className={`p-4 rounded-3xl border shadow-2xl backdrop-blur-xl ${
-              isDarkMode ? 'bg-slate-900/80 border-white/10' : 'bg-white/80 border-slate-200'
+              isDarkMode ? 'bg-slate-900/95 border-slate-800' : 'bg-white/95 border-slate-200'
             }`}>
               <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
                 
@@ -800,7 +811,7 @@ export default function WeatherMapPage() {
                   </Button>
                   
                   <div className="text-left leading-tight">
-                    <p className="text-[10px] text-slate-450 dark:text-slate-550 font-bold uppercase tracking-wider">Radar Scan Rate</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Radar Scan Rate</p>
                     <p className="text-xs font-extrabold text-slate-900 dark:text-white">
                       {isAnimating ? "Simulating Real-Time Doppler Sweeps" : "Radar Scan Paused"}
                     </p>
@@ -811,7 +822,7 @@ export default function WeatherMapPage() {
                 <div className="flex flex-1 items-center gap-4 max-w-md w-full">
                   <div className="w-full text-left">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] text-slate-450 dark:text-slate-500 font-bold uppercase tracking-wider">Radar Layer Opacity</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Radar Layer Opacity</span>
                       <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">{opacity[0]}%</span>
                     </div>
                     <Slider
@@ -829,16 +840,16 @@ export default function WeatherMapPage() {
                       onClick={() => setZoom(Math.max(1, zoom - 1))}
                       variant="ghost"
                       size="icon"
-                      className="w-8 h-8 rounded-xl bg-slate-200/50 dark:bg-slate-950/20 text-slate-650 dark:text-slate-300"
+                      className="w-8 h-8 rounded-xl bg-slate-200/50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:bg-slate-300/50 dark:hover:bg-slate-800"
                     >
                       <ZoomOut className="h-3.5 w-3.5" />
                     </Button>
-                    <span className="text-xs font-extrabold font-mono w-6 text-center">{zoom}x</span>
+                    <span className="text-xs font-extrabold font-mono w-6 text-center text-slate-800 dark:text-slate-200">{zoom}x</span>
                     <Button
                       onClick={() => setZoom(Math.min(15, zoom + 1))}
                       variant="ghost"
                       size="icon"
-                      className="w-8 h-8 rounded-xl bg-slate-200/50 dark:bg-slate-950/20 text-slate-650 dark:text-slate-300"
+                      className="w-8 h-8 rounded-xl bg-slate-200/50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:bg-slate-300/50 dark:hover:bg-slate-800"
                     >
                       <ZoomIn className="h-3.5 w-3.5" />
                     </Button>
@@ -848,7 +859,7 @@ export default function WeatherMapPage() {
                 {/* 3. Color Legend mapping */}
                 {currentLayerInfo && (
                   <div className="w-full md:w-48 text-left">
-                    <p className="text-[10px] text-slate-455 dark:text-slate-500 font-bold uppercase tracking-wider mb-1.5">
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1.5">
                       {currentLayerInfo.name} Legend
                     </p>
                     <div className="flex gap-1 mb-1.5">
@@ -858,7 +869,7 @@ export default function WeatherMapPage() {
                       <div className={`h-2 flex-1 ${currentLayerInfo.color} opacity-80`} />
                       <div className={`h-2 rounded-r-full flex-1 ${currentLayerInfo.color}`} />
                     </div>
-                    <div className="flex justify-between text-[9px] font-bold text-slate-400 dark:text-slate-500 font-mono leading-none">
+                    <div className="flex justify-between text-[9px] font-bold text-slate-500 dark:text-slate-400 font-mono leading-none">
                       <span>Low</span>
                       <span>Mid</span>
                       <span>High</span>
@@ -890,7 +901,7 @@ export default function WeatherMapPage() {
         {weatherData && (
           <div className="mt-6">
             <Card className={`border rounded-3xl overflow-hidden backdrop-blur-xl ${
-              isDarkMode ? 'bg-slate-900/40 border-white/10 text-white' : 'bg-white/40 border-white/30 text-slate-800'
+              isDarkMode ? 'bg-slate-900/95 border-slate-800 text-white' : 'bg-white/95 border-slate-200 text-slate-800'
             }`}>
               <CardContent className="p-4 sm:p-5">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -899,8 +910,8 @@ export default function WeatherMapPage() {
                       <AlertCircle className="h-5 w-5 animate-pulse" />
                     </div>
                     <div>
-                      <p className="font-extrabold text-sm">Doppler Monitoring Center</p>
-                      <p className="text-xs text-slate-450 dark:text-slate-500 mt-0.5">
+                      <p className="font-extrabold text-sm text-slate-900 dark:text-white">Doppler Monitoring Center</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         Active satellite radar is scanning coordinates {weatherData.coord.lat.toFixed(4)}°, {weatherData.coord.lon.toFixed(4)}°
                       </p>
                     </div>

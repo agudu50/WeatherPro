@@ -105,7 +105,31 @@ export default function DashboardLayout({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isDarkMode, setIsDarkMode] = useState(false)
   const pathname = usePathname()
+
+  // Sync dark mode state from localStorage on mount
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem("darkMode")
+    const isDark = savedDarkMode === "true"
+    setIsDarkMode(isDark)
+    if (isDark) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [])
+
+  const toggleDarkMode = () => {
+    const newDarkMode = !isDarkMode
+    setIsDarkMode(newDarkMode)
+    localStorage.setItem("darkMode", String(newDarkMode))
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }
 
   // Get all navigation items for search
   const allNavItems = navigationGroups.flatMap(group => group.items)
@@ -450,6 +474,23 @@ export default function DashboardLayout({ children }) {
 
             {/* Notification and User Menu */}
             <div className="flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={toggleDarkMode}
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 transition-transform hover:scale-105 active:scale-95"
+                    title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                  >
+                    {isDarkMode ? <Sun className="h-4 w-4 text-yellow-500 animate-pulse" /> : <Moon className="h-4 w-4 text-slate-500" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{isDarkMode ? "Light Mode" : "Dark Mode"}</p>
+                </TooltipContent>
+              </Tooltip>
+
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button 
