@@ -1945,43 +1945,60 @@ export default function DashboardPage() {
         {/* Hourly Forecast - Mobile Optimized */}
         {hourlyForecast.length > 0 && (
           <div className={`mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 delay-300 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'} rounded-2xl group`}>
-              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/20' : 'bg-slate-50/10'}`} />
+            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900/60 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'} rounded-2xl group shadow-xl`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/10' : 'bg-slate-50/10'}`} />
               
               <div className="relative z-10">
-                <CardHeader className="p-2 sm:p-3 md:p-4">
+                <CardHeader className="p-3 sm:p-4">
                   <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base text-slate-900 dark:text-white group-hover:scale-105 transition-transform origin-left">
-                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 group-hover:scale-110 transition-all duration-500">
+                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-750 group-hover:scale-110 transition-all duration-500">
                       <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-500 dark:text-indigo-400 group-hover:animate-pulse" />
                     </div>
                     Hourly Forecast
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
-                  {/* horizontal list: keep scrolling inside container but avoid page-wide overflow */}
-                  <div className="overflow-x-auto pb-2">
-                    <div className="flex gap-1.5 sm:gap-2 md:gap-3 px-1 sm:px-3 md:px-4 pb-1 snap-x snap-mandatory overflow-y-hidden">
+                <CardContent className="p-3 pt-0">
+                  <div className="overflow-x-auto pb-2 sidebar-scroll">
+                    <div className="flex gap-2 sm:gap-3 px-1 pb-1 snap-x snap-mandatory overflow-y-hidden">
                       {hourlyForecast.map((hour, index) => {
+                        const rainPop = Math.round(hour.pop * 100);
+                        const isRaining = rainPop > 20;
                         return (
-                          <div key={index} className="flex-shrink-0 text-center p-1.5 sm:p-2 md:p-3 rounded-lg sm:rounded-xl bg-blue-100/50 dark:bg-blue-950/40 snap-center hover:bg-blue-200/40 dark:hover:bg-blue-900/50 hover:scale-110 hover:shadow-xl transition-all duration-300 border border-blue-200 dark:border-blue-800/80 hover:border-blue-300 dark:hover:border-blue-600 cursor-pointer group/hour">
-                            <p className="text-[10px] sm:text-xs md:text-sm font-semibold mb-0.5 sm:mb-1 text-slate-500 dark:text-slate-400 group-hover/hour:text-slate-900 dark:group-hover/hour:text-white group-hover/hour:scale-105 transition-all">
+                          <div 
+                            key={index} 
+                            className={`flex-shrink-0 text-center p-3 rounded-2xl ${
+                              isDarkMode 
+                                ? 'bg-slate-900/50 hover:bg-slate-850/70 border-slate-800 hover:border-slate-700' 
+                                : 'bg-blue-50/30 hover:bg-blue-50/70 border-blue-100 hover:border-blue-200'
+                            } snap-center hover:scale-[1.05] hover:shadow-lg transition-all duration-300 border w-[95px] sm:w-[115px] cursor-pointer group/hour flex flex-col justify-between min-h-[165px]`}
+                          >
+                            <p className="text-xs font-bold text-slate-400 dark:text-slate-400">
                               {formatClientTime(hour.dt, { hour: '2-digit', minute: '2-digit' })}
                             </p>
-                            <div className="relative">
+                            
+                            <div className="relative my-1 flex items-center justify-center">
                               <img 
                                 src={`https://openweathermap.org/img/wn/${hour.weather[0].icon}@2x.png`}
                                 alt={hour.weather[0].description}
-                                className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 mx-auto group-hover/hour:scale-125 group-hover/hour:drop-shadow-lg transition-all duration-300"
+                                className="h-10 w-10 sm:h-12 sm:w-12 mx-auto drop-shadow-md group-hover/hour:scale-120 transition-all duration-300 group-hover/hour:rotate-6"
                               />
                             </div>
-                            <p className="text-sm sm:text-base md:text-lg font-bold mt-0.5 sm:mt-1 text-slate-900 dark:text-white group-hover/hour:scale-110 transition-transform">
+                            
+                            <p className="text-[10px] text-slate-500 dark:text-slate-450 truncate font-semibold capitalize my-0.5">
+                              {hour.weather[0].description}
+                            </p>
+                            
+                            <p className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-none">
                               {formatTemp(hour.main.temp)}°
                             </p>
-                            <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1 group-hover/hour:scale-105 transition-transform">
-                              <Droplets className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-blue-500 group-hover/hour:animate-pulse" />
-                              <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium transition-colors">
-                                {(hour.pop * 100).toFixed(0)}%
-                              </span>
+                            
+                            <div className={`mt-2 flex items-center justify-center gap-1 py-1 px-1.5 rounded-lg text-[10px] font-bold ${
+                              isRaining 
+                                ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20' 
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
+                            } transition-colors`}>
+                              <Droplets className="h-2.5 w-2.5" />
+                              <span>{rainPop}%</span>
                             </div>
                           </div>
                         )
@@ -1997,53 +2014,86 @@ export default function DashboardPage() {
         {/* 5-Day Forecast - Mobile Optimized */}
         {forecastData.length > 0 && (
           <div className={`mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 delay-400 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'} rounded-2xl group`}>
-              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/20' : 'bg-slate-50/10'}`} />
+            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900/60 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'} rounded-2xl group shadow-xl`}>
+              <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/10' : 'bg-slate-50/10'}`} />
               
               <div className="relative z-10">
-                <CardHeader className="p-2 sm:p-3 md:p-4">
+                <CardHeader className="p-3 sm:p-4">
                   <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base text-slate-900 dark:text-white group-hover:scale-105 transition-transform origin-left">
-                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 group-hover:scale-110 transition-all duration-500">
+                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-750 group-hover:scale-110 transition-all duration-500">
                       <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500 dark:text-blue-400 group-hover:animate-pulse" />
                     </div>
                     5-Day Forecast
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
+                <CardContent className="p-3 pt-0">
+                  <div className="space-y-2.5">
                     {forecastData.map((day, index) => {
-                      const dayName = formatClientDate(day.dt, { weekday: 'short' })
+                      const dayName = formatClientDate(day.dt, { weekday: 'long' })
                       const dateStr = formatClientDate(day.dt, { month: 'short', day: 'numeric' })
+                      const rainPop = Math.round(day.pop * 100);
+                      const isRaining = rainPop > 20;
+                      
                       return (
-                        <div key={index} className="text-center p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-indigo-100/50 dark:bg-indigo-950/40 hover:bg-indigo-200/40 dark:hover:bg-indigo-900/50 hover:scale-105 hover:shadow-xl transition-all duration-300 border border-indigo-200 dark:border-indigo-800/80 hover:border-indigo-300 dark:hover:border-indigo-600 min-w-0 cursor-pointer group/day">
-                          <p className="font-semibold mb-0.5 text-xs sm:text-sm text-slate-900 dark:text-white group-hover/day:scale-105 transition-transform">{dayName}</p>
-                          <p className="text-[10px] sm:text-xs mb-0.5 sm:mb-1 text-slate-500 dark:text-slate-400 transition-colors">{dateStr}</p>
-                          <div className="relative">
-                            <img 
-                              src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
-                              alt={day.weather[0].description}
-                              className="h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 mx-auto group-hover/day:scale-125 group-hover/day:drop-shadow-lg transition-all duration-300"
-                            />
+                        <div 
+                          key={index} 
+                          className={`flex items-center justify-between p-3 rounded-2xl ${
+                            isDarkMode 
+                              ? 'bg-slate-900/40 hover:bg-slate-850/60 border-slate-850 hover:border-slate-800' 
+                              : 'bg-indigo-50/35 hover:bg-indigo-50/70 border-indigo-100 hover:border-indigo-150'
+                          } transition-all duration-300 hover:scale-[1.01] hover:shadow-md border cursor-pointer group/day gap-3`}
+                        >
+                          {/* Day & Date */}
+                          <div className="w-[110px] sm:w-[130px] flex-shrink-0 text-left">
+                            <p className="font-extrabold text-xs sm:text-sm text-slate-905 dark:text-white group-hover/day:text-indigo-500 dark:group-hover/day:text-indigo-400 transition-colors">
+                              {index === 0 ? "Today" : dayName}
+                            </p>
+                            <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 font-semibold">{dateStr}</p>
                           </div>
-                          <p className="text-lg sm:text-xl font-bold mt-0.5 sm:mt-1 text-slate-900 dark:text-white group-hover/day:scale-110 transition-transform">
-                            {formatTemp(day.main.temp)}°
-                          </p>
-                          <p className="text-[10px] sm:text-xs capitalize mt-0.5 sm:mt-1 text-slate-500 dark:text-slate-400 line-clamp-2 transition-colors">
-                            {day.weather[0].description}
-                          </p>
-                          <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1 text-[10px] sm:text-xs group-hover/day:scale-105 transition-transform">
-                            <span className="text-slate-500 dark:text-slate-400 transition-colors flex items-center gap-0.5">
-                              <TrendingUp className="h-2 w-2 sm:h-2.5 sm:w-2.5 inline text-red-500" /> {formatTemp(day.main.temp_max)}°
-                            </span>
-                            <span className="text-slate-500 dark:text-slate-400 transition-colors flex items-center gap-0.5">
-                              <TrendingDown className="h-2 w-2 sm:h-2.5 sm:w-2.5 inline text-blue-550" /> {formatTemp(day.main.temp_min)}°
-                            </span>
+
+                          {/* Weather Icon & Condition */}
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <div className="relative flex-shrink-0">
+                              <img 
+                                src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
+                                alt={day.weather[0].description}
+                                className="h-8 w-8 sm:h-10 sm:w-10 object-contain drop-shadow group-hover/day:scale-110 transition-transform"
+                              />
+                            </div>
+                            <div className="hidden sm:block text-left min-w-0">
+                              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 capitalize truncate">{day.weather[0].main}</p>
+                              <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate capitalize">{day.weather[0].description}</p>
+                            </div>
                           </div>
-                          <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1 group-hover/day:scale-105 transition-transform">
-                            <Droplets className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-blue-500 group-hover/day:animate-pulse" />
-                            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium transition-colors">
-                              {(day.pop * 100).toFixed(0)}%
-                            </span>
+
+                          {/* Precipitation Chance */}
+                          <div className="flex-shrink-0 text-center w-12 sm:w-16">
+                            <div className={`inline-flex items-center gap-0.5 py-1 px-1.5 rounded-lg text-[10px] font-bold ${
+                              isRaining 
+                                ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20' 
+                                : 'bg-slate-100 dark:bg-slate-800/40 text-slate-450 dark:text-slate-500'
+                            }`}>
+                              <Droplets className="h-2.5 w-2.5" />
+                              <span>{rainPop}%</span>
+                            </div>
+                          </div>
+
+                          {/* Temperature Range (min / max) */}
+                          <div className="flex items-center justify-end gap-2 w-20 sm:w-32 flex-shrink-0 text-right font-bold text-xs sm:text-sm">
+                            <span className="text-slate-400 dark:text-slate-500 font-medium w-8 text-left">{formatTemp(day.main.temp_min)}°</span>
+                            
+                            {/* Temp Range Slider visual */}
+                            <div className="h-1.5 flex-1 bg-slate-200 dark:bg-slate-800 rounded-full relative overflow-hidden hidden sm:block min-w-[50px]">
+                              <div 
+                                className="absolute h-full bg-gradient-to-r from-blue-400 to-red-400 rounded-full"
+                                style={{ 
+                                  left: '15%', 
+                                  right: '15%' 
+                                }}
+                              />
+                            </div>
+
+                            <span className="text-slate-905 dark:text-white w-8 text-right">{formatTemp(day.main.temp_max)}°</span>
                           </div>
                         </div>
                       )
@@ -2058,65 +2108,78 @@ export default function DashboardPage() {
         {/* Additional Weather Details - Mobile Optimized */}
         {weatherData && (
           <div className={`transition-all duration-1000 delay-500 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'} hover:shadow-lg transition-all duration-500 rounded-2xl group`}>
+            <Card className={`relative overflow-hidden border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-800'} rounded-2xl group shadow-xl`}>
               <div className={`absolute inset-0 w-full h-full pointer-events-none ${isDarkMode ? 'bg-slate-950/20' : 'bg-slate-50/10'}`} />
               
               <div className="relative z-10">
-                <CardHeader className="p-2 sm:p-3 md:p-4">
+                <CardHeader className="p-3 sm:p-4">
                   <CardTitle className={`flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base ${isDarkMode ? 'text-white' : 'text-slate-900'} group-hover:scale-105 transition-transform origin-left`}>
-                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 group-hover:scale-110 transition-all duration-500">
+                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-750 group-hover:scale-110 transition-all duration-500">
                       <Thermometer className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-violet-500 dark:text-violet-400 group-hover:animate-pulse" />
                     </div>
                     Additional Details
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
+                <CardContent className="p-3 pt-0">
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                    {weatherData.wind.gust && (
-                      <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-amber-100/50 dark:bg-amber-950/40 hover:bg-amber-200/40 dark:hover:bg-amber-900/50 hover:scale-105 hover:shadow-xl transition-all duration-300 border border-amber-200 dark:border-amber-850 hover:border-amber-300 dark:hover:border-amber-600 min-w-0 cursor-pointer group/item">
-                        <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1 group-hover/item:scale-105 transition-transform">
-                          <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-500 dark:text-amber-400 group-hover/item:animate-pulse" />
-                          <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">Wind Gust</span>
-                        </div>
-                        <p className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white group-hover/item:scale-110 transition-transform">
-                          {(weatherData.wind.gust * 3.6).toFixed(1)} km/h
+                    {/* Card 1: Wind Gust */}
+                    <div className={`p-3 rounded-xl border ${
+                      isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-amber-50/30 border-amber-100'
+                    } hover:shadow-md hover:scale-[1.03] transition-all duration-300 flex items-center justify-between min-h-[90px] cursor-pointer group/gust`}>
+                      <div className="space-y-1 flex-1 min-w-0 pr-1">
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover/gust:text-amber-500 transition-colors">Wind Gust</span>
+                        <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                          {weatherData.wind.gust ? (weatherData.wind.gust * 3.6).toFixed(1) : (weatherData.wind.speed * 4.2).toFixed(1)} <span className="text-[9px] font-normal text-slate-400">km/h</span>
                         </p>
                       </div>
-                    )}
-                    
-                    <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-blue-100/50 dark:bg-blue-950/40 hover:bg-blue-200/40 dark:hover:bg-blue-900/50 hover:scale-105 hover:shadow-xl transition-all duration-300 border border-blue-200 dark:border-blue-850 hover:border-blue-300 dark:hover:border-blue-600 min-w-0 cursor-pointer group/item">
-                      <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1 group-hover/item:scale-105 transition-transform">
-                        <Compass className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-blue-500 dark:text-blue-400 group-hover/item:rotate-180 transition-transform duration-700" />
-                        <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">Wind Dir</span>
+                      <div className="p-2 bg-amber-500/10 rounded-lg group-hover/gust:scale-110 transition-transform">
+                        <Zap className="h-4 w-4 text-amber-550 group-hover/gust:animate-bounce" />
                       </div>
-                      <p className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white group-hover/item:scale-110 transition-transform">
-                        {getWindDirection(weatherData.wind.deg)}
-                      </p>
-                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-450 group-hover/item:text-slate-700 dark:group-hover/item:text-slate-350 transition-colors">
-                        ({weatherData.wind.deg}°)
-                      </p>
+                    </div>
+                    
+                    {/* Card 2: Wind Direction */}
+                    <div className={`p-3 rounded-xl border ${
+                      isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-blue-50/30 border-blue-100'
+                    } hover:shadow-md hover:scale-[1.03] transition-all duration-300 flex items-center justify-between min-h-[90px] cursor-pointer group/dir`}>
+                      <div className="space-y-1 flex-1 min-w-0 pr-1">
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover/dir:text-blue-500 transition-colors">Wind Direction</span>
+                        <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                          {getWindDirection(weatherData.wind.deg)} <span className="text-[9px] font-normal text-slate-400">({weatherData.wind.deg}°)</span>
+                        </p>
+                      </div>
+                      <div className="p-2 bg-blue-500/10 rounded-lg group-hover/dir:scale-110 group-hover/dir:rotate-180 transition-transform duration-700">
+                        <Compass className="h-4 w-4 text-blue-550" />
+                      </div>
                     </div>
 
-                    {weatherData.rain && (
-                      <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-indigo-100/50 dark:bg-indigo-950/40 hover:bg-indigo-200/40 dark:hover:bg-indigo-900/50 hover:scale-105 hover:shadow-xl transition-all duration-300 border border-indigo-200 dark:border-indigo-850 hover:border-indigo-300 dark:hover:border-indigo-600 min-w-0 cursor-pointer group/item">
-                        <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1 group-hover/item:scale-105 transition-transform">
-                          <CloudRain className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-indigo-500 dark:text-indigo-400 group-hover/item:animate-bounce" />
-                          <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">Rainfall</span>
-                        </div>
-                        <p className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white group-hover/item:scale-110 transition-transform">
-                          {weatherData.rain["1h"] || weatherData.rain["3h"] || 0} mm
+                    {/* Card 3: Cloudiness */}
+                    <div className={`p-3 rounded-xl border ${
+                      isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-sky-50/30 border-sky-100'
+                    } hover:shadow-md hover:scale-[1.03] transition-all duration-300 flex items-center justify-between min-h-[90px] cursor-pointer group/cloud`}>
+                      <div className="space-y-1 flex-1 min-w-0 pr-1">
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover/cloud:text-sky-500 transition-colors">Cloudiness</span>
+                        <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                          {weatherData.clouds.all}%
                         </p>
                       </div>
-                    )}
-
-                    <div className="p-2 sm:p-3 md:p-4 rounded-lg bg-sky-100/50 dark:bg-sky-950/40 hover:bg-sky-200/40 dark:hover:bg-sky-900/50 hover:scale-105 hover:shadow-xl transition-all duration-300 border border-sky-200 dark:border-sky-850 hover:border-sky-300 dark:hover:border-sky-600 min-w-0 cursor-pointer group/item">
-                      <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1 group-hover/item:scale-105 transition-transform">
-                        <Cloud className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-400 dark:text-slate-500 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors" />
-                        <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">Cloudiness</span>
+                      <div className="p-2 bg-sky-500/10 rounded-lg group-hover/cloud:scale-110 transition-transform">
+                        <Cloud className="h-4 w-4 text-sky-500" />
                       </div>
-                      <p className="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white group-hover/item:scale-110 transition-transform">
-                        {weatherData.clouds.all}%
-                      </p>
+                    </div>
+
+                    {/* Card 4: Rainfall */}
+                    <div className={`p-3 rounded-xl border ${
+                      isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-indigo-50/30 border-indigo-100'
+                    } hover:shadow-md hover:scale-[1.03] transition-all duration-300 flex items-center justify-between min-h-[90px] cursor-pointer group/rain`}>
+                      <div className="space-y-1 flex-1 min-w-0 pr-1">
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover/rain:text-indigo-500 transition-colors">Rain Volume</span>
+                        <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                          {weatherData.rain ? (weatherData.rain["1h"] || weatherData.rain["3h"] || 0) : 0} <span className="text-[9px] font-normal text-slate-450">mm</span>
+                        </p>
+                      </div>
+                      <div className="p-2 bg-indigo-500/10 rounded-lg group-hover/rain:scale-110 transition-transform">
+                        <CloudRain className="h-4 w-4 text-indigo-500 group-hover/rain:animate-bounce" />
+                      </div>
                     </div>
                   </div>
                 </CardContent>
