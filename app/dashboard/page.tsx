@@ -315,7 +315,11 @@ export default function DashboardPage() {
   // ✅ Add useRef to track the timer
   const clockTimerRef = useRef<NodeJS.Timeout | null>(null)
   
-  const [userLocation, setUserLocation] = useState({
+  const [userLocation, setUserLocation] = useState<{
+    name: string;
+    lat: number | null;
+    lon: number | null;
+  }>({
     name: "Medina Estates, GH",
     lat: 5.6515,
     lon: -0.1856
