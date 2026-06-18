@@ -71,6 +71,8 @@ export default function WeatherMapPage() {
   const [nearbyLocations, setNearbyLocations] = useState<Array<{name: string, lat: number, lon: number, temp: number}>>([])
   const [isDarkMode, setIsDarkMode] = useState(false) // Default to light mode
   const [locationStatus, setLocationStatus] = useState<'loading' | 'success' | 'error' | 'denied'>('loading')
+  const [showLayersMobile, setShowLayersMobile] = useState(false)
+  const [showDetailsMobile, setShowDetailsMobile] = useState(false)
   const mapRef = useRef<HTMLDivElement>(null)
 
   const mapLayers = [
@@ -609,6 +611,45 @@ export default function WeatherMapPage() {
 
           {/* FLOATING GLASS OVERLAY PANELS ON THE MAP CONTAINER */}
 
+          {/* Top Left Mobile Trigger: Layers Menu */}
+          <div className="absolute top-4 left-4 z-30 md:hidden">
+            <Button
+              onClick={() => {
+                setShowLayersMobile(!showLayersMobile)
+                setShowDetailsMobile(false)
+              }}
+              size="icon"
+              variant="ghost"
+              className={`w-10 h-10 rounded-2xl shadow-lg border backdrop-blur-md hover:scale-105 active:scale-95 transition-transform ${
+                isDarkMode 
+                  ? 'bg-slate-900/80 border-white/10 text-white hover:bg-slate-800' 
+                  : 'bg-white/80 border-slate-200 text-slate-800 hover:bg-slate-50'
+              }`}
+            >
+              <Layers className="h-4.5 w-4.5 text-indigo-500" />
+            </Button>
+          </div>
+
+          {/* Top Right Mobile Trigger: Weather Station Details */}
+          {weatherData && (
+            <div className="absolute top-4 right-16 z-30 md:hidden">
+              <Button
+                onClick={() => {
+                  setShowDetailsMobile(!showDetailsMobile)
+                  setShowLayersMobile(false)
+                }}
+                className={`px-3 h-10 rounded-2xl shadow-lg border backdrop-blur-md flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-transform ${
+                  isDarkMode 
+                    ? 'bg-slate-900/80 border-white/10 text-white hover:bg-slate-800' 
+                    : 'bg-white/80 border-slate-200 text-slate-800 hover:bg-slate-50'
+                }`}
+              >
+                <MapPin className="h-4 w-4 text-rose-500" />
+                <span className="text-xs font-black">{Math.round(weatherData.main.temp)}°C</span>
+              </Button>
+            </div>
+          )}
+
           {/* Top Right: Fullscreen control button */}
           <div className="absolute top-4 right-4 z-30">
             <Button
@@ -626,12 +667,14 @@ export default function WeatherMapPage() {
           </div>
 
           {/* Left Side Overlay Panel: Map Layer Selection Pod */}
-          <div className="absolute top-4 left-4 z-35 max-w-[200px] sm:max-w-[260px] w-full text-left">
+          <div className={`absolute z-35 max-w-[220px] sm:max-w-[260px] w-full text-left transition-all ${
+            showLayersMobile ? 'top-16 left-4 block animate-in fade-in slide-in-from-top-4 duration-200' : 'hidden'
+          } md:block md:top-4 md:left-4`}>
             <div className={`p-3 rounded-3xl border shadow-2xl backdrop-blur-xl ${
               isDarkMode ? 'bg-slate-900/80 border-white/10' : 'bg-white/80 border-slate-200'
             }`}>
               <div className="flex items-center gap-2 mb-3 px-1">
-                <Layers className="h-4 w-4 text-blue-500" />
+                <Layers className="h-4 w-4 text-indigo-500" />
                 <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Map Layers</span>
               </div>
               <div className="space-y-1.5">
@@ -641,12 +684,15 @@ export default function WeatherMapPage() {
                   return (
                     <button
                       key={layer.id}
-                      onClick={() => setActiveLayer(layer.id)}
+                      onClick={() => {
+                        setActiveLayer(layer.id)
+                        setShowLayersMobile(false)
+                      }}
                       className={`w-full p-2.5 rounded-2xl flex items-center gap-2.5 transition-all text-left group ${
                         isActive
                           ? isDarkMode
                             ? 'bg-white/10 scale-[1.02] border border-white/10'
-                            : 'bg-blue-600 text-white scale-[1.02] shadow-md shadow-blue-500/10'
+                            : 'bg-indigo-600 text-white scale-[1.02] shadow-md shadow-indigo-500/10'
                           : isDarkMode
                             ? 'hover:bg-white/5 border border-transparent'
                             : 'hover:bg-slate-100 border border-transparent'
@@ -678,7 +724,9 @@ export default function WeatherMapPage() {
 
           {/* Right Side Overlay Panel: Selected Station Weather Details */}
           {weatherData && (
-            <div className="absolute top-16 sm:top-4 right-4 z-35 max-w-[200px] sm:max-w-[260px] w-full text-left animate-in slide-in-from-right duration-500">
+            <div className={`absolute z-35 max-w-[220px] sm:max-w-[260px] w-full text-left transition-all ${
+              showDetailsMobile ? 'top-16 right-4 block animate-in fade-in slide-in-from-top-4 duration-200' : 'hidden'
+            } md:block md:top-4 md:right-4`}>
               <div className={`p-4 rounded-3xl border shadow-2xl backdrop-blur-xl ${
                 isDarkMode ? 'bg-slate-900/80 border-white/10' : 'bg-white/80 border-slate-200'
               }`}>
@@ -693,7 +741,7 @@ export default function WeatherMapPage() {
                 <div className="space-y-3">
                   {/* Temperature Info */}
                   <div className="flex items-center gap-2">
-                    <div className="text-3xl font-black tracking-tight text-slate-905 dark:text-white">
+                    <div className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
                       {Math.round(weatherData.main.temp)}°C
                     </div>
                     <div className="text-left leading-tight">
@@ -715,7 +763,7 @@ export default function WeatherMapPage() {
                   </div>
 
                   {/* Info metrics grid */}
-                  <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-550 dark:text-slate-400">
+                  <div className="grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-500 dark:text-slate-400">
                     <div className="bg-slate-100/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-white/5 p-2 rounded-xl text-center">
                       <Droplets className="h-3.5 w-3.5 mx-auto mb-1 text-blue-550" />
                       <p className="text-slate-400 text-[8px] uppercase font-semibold">Humidity</p>
