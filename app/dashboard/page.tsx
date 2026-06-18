@@ -2168,10 +2168,10 @@ export default function DashboardPage() {
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                     {/* Card 1: Wind Gust */}
                     <div className={`p-3 rounded-xl border ${
-                      isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-amber-50/30 border-amber-100'
+                      isDarkMode ? 'bg-slate-800/50 border-slate-700/80' : 'bg-amber-50 border-amber-200'
                     } hover:shadow-md hover:scale-[1.03] transition-all duration-300 flex items-center justify-between min-h-[90px] cursor-pointer group/gust`}>
                       <div className="space-y-1 flex-1 min-w-0 pr-1">
-                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover/gust:text-amber-500 transition-colors">Wind Gust</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 group-hover/gust:text-amber-550 dark:group-hover/gust:text-amber-400 transition-colors">Wind Gust</span>
                         <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
                           {weatherData.wind.gust ? (weatherData.wind.gust * 3.6).toFixed(1) : (weatherData.wind.speed * 4.2).toFixed(1)} <span className="text-[9px] font-normal text-slate-400">km/h</span>
                         </p>
@@ -2183,10 +2183,10 @@ export default function DashboardPage() {
                     
                     {/* Card 2: Wind Direction */}
                     <div className={`p-3 rounded-xl border ${
-                      isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-blue-50/30 border-blue-100'
+                      isDarkMode ? 'bg-slate-800/50 border-slate-700/80' : 'bg-blue-50 border-blue-200'
                     } hover:shadow-md hover:scale-[1.03] transition-all duration-300 flex items-center justify-between min-h-[90px] cursor-pointer group/dir`}>
                       <div className="space-y-1 flex-1 min-w-0 pr-1">
-                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover/dir:text-blue-500 transition-colors">Wind Direction</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 group-hover/dir:text-blue-550 dark:group-hover/dir:text-blue-400 transition-colors">Wind Direction</span>
                         <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
                           {getWindDirection(weatherData.wind.deg)} <span className="text-[9px] font-normal text-slate-400">({weatherData.wind.deg}°)</span>
                         </p>
@@ -2198,10 +2198,10 @@ export default function DashboardPage() {
 
                     {/* Card 3: Cloudiness */}
                     <div className={`p-3 rounded-xl border ${
-                      isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-sky-50/30 border-sky-100'
+                      isDarkMode ? 'bg-slate-800/50 border-slate-700/80' : 'bg-sky-50 border-sky-200'
                     } hover:shadow-md hover:scale-[1.03] transition-all duration-300 flex items-center justify-between min-h-[90px] cursor-pointer group/cloud`}>
                       <div className="space-y-1 flex-1 min-w-0 pr-1">
-                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover/cloud:text-sky-500 transition-colors">Cloudiness</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 group-hover/cloud:text-sky-550 dark:group-hover/cloud:text-sky-400 transition-colors">Cloudiness</span>
                         <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
                           {weatherData.clouds.all}%
                         </p>
@@ -2213,16 +2213,16 @@ export default function DashboardPage() {
 
                     {/* Card 4: Rainfall */}
                     <div className={`p-3 rounded-xl border ${
-                      isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-indigo-50/30 border-indigo-100'
+                      isDarkMode ? 'bg-slate-800/50 border-slate-700/80' : 'bg-indigo-50 border-indigo-200'
                     } hover:shadow-md hover:scale-[1.03] transition-all duration-300 flex items-center justify-between min-h-[90px] cursor-pointer group/rain`}>
                       <div className="space-y-1 flex-1 min-w-0 pr-1">
-                        <span className="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 group-hover/rain:text-indigo-500 transition-colors">Rain Volume</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 group-hover/rain:text-indigo-550 dark:group-hover/rain:text-indigo-400 transition-colors">Rain Volume</span>
                         <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
                           {weatherData.rain ? (weatherData.rain["1h"] || weatherData.rain["3h"] || 0) : 0} <span className="text-[9px] font-normal text-slate-450">mm</span>
                         </p>
                       </div>
                       <div className="p-2 bg-indigo-500/10 rounded-lg group-hover/rain:scale-110 transition-transform">
-                        <CloudRain className="h-4 w-4 text-indigo-500 group-hover/rain:animate-bounce" />
+                        <CloudRain className="h-4 w-4 text-indigo-550 group-hover/rain:animate-bounce" />
                       </div>
                     </div>
                   </div>
