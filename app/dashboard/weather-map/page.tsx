@@ -757,7 +757,7 @@ export default function WeatherMapPage() {
                     </div>
                     <div className="text-left leading-tight">
                       <span className="text-[10px] text-slate-500 dark:text-slate-400 font-extrabold uppercase block tracking-wide">Feels Like</span>
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{Math.round(weatherData.main.feels_like)}°C</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-250">{Math.round(weatherData.main.feels_like)}°C</span>
                     </div>
                   </div>
 
@@ -770,7 +770,7 @@ export default function WeatherMapPage() {
                         className="h-6 w-6 object-contain"
                       />
                     )}
-                    <span className="text-xs font-bold capitalize text-slate-800 dark:text-slate-200 truncate">{weatherData.weather[0]?.description}</span>
+                    <span className="text-xs font-bold capitalize text-slate-800 dark:text-slate-250 truncate">{weatherData.weather[0]?.description}</span>
                   </div>
 
                   {/* Info metrics grid */}

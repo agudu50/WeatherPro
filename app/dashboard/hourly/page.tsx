@@ -5,6 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts"
+import {
   Clock,
   CloudRain,
   Droplets,
@@ -28,11 +37,8 @@ import {
   Moon,
   Download,
   Share2,
-  Filter,
   AlertCircle,
   Umbrella,
-  Shirt,
-  Wind as WindIcon,
   Info,
 } from "lucide-react"
 
@@ -61,6 +67,31 @@ interface WeatherData {
   sys: { country: string; sunrise: number; sunset: number }
 }
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-950/95 border border-slate-800 backdrop-blur-md rounded-2xl p-3 sm:p-4 shadow-2xl text-left">
+        <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider mb-2">{label}</p>
+        <div className="space-y-1.5">
+          {payload.map((item: any, idx: number) => (
+            <div key={idx} className="flex items-center gap-3 justify-between">
+              <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.stroke || item.color }} />
+                {item.name}
+              </span>
+              <span className="text-xs font-black text-white">
+                {item.value}
+                {item.unit}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+  return null
+}
+
 export default function HourlyForecastPage() {
   const [hourlyData, setHourlyData] = useState<HourlyForecast[]>([])
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
@@ -71,13 +102,10 @@ export default function HourlyForecastPage() {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, delay: number}>>([])
   const [showComparison, setShowComparison] = useState(false)
-  const [filterMetric, setFilterMetric] = useState<'all' | 'rain' | 'temp' | 'wind'>('all')
   const [viewMode, setViewMode] = useState<'card' | 'list' | 'chart'>('card')
-  const [showDetails, setShowDetails] = useState(false)
   const [chartMetric, setChartMetric] = useState<'temp' | 'humidity' | 'wind' | 'pressure'>('temp')
   const [compareHours, setCompareHours] = useState<number[]>([])
   const [showAlerts, setShowAlerts] = useState(true)
-  const [animatedGradient, setAnimatedGradient] = useState(0)
 
   const weatherIcons = {
     Clear: Sun,
@@ -90,9 +118,15 @@ export default function HourlyForecastPage() {
 
   useEffect(() => {
     // Load dark mode preference
-    const savedDarkMode = localStorage.getItem("hourlyDarkMode")
+    const savedDarkMode = localStorage.getItem("darkMode")
     if (savedDarkMode !== null) {
-      setIsDarkMode(savedDarkMode === "true")
+      const isDark = savedDarkMode === "true"
+      setIsDarkMode(isDark)
+      if (isDark) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
     }
 
     // Generate particles
@@ -110,21 +144,20 @@ export default function HourlyForecastPage() {
     // Update time
     const timer = setInterval(() => setCurrentTime(new Date()), 1000)
     
-    // Animate gradient
-    const gradientTimer = setInterval(() => {
-      setAnimatedGradient(prev => (prev + 1) % 360)
-    }, 50)
-    
     return () => {
       clearInterval(timer)
-      clearInterval(gradientTimer)
     }
   }, [])
 
   const toggleDarkMode = () => {
     const newDarkMode = !isDarkMode
     setIsDarkMode(newDarkMode)
-    localStorage.setItem("hourlyDarkMode", String(newDarkMode))
+    localStorage.setItem("darkMode", String(newDarkMode))
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
   }
 
   const getUserLocation = () => {
@@ -152,7 +185,7 @@ export default function HourlyForecastPage() {
       const weatherInfo = await weatherResponse.json()
       setWeatherData(weatherInfo)
 
-      // Fetch hourly forecast (using 5-day forecast API)
+      // Fetch hourly forecast
       const API_KEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY
       const forecastResponse = await fetch(
         `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
@@ -179,7 +212,6 @@ export default function HourlyForecastPage() {
       }))
       
       setHourlyData(next24Hours)
-      console.log('Live hourly data:', next24Hours)
     } catch (error) {
       console.error('Hourly fetch error:', error)
     } finally {
@@ -225,12 +257,9 @@ export default function HourlyForecastPage() {
     return gradients[timeOfDay as keyof typeof gradients] || gradients.afternoon
   }
 
-  // Removed horizontal scroll controls; layout now uses a wrapping grid
-
   const getWeatherInsights = () => {
     if (hourlyData.length === 0) return null
 
-    const temps = hourlyData.map(h => h.temp)
     const hottestHour = hourlyData.reduce((max, h) => h.temp > max.temp ? h : max, hourlyData[0])
     const coldestHour = hourlyData.reduce((min, h) => h.temp < min.temp ? h : min, hourlyData[0])
     const rainiestHour = hourlyData.reduce((max, h) => h.pop > max.pop ? h : max, hourlyData[0])
@@ -411,7 +440,6 @@ export default function HourlyForecastPage() {
   const getDayPartSummary = () => {
     if (hourlyData.length === 0) return []
     
-    const now = new Date()
     const summaries = []
     
     // Morning (6am - 12pm)
@@ -505,21 +533,63 @@ export default function HourlyForecastPage() {
     })
   }
 
+  // Define Recharts data structures
+  const tempChartData = hourlyData.map((hour) => ({
+    name: formatTime(hour.dt),
+    'Actual Temp': formatTemp(hour.temp),
+    'Feels Like': formatTemp(hour.feels_like),
+  }))
+
+  const analyticsChartData = hourlyData.map((hour) => {
+    let val = hour.temp
+    let name = 'Temperature'
+    let unit = isCelsius ? '°C' : '°F'
+    let color = '#ef4444'
+    if (chartMetric === 'humidity') {
+      val = hour.humidity
+      name = 'Humidity'
+      unit = '%'
+      color = '#3b82f6'
+    } else if (chartMetric === 'wind') {
+      val = Math.round(hour.wind_speed * 3.6)
+      name = 'Wind Speed'
+      unit = ' km/h'
+      color = '#22c55e'
+    } else if (chartMetric === 'pressure') {
+      val = hour.pressure || 1013
+      name = 'Pressure'
+      unit = ' hPa'
+      color = '#a855f7'
+    }
+
+    return {
+      time: formatTime(hour.dt),
+      [name]: val,
+      metricName: name,
+      unit: unit,
+      color: color
+    }
+  })
+
+  const activeMetricName = chartMetric === 'temp' ? 'Temperature' :
+                           chartMetric === 'humidity' ? 'Humidity' :
+                           chartMetric === 'wind' ? 'Wind Speed' : 'Pressure';
+
+  const activeColor = chartMetric === 'temp' ? '#ef4444' :
+                      chartMetric === 'humidity' ? '#3b82f6' :
+                      chartMetric === 'wind' ? '#22c55e' : '#a855f7';
+
   return (
-    <div className={`min-h-screen relative overflow-x-hidden min-w-0 transition-all duration-1000`}
-      style={{
-        background: isDarkMode 
-          ? `linear-gradient(${animatedGradient}deg, #0f172a, #1e3a8a, #312e81, #4c1d95)`
-          : `linear-gradient(${animatedGradient}deg, #dbeafe, #e0e7ff, #f3e8ff, #fce7f3)`
-      }}
-    >
-      {/* Animated Background */}
+    <div className={`min-h-screen relative overflow-x-hidden min-w-0 transition-colors duration-500 ${
+      isDarkMode ? 'dark bg-slate-955 bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
+    }`}>
+      {/* Animated Background Glow Spots */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particles.map((particle) => (
           <div
             key={particle.id}
             className={`absolute w-1 h-1 ${
-              isDarkMode ? 'bg-blue-400/30' : 'bg-blue-600/20'
+              isDarkMode ? 'bg-blue-400/20' : 'bg-blue-600/10'
             } rounded-full animate-float`}
             style={{
               left: `${particle.x}%`,
@@ -530,80 +600,76 @@ export default function HourlyForecastPage() {
           />
         ))}
         
-        {/* Additional animated elements */}
-        <div className="absolute top-20 left-10 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
-        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}} />
+        {/* Glow Spheres */}
+        <div className={`absolute top-20 left-10 w-72 h-72 rounded-full blur-[120px] transition-colors duration-1000 ${
+          isDarkMode ? 'bg-blue-600/10' : 'bg-blue-300/15'
+        }`} />
+        <div className={`absolute bottom-20 right-10 w-96 h-96 rounded-full blur-[150px] transition-colors duration-1000 ${
+          isDarkMode ? 'bg-purple-600/10' : 'bg-purple-300/15'
+        }`} style={{animationDelay: '1s'}} />
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-[130px] transition-colors duration-1000 ${
+          isDarkMode ? 'bg-pink-600/5' : 'bg-pink-300/10'
+        }`} style={{animationDelay: '2s'}} />
       </div>
 
-      <div className="relative z-10 p-2 sm:p-4 md:p-6 max-w-7xl w-full mx-auto pb-24 sm:pb-12 box-border px-2 sm:px-4 md:px-6 min-w-0">
-        {/* Header */}
-        <div className="mb-4 sm:mb-6 md:mb-8">
-          <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} transition-all duration-500 rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-indigo-900/80 to-purple-900/80' : 'from-indigo-50 to-purple-50'}`}>
-            <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.1),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.5),transparent_45%)]'}`} />
-            <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/10' : 'border-white/50'} rounded-2xl`} />
-            <CardContent className="relative z-10 p-3 sm:p-4 md:p-6">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+      <div className="relative z-10 p-3 sm:p-5 md:p-7 max-w-7xl w-full mx-auto pb-24 box-border">
+        {/* Header Section */}
+        <div className="mb-6">
+          <Card className={`relative overflow-hidden border transition-all duration-500 rounded-3xl backdrop-blur-xl ${
+            isDarkMode 
+              ? 'bg-slate-900/60 border-slate-800/80 shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)] text-white' 
+              : 'bg-white/80 border-slate-200/80 shadow-[0_18px_55px_-25px_rgba(0,0,0,0.1)] text-slate-800'
+          }`}>
+            <CardContent className="relative z-10 p-4 sm:p-6">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                    <div className="p-2 sm:p-2.5 rounded-xl bg-white/20 backdrop-blur-sm shadow-lg ring-1 ring-white/25">
-                      <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-white drop-shadow" />
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2.5 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/25">
+                      <Clock className="h-6 w-6" />
                     </div>
-                    <h1 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold ${
-                      isDarkMode 
-                        ? 'text-white' 
-                        : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent'
-                    }`}>
-                      Hourly Forecast
-                    </h1>
+                    <div>
+                      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">
+                        Hourly Weather Forecast
+                      </h1>
+                      <p className={`text-xs sm:text-sm font-medium mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Detailed temperature progression, weather metrics, and comfort index checks
+                      </p>
+                    </div>
                   </div>
-                  <div className={`flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-indigo-700'
-                  }`}>
-                    <div className="flex items-center gap-1 min-w-0">
-                      <MapPin className={`h-3 w-3 sm:h-4 sm:w-4 ${isDarkMode ? 'text-red-400' : 'text-red-500'} flex-shrink-0`} />
-                      <span className="truncate font-medium">{weatherData?.name || 'Loading...'}{weatherData?.sys.country ? `, ${weatherData.sys.country}` : ''}</span>
+                  <div className="flex flex-wrap items-center gap-3 text-xs font-semibold mt-3">
+                    <div className={`flex items-center gap-1 px-2.5 py-1 rounded-xl ${isDarkMode ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'}`}>
+                      <MapPin className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />
+                      <span className="truncate">{weatherData?.name || 'Loading location...'}{weatherData?.sys.country ? `, ${weatherData.sys.country}` : ''}</span>
                     </div>
-                    <div className="hidden md:flex items-center gap-1 min-w-0">
-                      <Calendar className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                      <span className="truncate">{currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+                    <div className={`flex items-center gap-1 px-2.5 py-1 rounded-xl ${isDarkMode ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'}`}>
+                      <Calendar className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                      <span>{currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                     </div>
-                    <div className="hidden lg:flex items-center gap-1">
-                      <Clock className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                      <span>{currentTime.toLocaleTimeString()}</span>
-                    </div>
-                    <Badge className={`flex-shrink-0 ${
-                      isDarkMode 
-                        ? 'bg-green-500/20 text-green-300 border-green-500/30' 
-                        : 'bg-green-100 text-green-700 border-green-300'
-                    }`}>
-                      <Activity className="h-3 w-3 mr-1 animate-pulse" />
-                      Live
+                    <Badge className="bg-green-500/10 hover:bg-green-500/15 text-green-600 dark:text-green-400 border border-green-500/20 py-0.5 px-2.5 rounded-full flex gap-1 items-center">
+                      <Activity className="h-3 w-3 animate-pulse" />
+                      Live Feed
                     </Badge>
                   </div>
                 </div>
 
-                <div className="flex gap-2 flex-wrap w-full sm:w-auto justify-start sm:justify-end">
+                {/* Actions Bar */}
+                <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-start lg:justify-end border-t border-slate-250/20 dark:border-slate-800/20 pt-4 lg:pt-0 lg:border-t-0">
                   <Button
                     onClick={toggleDarkMode}
                     variant="outline"
-                    size="sm"
-                    className={`px-3 ${
-                      isDarkMode 
-                        ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
-                        : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
+                    size="icon"
+                    className={`w-10 h-10 rounded-2xl ${
+                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
                     }`}
+                    title={isDarkMode ? "Light Mode" : "Dark Mode"}
                   >
-                    {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    {isDarkMode ? <Sun className="h-4 w-4 text-yellow-400 animate-pulse" /> : <Moon className="h-4 w-4 text-slate-700" />}
                   </Button>
                   <Button
                     onClick={() => setIsCelsius(!isCelsius)}
                     variant="outline"
-                    size="sm"
-                    className={`px-3 ${
-                      isDarkMode 
-                        ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
-                        : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
+                    className={`w-10 h-10 rounded-2xl font-bold ${
+                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
                     }`}
                   >
                     °{isCelsius ? 'C' : 'F'}
@@ -614,58 +680,39 @@ export default function HourlyForecastPage() {
                       if (showComparison) setCompareHours([])
                     }}
                     variant="outline"
-                    size="sm"
-                    className={`px-2 sm:px-3 ${
+                    className={`h-10 rounded-2xl font-bold px-3 sm:px-4 ${
                       showComparison
-                        ? 'bg-gradient-to-r from-green-500 to-teal-600 text-white border-none'
+                        ? 'bg-indigo-600 hover:bg-indigo-700 border-transparent text-white shadow-lg shadow-indigo-500/25'
                         : isDarkMode 
-                          ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
-                          : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
+                          ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' 
+                          : 'bg-white border-slate-200 text-slate-850 hover:bg-slate-55 hover:bg-slate-100'
                     }`}
                   >
-                    <span className="hidden sm:inline text-xs">Compare</span>
-                    <span className="sm:hidden">⚖️</span>
-                  </Button>
-                  <Button
-                    onClick={() => setViewMode(viewMode === 'card' ? 'list' : viewMode === 'list' ? 'chart' : 'card')}
-                    variant="outline"
-                    size="sm"
-                    className={`px-3 ${
-                      isDarkMode 
-                        ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
-                        : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
-                    }`}
-                  >
-                    {viewMode === 'card' ? '📊' : viewMode === 'list' ? '📈' : '🎴'}
+                    <span className="text-xs">Compare Mode</span>
                   </Button>
                   <Button
                     onClick={shareWeather}
                     variant="outline"
-                    size="sm"
-                    className={`${
-                      isDarkMode 
-                        ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
-                        : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
+                    size="icon"
+                    className={`w-10 h-10 rounded-2xl ${
+                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
                     }`}
                   >
                     <Share2 className="h-4 w-4" />
                   </Button>
                   <Button
                     onClick={getUserLocation}
-                    size="sm"
-                    className="flex-1 sm:flex-none bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-4 h-10 shadow-lg shadow-indigo-500/25 flex items-center gap-1.5 flex-1 sm:flex-none justify-center"
                   >
-                    <RefreshCw className="h-4 w-4 mr-1.5" />
-                    <span className="hidden xs:inline sm:hidden md:inline">Refresh</span>
+                    <RefreshCw className="h-4 w-4" />
+                    <span>Sync</span>
                   </Button>
                   <Button
                     onClick={exportData}
-                    size="sm"
                     variant="outline"
-                    className={`${
-                      isDarkMode 
-                        ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
-                        : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
+                    size="icon"
+                    className={`w-10 h-10 rounded-2xl ${
+                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
                     }`}
                   >
                     <Download className="h-4 w-4" />
@@ -677,214 +724,150 @@ export default function HourlyForecastPage() {
         </div>
 
         {loading ? (
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-xl`}>
-            <CardContent className="p-12 flex flex-col items-center justify-center">
-              <Loader2 className={`h-12 w-12 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'} animate-spin mb-4`} />
-              <p className="text-lg font-semibold">Loading live hourly forecast...</p>
+          <Card className={`border rounded-3xl backdrop-blur-xl ${
+            isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
+          }`}>
+            <CardContent className="p-16 flex flex-col items-center justify-center">
+              <Loader2 className="h-12 w-12 text-indigo-500 animate-spin mb-4" />
+              <p className="text-lg font-black tracking-tight">Syncing Meteorological Feeds</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Please wait, loading live hourly grids...</p>
             </CardContent>
           </Card>
         ) : (
-          <>
-            {/* Weather Insights Summary */}
+          <div className="space-y-6">
+            {/* Weather Insights Grid */}
             {hourlyData.length > 0 && (() => {
               const insights = getWeatherInsights()
               if (!insights) return null
 
               return (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
-                  {/* HOTTEST Card */}
-                  <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-rose-600 via-pink-700 to-red-800' : 'from-rose-400 via-pink-500 to-red-500'} text-white cursor-pointer active:scale-100`}>
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/20 via-white/10 to-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                    <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-                    <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-                    <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                    
-                    <div className="relative z-10">
-                      <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-4">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-xs sm:text-sm font-semibold text-white group-hover:scale-105 transition-transform origin-left">
-                            HOTTEST
-                          </CardTitle>
-                          <div className="p-2 sm:p-2.5 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 shadow-lg ring-1 ring-white/25 group-hover:ring-2 group-hover:ring-white/50">
-                            <Thermometer className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow group-hover:drop-shadow-lg" />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-3 sm:p-4 pt-0">
-                        <div className="flex items-baseline gap-1 sm:gap-1.5 mb-1 sm:mb-2 group-hover:scale-110 transition-transform origin-left">
-                          <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white group-hover:text-shadow-lg transition-all">
-                            {formatTemp(insights.hottestHour.temp)}°
-                          </span>
-                        </div>
-                        <p className="text-[10px] sm:text-xs text-white/80 font-medium group-hover:text-white/95 transition-colors">
-                          at {formatTime(insights.hottestHour.dt)}
-                        </p>
-                      </CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* HOTTEST HOUR */}
+                  <div className={`p-4 rounded-3xl border shadow-xl flex items-center justify-between transition-transform duration-300 hover:scale-[1.03] ${
+                    isDarkMode 
+                      ? 'bg-gradient-to-br from-rose-950/40 to-pink-950/30 border-rose-900/50 text-rose-100'
+                      : 'bg-gradient-to-br from-rose-50/90 to-pink-50/90 border-rose-100 text-rose-950'
+                  }`}>
+                    <div className="text-left">
+                      <p className="text-[10px] font-black uppercase tracking-wider opacity-75">Hottest Hour</p>
+                      <h3 className="text-3xl font-black mt-1 leading-none">
+                        {formatTemp(insights.hottestHour.temp)}°
+                      </h3>
+                      <p className="text-xs font-semibold opacity-75 mt-1.5">
+                        at {formatTime(insights.hottestHour.dt)}
+                      </p>
                     </div>
-                  </Card>
+                    <div className="p-2.5 rounded-2xl bg-rose-500 text-white shadow-lg shadow-rose-500/25">
+                      <Thermometer className="h-5 w-5" />
+                    </div>
+                  </div>
 
-                  {/* COLDEST Card */}
-                  <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-cyan-600 via-blue-700 to-indigo-800' : 'from-cyan-400 via-blue-500 to-indigo-600'} text-white cursor-pointer active:scale-100`}>
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/20 via-white/10 to-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                    <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-                    <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-                    <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                    
-                    <div className="relative z-10">
-                      <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-4">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-xs sm:text-sm font-semibold text-white group-hover:scale-105 transition-transform origin-left">
-                            COLDEST
-                          </CardTitle>
-                          <div className="p-2 sm:p-2.5 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 shadow-lg ring-1 ring-white/25 group-hover:ring-2 group-hover:ring-white/50">
-                            <Thermometer className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow group-hover:drop-shadow-lg" />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-3 sm:p-4 pt-0">
-                        <div className="flex items-baseline gap-1 sm:gap-1.5 mb-1 sm:mb-2 group-hover:scale-110 transition-transform origin-left">
-                          <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white group-hover:text-shadow-lg transition-all">
-                            {formatTemp(insights.coldestHour.temp)}°
-                          </span>
-                        </div>
-                        <p className="text-[10px] sm:text-xs text-white/80 font-medium group-hover:text-white/95 transition-colors">
-                          at {formatTime(insights.coldestHour.dt)}
-                        </p>
-                      </CardContent>
+                  {/* COLDEST HOUR */}
+                  <div className={`p-4 rounded-3xl border shadow-xl flex items-center justify-between transition-transform duration-300 hover:scale-[1.03] ${
+                    isDarkMode 
+                      ? 'bg-gradient-to-br from-blue-950/40 to-cyan-950/30 border-blue-900/50 text-blue-100'
+                      : 'bg-gradient-to-br from-blue-50/90 to-cyan-50/90 border-blue-100 text-blue-950'
+                  }`}>
+                    <div className="text-left">
+                      <p className="text-[10px] font-black uppercase tracking-wider opacity-75">Coldest Hour</p>
+                      <h3 className="text-3xl font-black mt-1 leading-none">
+                        {formatTemp(insights.coldestHour.temp)}°
+                      </h3>
+                      <p className="text-xs font-semibold opacity-75 mt-1.5">
+                        at {formatTime(insights.coldestHour.dt)}
+                      </p>
                     </div>
-                  </Card>
+                    <div className="p-2.5 rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/25">
+                      <Thermometer className="h-5 w-5" />
+                    </div>
+                  </div>
 
-                  {/* RAIN PEAK Card */}
-                  <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-violet-600 via-purple-700 to-fuchsia-800' : 'from-violet-400 via-purple-500 to-fuchsia-600'} text-white cursor-pointer active:scale-100`}>
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/20 via-white/10 to-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                    <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-                    <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-                    <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                    
-                    <div className="relative z-10">
-                      <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-4">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-xs sm:text-sm font-semibold text-white group-hover:scale-105 transition-transform origin-left">
-                            RAIN PEAK
-                          </CardTitle>
-                          <div className="p-2 sm:p-2.5 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 shadow-lg ring-1 ring-white/25 group-hover:ring-2 group-hover:ring-white/50">
-                            <CloudRain className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow group-hover:drop-shadow-lg" />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-3 sm:p-4 pt-0">
-                        <div className="flex items-baseline gap-1 sm:gap-1.5 mb-1 sm:mb-2 group-hover:scale-110 transition-transform origin-left">
-                          <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white group-hover:text-shadow-lg transition-all">
-                            {Math.round(insights.rainiestHour.pop)}%
-                          </span>
-                        </div>
-                        <p className="text-[10px] sm:text-xs text-white/80 font-medium group-hover:text-white/95 transition-colors">
-                          at {formatTime(insights.rainiestHour.dt)}
-                        </p>
-                      </CardContent>
+                  {/* RAINIEST HOUR */}
+                  <div className={`p-4 rounded-3xl border shadow-xl flex items-center justify-between transition-transform duration-300 hover:scale-[1.03] ${
+                    isDarkMode 
+                      ? 'bg-gradient-to-br from-violet-950/40 to-purple-950/30 border-violet-900/50 text-violet-100'
+                      : 'bg-gradient-to-br from-violet-50/90 to-purple-50/90 border-violet-100 text-violet-950'
+                  }`}>
+                    <div className="text-left">
+                      <p className="text-[10px] font-black uppercase tracking-wider opacity-75">Rain Peak</p>
+                      <h3 className="text-3xl font-black mt-1 leading-none">
+                        {Math.round(insights.rainiestHour.pop)}%
+                      </h3>
+                      <p className="text-xs font-semibold opacity-75 mt-1.5">
+                        at {formatTime(insights.rainiestHour.dt)}
+                      </p>
                     </div>
-                  </Card>
+                    <div className="p-2.5 rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/25">
+                      <CloudRain className="h-5 w-5" />
+                    </div>
+                  </div>
 
-                  {/* MAX WIND Card */}
-                  <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-green-600 via-emerald-700 to-teal-800' : 'from-green-400 via-emerald-500 to-teal-600'} text-white cursor-pointer active:scale-100`}>
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/20 via-white/10 to-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                    <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-                    <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-                    <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                    
-                    <div className="relative z-10">
-                      <CardHeader className="pb-1 sm:pb-2 p-3 sm:p-4">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-xs sm:text-sm font-semibold text-white group-hover:scale-105 transition-transform origin-left">
-                            MAX WIND
-                          </CardTitle>
-                          <div className="p-2 sm:p-2.5 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 shadow-lg ring-1 ring-white/25 group-hover:ring-2 group-hover:ring-white/50">
-                            <Wind className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow group-hover:drop-shadow-lg" />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-3 sm:p-4 pt-0">
-                        <div className="flex items-baseline gap-1 sm:gap-1.5 mb-1 sm:mb-2 group-hover:scale-110 transition-transform origin-left">
-                          <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white group-hover:text-shadow-lg transition-all">
-                            {Math.round(insights.maxWind * 3.6)}
-                          </span>
-                          <span className="text-white/80 text-xs sm:text-sm font-medium group-hover:text-white transition-colors">km/h</span>
-                        </div>
-                        <p className="text-[10px] sm:text-xs text-white/80 font-medium group-hover:text-white/95 transition-colors">
-                          peak speed
-                        </p>
-                      </CardContent>
+                  {/* PEAK WIND SPEED */}
+                  <div className={`p-4 rounded-3xl border shadow-xl flex items-center justify-between transition-transform duration-300 hover:scale-[1.03] ${
+                    isDarkMode 
+                      ? 'bg-gradient-to-br from-emerald-950/40 to-teal-950/30 border-emerald-900/50 text-emerald-100'
+                      : 'bg-gradient-to-br from-emerald-50/90 to-teal-50/90 border-emerald-100 text-emerald-950'
+                  }`}>
+                    <div className="text-left">
+                      <p className="text-[10px] font-black uppercase tracking-wider opacity-75">Max Wind Speed</p>
+                      <h3 className="text-3xl font-black mt-1 leading-none">
+                        {Math.round(insights.maxWind * 3.6)}<span className="text-xs font-bold ml-0.5">km/h</span>
+                      </h3>
+                      <p className="text-xs font-semibold opacity-75 mt-1.5">
+                        Peak velocity scans
+                      </p>
                     </div>
-                  </Card>
+                    <div className="p-2.5 rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/25">
+                      <Wind className="h-5 w-5" />
+                    </div>
+                  </div>
                 </div>
               )
             })()}
 
-            {/* Weather Alerts */}
+            {/* Weather Alerts Panel */}
             {hourlyData.length > 0 && showAlerts && (() => {
               const alerts = getWeatherAlerts()
               if (alerts.length === 0) return null
 
               return (
-                <Card className={`${
-                  isDarkMode 
-                    ? 'bg-white/10 border-white/20 text-white' 
-                    : 'bg-white border-gray-200 text-gray-900'
-                } backdrop-blur-xl mb-4 sm:mb-6 overflow-hidden`}>
-                  <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
-                        <AlertCircle className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'} animate-pulse`} />
-                        <span className="truncate">Weather Alerts</span>
-                      </CardTitle>
-                      <Button
-                        onClick={() => setShowAlerts(false)}
-                        size="sm"
-                        variant="ghost"
-                        className={isDarkMode ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-900'}
-                      >
-                        <span className="text-xs">Dismiss</span>
-                      </Button>
-                    </div>
+                <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
+                  isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
+                }`}>
+                  <CardHeader className="p-4 sm:p-6 pb-3 flex flex-row items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
+                      <AlertCircle className="h-5 w-5 text-yellow-500 animate-pulse" />
+                      <span>Environmental Conditions Check</span>
+                    </CardTitle>
+                    <Button
+                      onClick={() => setShowAlerts(false)}
+                      size="sm"
+                      variant="ghost"
+                      className={`h-8 rounded-xl px-2.5 ${isDarkMode ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'}`}
+                    >
+                      Dismiss Alert List
+                    </Button>
                   </CardHeader>
-                  <CardContent className="px-3 sm:px-6 space-y-3">
+                  <CardContent className="p-4 sm:p-6 pt-0 space-y-3">
                     {alerts.map((alert, index) => (
                       <div
                         key={index}
-                        className={`flex items-start gap-3 p-3 sm:p-4 rounded-xl border-l-4 ${
+                        className={`flex items-start gap-3.5 p-4 rounded-2xl border-l-4 ${
                           alert.type === 'danger'
-                            ? isDarkMode
-                              ? 'bg-red-500/10 border-red-500'
-                              : 'bg-red-50 border-red-500'
+                            ? isDarkMode ? 'bg-red-500/10 border-red-500' : 'bg-red-50/90 border-red-500 text-red-950'
                             : alert.type === 'warning'
-                              ? isDarkMode
-                                ? 'bg-yellow-500/10 border-yellow-500'
-                                : 'bg-yellow-50 border-yellow-500'
-                              : isDarkMode
-                                ? 'bg-blue-500/10 border-blue-500'
-                                : 'bg-blue-50 border-blue-500'
-                        } transition-all duration-300 hover:scale-[1.02]`}
+                              ? isDarkMode ? 'bg-yellow-500/10 border-yellow-500' : 'bg-yellow-50/90 border-yellow-500 text-yellow-950'
+                              : isDarkMode ? 'bg-blue-500/10 border-blue-500' : 'bg-blue-50/90 border-blue-500 text-blue-950'
+                        }`}
                       >
                         <span className="text-2xl flex-shrink-0">{alert.icon}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-xs font-semibold mb-1 uppercase tracking-wider ${
-                            alert.type === 'danger'
-                              ? 'text-red-600 dark:text-red-400'
-                              : alert.type === 'warning'
-                                ? 'text-yellow-600 dark:text-yellow-400'
-                                : 'text-blue-600 dark:text-blue-400'
+                        <div className="flex-1 min-w-0 text-left">
+                          <p className={`text-[10px] font-black uppercase tracking-wider mb-0.5 ${
+                            alert.type === 'danger' ? 'text-red-550' : alert.type === 'warning' ? 'text-amber-550' : 'text-blue-550'
                           }`}>
-                            {alert.type === 'danger' ? 'Danger' : alert.type === 'warning' ? 'Warning' : 'Info'}
+                            {alert.type === 'danger' ? 'Severe Warning' : alert.type === 'warning' ? 'Advisory' : 'Information'}
                           </p>
-                          <p className={`text-sm ${isDarkMode ? 'text-white/90' : 'text-gray-800'}`}>
+                          <p className={`text-xs font-semibold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
                             {alert.message}
                           </p>
                         </div>
@@ -895,59 +878,51 @@ export default function HourlyForecastPage() {
               )
             })()}
 
-            {/* Day Part Summary */}
+            {/* Day Part Summaries Grid */}
             {hourlyData.length > 0 && (() => {
               const summaries = getDayPartSummary()
               if (summaries.length === 0) return null
 
               return (
-                <div className="mb-4 sm:mb-6">
-                  <h3 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2 ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
+                <div className="space-y-4">
+                  <h3 className={`text-base font-black uppercase tracking-wider flex items-center gap-2 pl-1 ${
+                    isDarkMode ? 'text-slate-400' : 'text-slate-500'
                   }`}>
-                    <Calendar className="h-5 w-5" />
-                    Today's Forecast
+                    <Calendar className="h-4.5 w-4.5 text-indigo-500" />
+                    <span>Today's Phase Progression</span>
                   </h3>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {summaries.map((summary, index) => (
                       <Card
                         key={index}
-                        className={`${
+                        className={`border rounded-3xl backdrop-blur-xl overflow-hidden group hover:scale-[1.03] transition-transform duration-300 ${
                           isDarkMode 
-                            ? 'bg-white/10 border-white/20' 
-                            : 'bg-white border-gray-200'
-                        } backdrop-blur-xl hover:scale-105 transition-all duration-300 overflow-hidden group cursor-pointer`}
+                            ? 'bg-slate-900/60 border-slate-800/80 text-white' 
+                            : 'bg-white/80 border-slate-200/80 text-slate-850'
+                        }`}
                       >
-                        <div className={`h-2 bg-gradient-to-r ${summary.gradient}`} />
-                        <CardContent className="p-4">
+                        <div className={`h-2.5 bg-gradient-to-r ${summary.gradient}`} />
+                        <CardContent className="p-4 flex flex-col text-left">
                           <div className="flex items-center justify-between mb-3">
                             <span className="text-3xl">{summary.icon}</span>
-                            <Badge className={`${
-                              isDarkMode ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-900'
-                            } capitalize`}>
+                            <Badge className={`rounded-xl border border-transparent font-bold ${
+                              isDarkMode ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'
+                            }`}>
                               {summary.description}
                             </Badge>
                           </div>
-                          <h4 className={`text-sm font-semibold mb-2 ${
-                            isDarkMode ? 'text-white/70' : 'text-gray-600'
+                          <span className={`text-[10px] font-black uppercase tracking-wide opacity-75 ${
+                            isDarkMode ? 'text-slate-400' : 'text-slate-500'
                           }`}>
                             {summary.period}
-                          </h4>
-                          <p className={`text-3xl font-bold mb-2 ${
-                            isDarkMode ? 'text-white' : 'text-gray-900'
-                          }`}>
+                          </span>
+                          <span className={`text-3xl font-black mt-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                             {formatTemp(summary.temp)}°
-                          </p>
+                          </span>
                           {summary.rain > 0 && (
-                            <div className="flex items-center gap-2 mt-2">
-                              <CloudRain className={`h-4 w-4 ${
-                                isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                              }`} />
-                              <span className={`text-sm ${
-                                isDarkMode ? 'text-white/70' : 'text-gray-600'
-                              }`}>
-                                {Math.round(summary.rain)}% rain
-                              </span>
+                            <div className="flex items-center gap-1.5 mt-2.5 text-blue-500 dark:text-blue-400 text-xs font-bold">
+                              <CloudRain className="h-3.5 w-3.5" />
+                              <span>{Math.round(summary.rain)}% rain</span>
                             </div>
                           )}
                         </CardContent>
@@ -958,165 +933,203 @@ export default function HourlyForecastPage() {
               )
             })()}
 
-            {/* Precipitation Timeline */}
-            {hourlyData.length > 0 && Math.max(...hourlyData.map(h => h.pop)) > 0 && (
-              <Card className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white' 
-                  : 'bg-white border-gray-200 text-gray-900'
-              } backdrop-blur-xl mb-4 sm:mb-6`}>
-                <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
-                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
-                    <Umbrella className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                    <span className="truncate">Precipitation Timeline</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 sm:px-6">
-                  <div className="space-y-2">
-                    {hourlyData.map((hour, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        <span className={`text-xs w-16 flex-shrink-0 ${
-                          isDarkMode ? 'text-white/70' : 'text-gray-600'
-                        }`}>
-                          {formatTime(hour.dt)}
-                        </span>
-                        <div className="flex-1 h-8 bg-gray-200 dark:bg-white/5 rounded-full overflow-hidden relative">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              hour.pop > 70 
-                                ? 'bg-gradient-to-r from-blue-500 to-indigo-600' 
-                                : hour.pop > 40
-                                  ? 'bg-gradient-to-r from-blue-400 to-blue-500'
-                                  : 'bg-gradient-to-r from-blue-300 to-blue-400'
-                            }`}
-                            style={{ width: `${hour.pop}%` }}
-                          >
-                            {hour.pop > 20 && (
-                              <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
-                                {Math.round(hour.pop)}%
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {hour.pop > 0 && (
-                          <CloudRain className={`h-4 w-4 flex-shrink-0 ${
-                            hour.pop > 70 
-                              ? 'text-blue-600 dark:text-blue-400' 
-                              : 'text-blue-400 dark:text-blue-300'
-                          }`} />
-                        )}
+            {/* Main Interactive Graphs Container */}
+            {hourlyData.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                {/* 1. Actual Temp vs Feels Like graph */}
+                <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
+                  isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
+                }`}>
+                  <CardHeader className="p-4 sm:p-6 pb-2 text-left">
+                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
+                      <Thermometer className="h-5 w-5 text-rose-500" />
+                      <span>Temperature Trend: Actual vs Feels Like</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-3">
+                    <div className="h-[250px] w-full text-xs">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={tempChartData} margin={{ top: 15, right: 10, left: -25, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="tempActualGrad" x1="0" y1="0" x2="0" y2="100%">
+                              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="tempFeelsGrad" x1="0" y1="0" x2="0" y2="100%">
+                              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
+                              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"} />
+                          <XAxis 
+                            dataKey="name" 
+                            stroke={isDarkMode ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)"} 
+                            fontSize={10}
+                            fontWeight="bold"
+                            tickLine={false}
+                          />
+                          <YAxis 
+                            stroke={isDarkMode ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)"} 
+                            fontSize={10}
+                            fontWeight="bold"
+                            unit="°"
+                            tickLine={false}
+                          />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Area 
+                            type="monotone" 
+                            dataKey="Actual Temp" 
+                            name="Actual Temp"
+                            stroke="#ef4444" 
+                            strokeWidth={3}
+                            fillOpacity={1} 
+                            fill="url(#tempActualGrad)" 
+                            unit={isCelsius ? "°C" : "°F"}
+                          />
+                          <Area 
+                            type="monotone" 
+                            dataKey="Feels Like" 
+                            name="Feels Like"
+                            stroke="#3b82f6" 
+                            strokeWidth={2.5}
+                            strokeDasharray="4 4"
+                            fillOpacity={1} 
+                            fill="url(#tempFeelsGrad)" 
+                            unit={isCelsius ? "°C" : "°F"}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex justify-center gap-6 mt-4 text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-0.5 bg-red-500 inline-block" />
+                        <span>Actual Temp</span>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-0.5 border-t-2 border-dashed border-blue-500 inline-block" />
+                        <span>Feels Like</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 2. Interactive Analytics graph */}
+                <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
+                  isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
+                }`}>
+                  <CardHeader className="p-4 sm:p-6 pb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
+                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
+                      <Activity className="h-5 w-5 text-indigo-500" />
+                      <span>Interactive Analytics</span>
+                    </CardTitle>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {(['temp', 'humidity', 'wind', 'pressure'] as const).map((metric) => (
+                        <Button
+                          key={metric}
+                          onClick={() => setChartMetric(metric)}
+                          size="sm"
+                          variant="ghost"
+                          className={`h-8 rounded-xl px-2.5 text-xs font-bold capitalize ${
+                            chartMetric === metric
+                              ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow shadow-indigo-500/20'
+                              : isDarkMode 
+                                ? 'bg-slate-800 text-slate-200 hover:bg-slate-750' 
+                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          {metric === 'temp' && 'Temp'}
+                          {metric === 'humidity' && 'Humidity'}
+                          {metric === 'wind' && 'Wind'}
+                          {metric === 'pressure' && 'Pressure'}
+                        </Button>
+                      ))}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-3">
+                    <div className="h-[250px] w-full text-xs">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={analyticsChartData} margin={{ top: 15, right: 10, left: -25, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="analyticsGrad" x1="0" y1="0" x2="0" y2="100%">
+                              <stop offset="5%" stopColor={activeColor} stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor={activeColor} stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"} />
+                          <XAxis 
+                            dataKey="time" 
+                            stroke={isDarkMode ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)"} 
+                            fontSize={10}
+                            fontWeight="bold"
+                            tickLine={false}
+                          />
+                          <YAxis 
+                            stroke={isDarkMode ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)"} 
+                            fontSize={10}
+                            fontWeight="bold"
+                            domain={['auto', 'auto']}
+                            tickLine={false}
+                          />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Area 
+                            type="monotone" 
+                            dataKey={activeMetricName} 
+                            name={activeMetricName}
+                            stroke={activeColor} 
+                            strokeWidth={3}
+                            fillOpacity={1} 
+                            fill="url(#analyticsGrad)" 
+                            unit={
+                              chartMetric === 'temp' ? (isCelsius ? "°C" : "°F") :
+                              chartMetric === 'humidity' ? "%" :
+                              chartMetric === 'wind' ? " km/h" : " hPa"
+                            }
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex justify-center gap-6 mt-4 text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 rounded-full inline-block" style={{ backgroundColor: activeColor }} />
+                        <span>Hourly {activeMetricName}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
 
-            {/* Temperature Comparison Chart (Feels-Like vs Actual) */}
-            {hourlyData.length > 0 && (
-              <Card className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white' 
-                  : 'bg-white border-gray-200 text-gray-900'
-              } backdrop-blur-xl mb-4 sm:mb-6`}>
-                <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
-                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
-                    <Thermometer className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />
-                    <span className="truncate">Temperature: Actual vs Feels Like</span>
+            {/* Precipitation Probability timeline */}
+            {hourlyData.length > 0 && Math.max(...hourlyData.map(h => h.pop)) > 0 && (
+              <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
+                isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
+              }`}>
+                <CardHeader className="p-4 sm:p-6 pb-2 text-left">
+                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
+                    <Umbrella className="h-5 w-5 text-blue-500" />
+                    <span>Precipitation Timeline</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="px-3 sm:px-6">
-                  <div className="relative h-64">
-                    <svg className="w-full h-full" viewBox="0 0 800 280" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="actualTempGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="rgba(239,68,68,0.4)" />
-                          <stop offset="100%" stopColor="transparent" />
-                        </linearGradient>
-                        <linearGradient id="feelsLikeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="rgba(59,130,246,0.4)" />
-                          <stop offset="100%" stopColor="transparent" />
-                        </linearGradient>
-                      </defs>
-                      
-                      {/* Grid */}
-                      {[0, 1, 2, 3, 4].map((i) => (
-                        <line
-                          key={i}
-                          x1="0"
-                          y1={i * 70}
-                          x2="800"
-                          y2={i * 70}
-                          stroke={isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}
-                          strokeWidth="1"
+                <CardContent className="p-4 sm:p-6 pt-3 space-y-3.5">
+                  {hourlyData.map((hour, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <span className={`text-xs font-bold w-16 text-left ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {formatTime(hour.dt)}
+                      </span>
+                      <div className="flex-1 h-3.5 bg-slate-100 dark:bg-slate-950/40 rounded-full overflow-hidden relative">
+                        <div
+                          className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-blue-400 to-indigo-500"
+                          style={{ width: `${hour.pop}%` }}
                         />
-                      ))}
-                      
-                      {/* Data */}
-                      {hourlyData.length > 1 && (() => {
-                        const temps = hourlyData.map(h => h.temp)
-                        const feelsLike = hourlyData.map(h => h.feels_like)
-                        const minTemp = Math.min(...temps, ...feelsLike)
-                        const maxTemp = Math.max(...temps, ...feelsLike)
-                        
-                        return (
-                          <>
-                            {/* Actual Temperature */}
-                            <path
-                              d={`M 0 280 ${hourlyData.map((hour, i) => {
-                                const x = (i / (hourlyData.length - 1)) * 800
-                                const y = 260 - ((hour.temp - minTemp) / (maxTemp - minTemp)) * 240
-                                return `L ${x} ${y}`
-                              }).join(' ')} L 800 280 Z`}
-                              fill="url(#actualTempGradient)"
-                            />
-                            <path
-                              d={hourlyData.map((hour, i) => {
-                                const x = (i / (hourlyData.length - 1)) * 800
-                                const y = 260 - ((hour.temp - minTemp) / (maxTemp - minTemp)) * 240
-                                return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
-                              }).join(' ')}
-                              stroke="rgba(239,68,68,1)"
-                              strokeWidth="3"
-                              fill="none"
-                            />
-                            
-                            {/* Feels Like Temperature */}
-                            <path
-                              d={`M 0 280 ${hourlyData.map((hour, i) => {
-                                const x = (i / (hourlyData.length - 1)) * 800
-                                const y = 260 - ((hour.feels_like - minTemp) / (maxTemp - minTemp)) * 240
-                                return `L ${x} ${y}`
-                              }).join(' ')} L 800 280 Z`}
-                              fill="url(#feelsLikeGradient)"
-                            />
-                            <path
-                              d={hourlyData.map((hour, i) => {
-                                const x = (i / (hourlyData.length - 1)) * 800
-                                const y = 260 - ((hour.feels_like - minTemp) / (maxTemp - minTemp)) * 240
-                                return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
-                              }).join(' ')}
-                              stroke="rgba(59,130,246,1)"
-                              strokeWidth="3"
-                              strokeDasharray="5,5"
-                              fill="none"
-                            />
-                          </>
-                        )
-                      })()}
-                    </svg>
-                  </div>
-                  
-                  <div className="flex justify-center gap-6 mt-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-0.5 bg-red-500" />
-                      <span className={isDarkMode ? 'text-white/80' : 'text-gray-700'}>Actual Temp</span>
+                      </div>
+                      <span className={`text-xs font-extrabold w-12 text-right ${
+                        hour.pop > 50 ? 'text-blue-500 font-black' : isDarkMode ? 'text-slate-400' : 'text-slate-650'
+                      }`}>
+                        {Math.round(hour.pop)}%
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-0.5 bg-blue-500 border-dashed" style={{borderTop: '2px dashed'}} />
-                      <span className={isDarkMode ? 'text-white/80' : 'text-gray-700'}>Feels Like</span>
-                    </div>
-                  </div>
+                  ))}
                 </CardContent>
               </Card>
             )}
@@ -1127,30 +1140,30 @@ export default function HourlyForecastPage() {
               if (recommendations.length === 0) return null
 
               return (
-                <Card className={`${
+                <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
                   isDarkMode 
-                    ? 'bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20' 
-                    : 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200'
-                } backdrop-blur-xl mb-4 sm:mb-6`}>
-                  <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
-                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
-                      <Info className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-                      <span className="truncate">Weather Recommendations</span>
+                    ? 'bg-gradient-to-br from-indigo-950/45 to-purple-950/40 border-indigo-900/50 text-white' 
+                    : 'bg-gradient-to-br from-indigo-50/80 to-purple-50/70 border-indigo-100 text-slate-800'
+                }`}>
+                  <CardHeader className="p-4 sm:p-6 pb-2 text-left">
+                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
+                      <Info className="h-5 w-5 text-indigo-500" />
+                      <span>Meteorological Health & Activity Guides</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="px-3 sm:px-6">
+                  <CardContent className="p-4 sm:p-6 pt-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {recommendations.map((rec, index) => (
                         <div
                           key={index}
-                          className={`flex items-start gap-3 p-3 rounded-lg ${
+                          className={`flex items-start gap-3 p-3 rounded-2xl border text-left ${
                             isDarkMode 
-                              ? 'bg-white/5 hover:bg-white/10' 
-                              : 'bg-white hover:bg-gray-50'
+                              ? 'bg-slate-950/40 border-slate-900/80 hover:bg-slate-950/60' 
+                              : 'bg-white border-slate-150 hover:bg-slate-50'
                           } transition-colors duration-200`}
                         >
                           <span className="text-2xl flex-shrink-0">{rec.split(' ')[0]}</span>
-                          <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-white/80' : 'text-gray-700'}`}>
+                          <p className={`text-xs font-semibold leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
                             {rec.substring(rec.indexOf(' ') + 1)}
                           </p>
                         </div>
@@ -1161,457 +1174,211 @@ export default function HourlyForecastPage() {
               )
             })()}
 
-            {/* Interactive Multi-Metric Chart */}
-            {hourlyData.length > 0 && (
-              <Card className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white' 
-                  : 'bg-white border-gray-200 text-gray-900'
-              } backdrop-blur-xl mb-4 sm:mb-6`}>
-                <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
-                  <div className="flex items-center justify-between flex-wrap gap-3">
-                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
-                      <Activity className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                      <span className="truncate">Interactive Analytics</span>
-                    </CardTitle>
-                    <div className="flex gap-2">
-                      {(['temp', 'humidity', 'wind', 'pressure'] as const).map((metric) => (
-                        <Button
-                          key={metric}
-                          onClick={() => setChartMetric(metric)}
-                          size="sm"
-                          variant={chartMetric === metric ? 'default' : 'outline'}
-                          className={`px-2 sm:px-3 text-xs ${
-                            chartMetric === metric
-                              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-                              : isDarkMode 
-                                ? 'bg-white/5 border-white/20 hover:bg-white/10 text-white' 
-                                : 'bg-gray-100 border-gray-300 hover:bg-gray-200 text-gray-900'
-                          }`}
-                        >
-                          {metric === 'temp' && '🌡️'}
-                          {metric === 'humidity' && '💧'}
-                          {metric === 'wind' && '💨'}
-                          {metric === 'pressure' && '📊'}
-                          <span className="ml-1 capitalize hidden sm:inline">{metric}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-3 sm:px-6">
-                  <div className="relative h-48 sm:h-56 md:h-64">
-                    <svg className="w-full h-full" viewBox="0 0 800 250" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor={
-                            chartMetric === 'temp' ? (isDarkMode ? 'rgba(239,68,68,0.5)' : 'rgba(239,68,68,0.3)') :
-                            chartMetric === 'humidity' ? (isDarkMode ? 'rgba(59,130,246,0.5)' : 'rgba(59,130,246,0.3)') :
-                            chartMetric === 'wind' ? (isDarkMode ? 'rgba(34,197,94,0.5)' : 'rgba(34,197,94,0.3)') :
-                            (isDarkMode ? 'rgba(168,85,247,0.5)' : 'rgba(168,85,247,0.3)')
-                          } />
-                          <stop offset="100%" stopColor="transparent" />
-                        </linearGradient>
-                      </defs>
-                      
-                      {/* Grid lines */}
-                      {[0, 1, 2, 3, 4].map((i) => (
-                        <line
-                          key={i}
-                          x1="0"
-                          y1={i * 62.5}
-                          x2="800"
-                          y2={i * 62.5}
-                          stroke={isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}
-                          strokeWidth="1"
-                        />
-                      ))}
-                      
-                      {/* Data visualization */}
-                      {hourlyData.length > 1 && (() => {
-                        const values = hourlyData.map(h => {
-                          if (chartMetric === 'temp') return h.temp
-                          if (chartMetric === 'humidity') return h.humidity
-                          if (chartMetric === 'wind') return h.wind_speed * 3.6
-                          return h.pressure || 1013
-                        })
-                        const minVal = Math.min(...values)
-                        const maxVal = Math.max(...values)
-                        
-                        return (
-                          <>
-                            {/* Area */}
-                            <path
-                              d={`M 0 250 ${hourlyData.map((hour, i) => {
-                                const x = (i / (hourlyData.length - 1)) * 800
-                                const y = 230 - ((values[i] - minVal) / (maxVal - minVal)) * 210
-                                return `L ${x} ${y}`
-                              }).join(' ')} L 800 250 Z`}
-                              fill="url(#chartGradient)"
-                            />
-                            
-                            {/* Line */}
-                            <path
-                              d={hourlyData.map((hour, i) => {
-                                const x = (i / (hourlyData.length - 1)) * 800
-                                const y = 230 - ((values[i] - minVal) / (maxVal - minVal)) * 210
-                                return `${i === 0 ? 'M' : 'L'} ${x} ${y}`
-                              }).join(' ')}
-                              stroke={
-                                chartMetric === 'temp' ? (isDarkMode ? 'rgba(239,68,68,0.8)' : 'rgba(239,68,68,1)') :
-                                chartMetric === 'humidity' ? (isDarkMode ? 'rgba(59,130,246,0.8)' : 'rgba(59,130,246,1)') :
-                                chartMetric === 'wind' ? (isDarkMode ? 'rgba(34,197,94,0.8)' : 'rgba(34,197,94,1)') :
-                                (isDarkMode ? 'rgba(168,85,247,0.8)' : 'rgba(168,85,247,1)')
-                              }
-                              strokeWidth="3"
-                              fill="none"
-                            />
-                            
-                            {/* Points */}
-                            {hourlyData.map((hour, i) => {
-                              const x = (i / (hourlyData.length - 1)) * 800
-                              const y = 230 - ((values[i] - minVal) / (maxVal - minVal)) * 210
-                              return (
-                                <g key={i}>
-                                  <circle
-                                    cx={x}
-                                    cy={y}
-                                    r="6"
-                                    fill={
-                                      chartMetric === 'temp' ? '#ef4444' :
-                                      chartMetric === 'humidity' ? '#3b82f6' :
-                                      chartMetric === 'wind' ? '#22c55e' :
-                                      '#a855f7'
-                                    }
-                                    stroke="white"
-                                    strokeWidth="2"
-                                  />
-                                  <text
-                                    x={x}
-                                    y={y - 15}
-                                    textAnchor="middle"
-                                    fill={isDarkMode ? 'white' : 'black'}
-                                    fontSize="12"
-                                    fontWeight="bold"
-                                  >
-                                    {values[i].toFixed(chartMetric === 'pressure' ? 0 : 1)}
-                                  </text>
-                                </g>
-                              )
-                            })}
-                          </>
-                        )
-                      })()}
-                    </svg>
-                    
-                    {/* Time labels */}
-                    <div className={`absolute bottom-0 left-0 right-0 flex justify-between px-1 sm:px-2 text-[10px] sm:text-xs ${
-                      isDarkMode ? 'text-white/60' : 'text-gray-500'
-                    }`}>
-                      {hourlyData.slice(0, 8).map((hour, i) => (
-                        <span key={i} className="truncate">{formatTime(hour.dt)}</span>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Chart Legend */}
-                  <div className="mt-4 flex justify-center gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${
-                        chartMetric === 'temp' ? 'bg-red-500' :
-                        chartMetric === 'humidity' ? 'bg-blue-500' :
-                        chartMetric === 'wind' ? 'bg-green-500' :
-                        'bg-purple-500'
-                      }`} />
-                      <span className={isDarkMode ? 'text-white/80' : 'text-gray-700'}>
-                        {chartMetric === 'temp' && `Temperature (°${isCelsius ? 'C' : 'F'})`}
-                        {chartMetric === 'humidity' && 'Humidity (%)'}
-                        {chartMetric === 'wind' && 'Wind Speed (km/h)'}
-                        {chartMetric === 'pressure' && 'Pressure (hPa)'}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {/* Next 24 Hours interactive scroll selection */}
+            <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
+              isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-850'
+            }`}>
+              <CardHeader className="p-4 sm:p-6 pb-3 text-left">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
+                    <Clock className="h-5 w-5 text-indigo-500" />
+                    <span>Selected Timeline Inspection</span>
+                  </CardTitle>
+                  {showComparison && compareHours.length > 0 && (
+                    <Badge className="bg-green-500 text-white border-0 font-bold px-2.5 py-0.5 rounded-full">
+                      ⚖️ {compareHours.length} Hour{compareHours.length > 1 ? 's' : ''} Selected
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                  {hourlyData.map((hour, index) => {
+                    const WeatherIcon = weatherIcons[hour.weather[0]?.main as keyof typeof weatherIcons] || Cloud
+                    const timeOfDay = getTimeOfDay(hour.dt)
+                    const isSelected = selectedHour === index
+                    const isCompared = compareHours.includes(index)
 
-            {/* Hourly Timeline Scroll */}
-            <div className="mb-4 sm:mb-6">
-              <Card className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white' 
-                  : 'bg-white border-gray-200 text-gray-900'
-              } backdrop-blur-xl overflow-hidden`}>
-                <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
-                      <Clock className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                      <span className="truncate">Next 24 Hours</span>
-                      {showComparison && compareHours.length > 0 && (
-                        <Badge className="ml-2 bg-green-500 text-white">
-                          {compareHours.length} selected
-                        </Badge>
-                      )}
-                    </CardTitle>
-                    {showComparison && compareHours.length > 0 && (
-                      <Button
-                        onClick={() => setCompareHours([])}
-                        size="sm"
-                        variant="ghost"
-                        className="text-xs"
-                      >
-                        Clear
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div 
-                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 p-3 sm:p-6"
-                  >
-                    {hourlyData.map((hour, index) => {
-                      const WeatherIcon = weatherIcons[hour.weather[0]?.main as keyof typeof weatherIcons] || Cloud
-                      const timeOfDay = getTimeOfDay(hour.dt)
-                      const isSelected = selectedHour === index
-                      const isCompared = compareHours.includes(index)
-                      
-                      return (
-                        <button
-                          key={hour.dt}
-                          onClick={() => {
-                            if (showComparison) {
-                              toggleCompareHour(index)
-                            } else {
-                              setSelectedHour(index)
-                            }
-                          }}
-                          className={`w-full p-2 sm:p-3 md:p-4 rounded-xl sm:rounded-2xl transition-all duration-300 relative ${
-                            isCompared
+                    return (
+                      <button
+                        key={hour.dt}
+                        onClick={() => {
+                          if (showComparison) {
+                            toggleCompareHour(index)
+                          } else {
+                            setSelectedHour(isSelected ? null : index)
+                          }
+                        }}
+                        className={`w-full p-3.5 rounded-3xl transition-all duration-300 relative border flex flex-col justify-between h-40 ${
+                          isCompared
+                            ? isDarkMode
+                              ? 'bg-emerald-500/10 border-emerald-500 scale-[1.03] shadow-lg shadow-emerald-500/10 text-white'
+                              : 'bg-emerald-50/90 border-emerald-500 scale-[1.03] shadow-lg text-emerald-950'
+                            : isSelected
                               ? isDarkMode
-                                ? 'bg-green-500/20 scale-105 shadow-xl border-2 border-green-400'
-                                : 'bg-green-100 scale-105 shadow-xl border-2 border-green-500'
-                              : isSelected
-                                ? isDarkMode
-                                  ? 'bg-white/20 scale-105 shadow-xl border-2 border-white/30'
-                                  : 'bg-blue-100 scale-105 shadow-xl border-2 border-blue-300'
-                                : isDarkMode
-                                  ? 'bg-white/5 hover:bg-white/10 border border-white/10'
-                                  : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
-                          }`}
-                        >
-                          {isCompared && (
-                            <div className="absolute top-1 right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                              ✓
-                            </div>
-                          )}
-                          <div className="text-center space-y-1.5 sm:space-y-2 md:space-y-3">
-                            <p className="text-xs sm:text-sm font-semibold truncate">
-                              {index === 0 ? 'Now' : formatTime(hour.dt)}
-                            </p>
-                            <div className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto rounded-lg sm:rounded-xl bg-gradient-to-br ${getGradientForTimeOfDay(timeOfDay)} p-1 sm:p-1.5 md:p-2 flex items-center justify-center`}>
-                              <WeatherIcon className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-white" />
-                            </div>
-                            <div>
-                              <p className="text-lg sm:text-xl md:text-2xl font-bold">{formatTemp(hour.temp)}°</p>
-                              <p className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-white/60' : 'text-gray-500'} capitalize truncate`}>
-                                {hour.weather[0]?.description}
-                              </p>
-                            </div>
-                            {hour.pop > 0 && (
-                              <div className={`flex items-center justify-center gap-0.5 sm:gap-1 ${
-                                isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                              }`}>
-                                <CloudRain className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                <span className="text-[10px] sm:text-xs">{Math.round(hour.pop)}%</span>
-                              </div>
-                            )}
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                                ? 'bg-indigo-500/10 border-indigo-500 scale-[1.03] shadow-lg shadow-indigo-500/10 text-white'
+                                : 'bg-indigo-50/90 border-indigo-500 scale-[1.03] shadow-lg shadow-indigo-500/5 text-indigo-950'
+                              : isDarkMode
+                                ? 'bg-slate-900/40 border-slate-800/80 hover:bg-slate-800/40 hover:scale-[1.02] text-slate-200'
+                                : 'bg-white/80 border-slate-200/80 hover:bg-slate-100/50 hover:scale-[1.02] text-slate-800'
+                        }`}
+                      >
+                        {isCompared && (
+                          <span className="absolute top-2 right-2 w-4 h-4 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[9px] font-black shadow-md">
+                            ✓
+                          </span>
+                        )}
+                        <p className="text-[10px] font-black uppercase tracking-wider opacity-75 text-center w-full">
+                          {index === 0 ? 'Now' : formatTime(hour.dt)}
+                        </p>
+                        <div className={`w-10 h-10 mx-auto rounded-2xl bg-gradient-to-br ${getGradientForTimeOfDay(timeOfDay)} p-2 flex items-center justify-center shadow`}>
+                          <WeatherIcon className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="text-center w-full">
+                          <p className="text-xl font-black">{formatTemp(hour.temp)}°</p>
+                          <p className="text-[9px] font-bold opacity-75 capitalize truncate">
+                            {hour.weather[0]?.description}
+                          </p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Hour Comparison View */}
+            {/* Hours Comparison Dashboard Panel */}
             {showComparison && compareHours.length >= 2 && (
-              <Card className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white' 
-                  : 'bg-white border-gray-200 text-gray-900'
-              } backdrop-blur-xl mb-4 sm:mb-6`}>
-                <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
-                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
-                    <Activity className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
-                    <span className="truncate">Comparing {compareHours.length} Hours</span>
+              <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
+                isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
+              }`}>
+                <CardHeader className="p-4 sm:p-6 pb-2 text-left">
+                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
+                    <Activity className="h-5 w-5 text-indigo-550" />
+                    <span>Hourly Grid Comparison Board</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="px-3 sm:px-6">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
+                <CardContent className="p-4 sm:p-6 pt-2">
+                  <div className="overflow-x-auto scrollbar-hide">
+                    <table className="w-full min-w-[500px]">
                       <thead>
-                        <tr className={`border-b ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>
-                          <th className={`text-left py-3 px-2 text-xs sm:text-sm font-semibold ${
-                            isDarkMode ? 'text-white/70' : 'text-gray-600'
-                          }`}>
-                            Metric
+                        <tr className={`border-b ${isDarkMode ? 'border-slate-800' : 'border-slate-150'}`}>
+                          <th className={`text-left py-3 px-3 text-[10px] font-black uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                            Parameters
                           </th>
-                          {compareHours.map((hourIndex) => (
-                            <th key={hourIndex} className="text-center py-3 px-2">
-                              <div className="flex flex-col items-center gap-1">
-                                <span className={`text-xs sm:text-sm font-bold ${
-                                  isDarkMode ? 'text-white' : 'text-gray-900'
-                                }`}>
-                                  {formatTime(hourlyData[hourIndex].dt)}
-                                </span>
-                                <Badge className="text-[10px] bg-green-500 text-white">
-                                  {hourIndex === 0 ? 'Now' : `+${hourIndex * 3}h`}
+                          {compareHours.map((idx) => (
+                            <th key={idx} className="text-center py-3 px-2">
+                              <div className="flex flex-col items-center">
+                                <span className="text-xs font-black">{formatTime(hourlyData[idx].dt)}</span>
+                                <Badge className="text-[8px] font-black rounded-lg mt-1 border-0 bg-green-500 text-white">
+                                  {idx === 0 ? 'Now' : `+${idx * 3} Hours`}
                                 </Badge>
                               </div>
                             </th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody>
-                        {/* Temperature Row */}
-                        <tr className={`border-b ${isDarkMode ? 'border-white/5' : 'border-gray-100'}`}>
-                          <td className={`py-3 px-2 font-medium text-xs sm:text-sm ${
-                            isDarkMode ? 'text-white/80' : 'text-gray-700'
-                          }`}>
-                            <div className="flex items-center gap-2">
+                      <tbody className="text-xs font-bold">
+                        {/* TEMPERATURE COMPARISON */}
+                        <tr className={`border-b ${isDarkMode ? 'border-slate-850/50' : 'border-slate-100'}`}>
+                          <td className="py-4 px-3 text-left">
+                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
                               <Thermometer className="h-4 w-4 text-red-500" />
-                              Temperature
+                              <span>Temperature</span>
                             </div>
                           </td>
-                          {compareHours.map((hourIndex) => (
-                            <td key={hourIndex} className="text-center py-3 px-2">
-                              <div className="flex flex-col items-center">
-                                <span className={`text-lg sm:text-xl font-bold ${
-                                  isDarkMode ? 'text-white' : 'text-gray-900'
-                                }`}>
-                                  {formatTemp(hourlyData[hourIndex].temp)}°
-                                </span>
-                                <span className={`text-xs ${isDarkMode ? 'text-white/50' : 'text-gray-500'}`}>
-                                  Feels {formatTemp(hourlyData[hourIndex].feels_like)}°
-                                </span>
-                              </div>
+                          {compareHours.map((idx) => (
+                            <td key={idx} className="py-4 px-2 text-center">
+                              <span className="text-lg font-black">{formatTemp(hourlyData[idx].temp)}°</span>
+                              <span className={`text-[10px] block opacity-75 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                Feels {formatTemp(hourlyData[idx].feels_like)}°
+                              </span>
                             </td>
                           ))}
                         </tr>
-                        
-                        {/* Weather Row */}
-                        <tr className={`border-b ${isDarkMode ? 'border-white/5' : 'border-gray-100'}`}>
-                          <td className={`py-3 px-2 font-medium text-xs sm:text-sm ${
-                            isDarkMode ? 'text-white/80' : 'text-gray-700'
-                          }`}>
-                            <div className="flex items-center gap-2">
+
+                        {/* WEATHER DESCRIPTION */}
+                        <tr className={`border-b ${isDarkMode ? 'border-slate-850/50' : 'border-slate-100'}`}>
+                          <td className="py-4 px-3 text-left">
+                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
                               <Cloud className="h-4 w-4 text-blue-500" />
-                              Weather
+                              <span>Weather Status</span>
                             </div>
                           </td>
-                          {compareHours.map((hourIndex) => {
-                            const WeatherIcon = weatherIcons[hourlyData[hourIndex].weather[0]?.main as keyof typeof weatherIcons] || Cloud
+                          {compareHours.map((idx) => {
+                            const WeatherIcon = weatherIcons[hourlyData[idx].weather[0]?.main as keyof typeof weatherIcons] || Cloud
                             return (
-                              <td key={hourIndex} className="text-center py-3 px-2">
-                                <div className="flex flex-col items-center gap-1">
-                                  <WeatherIcon className={`h-6 w-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                                  <span className={`text-xs capitalize ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>
-                                    {hourlyData[hourIndex].weather[0]?.description}
-                                  </span>
+                              <td key={idx} className="py-4 px-2 text-center">
+                                <div className="flex flex-col items-center gap-1.5">
+                                  <WeatherIcon className="h-5.5 w-5.5 text-blue-500 dark:text-blue-400" />
+                                  <span className="capitalize text-[10px] tracking-wide">{hourlyData[idx].weather[0]?.description}</span>
                                 </div>
                               </td>
                             )
                           })}
                         </tr>
-                        
-                        {/* Rain Probability Row */}
-                        <tr className={`border-b ${isDarkMode ? 'border-white/5' : 'border-gray-100'}`}>
-                          <td className={`py-3 px-2 font-medium text-xs sm:text-sm ${
-                            isDarkMode ? 'text-white/80' : 'text-gray-700'
-                          }`}>
-                            <div className="flex items-center gap-2">
+
+                        {/* RAIN PROBABILITY */}
+                        <tr className={`border-b ${isDarkMode ? 'border-slate-850/50' : 'border-slate-100'}`}>
+                          <td className="py-4 px-3 text-left">
+                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
                               <CloudRain className="h-4 w-4 text-blue-500" />
-                              Rain
+                              <span>Rain Probability</span>
                             </div>
                           </td>
-                          {compareHours.map((hourIndex) => (
-                            <td key={hourIndex} className="text-center py-3 px-2">
-                              <span className={`text-base sm:text-lg font-bold ${
-                                hourlyData[hourIndex].pop > 50 
-                                  ? 'text-blue-600 dark:text-blue-400' 
-                                  : isDarkMode ? 'text-white' : 'text-gray-900'
-                              }`}>
-                                {Math.round(hourlyData[hourIndex].pop)}%
+                          {compareHours.map((idx) => (
+                            <td key={idx} className="py-4 px-2 text-center">
+                              <span className={`text-base font-black ${hourlyData[idx].pop > 40 ? 'text-blue-500' : ''}`}>
+                                {Math.round(hourlyData[idx].pop)}%
                               </span>
                             </td>
                           ))}
                         </tr>
-                        
-                        {/* Humidity Row */}
-                        <tr className={`border-b ${isDarkMode ? 'border-white/5' : 'border-gray-100'}`}>
-                          <td className={`py-3 px-2 font-medium text-xs sm:text-sm ${
-                            isDarkMode ? 'text-white/80' : 'text-gray-700'
-                          }`}>
-                            <div className="flex items-center gap-2">
+
+                        {/* HUMIDITY INDEX */}
+                        <tr className={`border-b ${isDarkMode ? 'border-slate-850/50' : 'border-slate-100'}`}>
+                          <td className="py-4 px-3 text-left">
+                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
                               <Droplets className="h-4 w-4 text-cyan-500" />
-                              Humidity
+                              <span>Humidity Index</span>
                             </div>
                           </td>
-                          {compareHours.map((hourIndex) => (
-                            <td key={hourIndex} className="text-center py-3 px-2">
-                              <span className={`text-base sm:text-lg font-bold ${
-                                isDarkMode ? 'text-white' : 'text-gray-900'
-                              }`}>
-                                {hourlyData[hourIndex].humidity}%
+                          {compareHours.map((idx) => (
+                            <td key={idx} className="py-4 px-2 text-center">
+                              <span className="text-base font-black">{hourlyData[idx].humidity}%</span>
+                            </td>
+                          ))}
+                        </tr>
+
+                        {/* WIND VELOCITY */}
+                        <tr className={`border-b ${isDarkMode ? 'border-slate-850/50' : 'border-slate-100'}`}>
+                          <td className="py-4 px-3 text-left">
+                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
+                              <Wind className="h-4 w-4 text-emerald-500" />
+                              <span>Wind & Direction</span>
+                            </div>
+                          </td>
+                          {compareHours.map((idx) => (
+                            <td key={idx} className="py-4 px-2 text-center">
+                              <span className="text-base font-black">{Math.round(hourlyData[idx].wind_speed * 3.6)} km/h</span>
+                              <span className={`text-[10px] block opacity-75 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                {getWindDirection(hourlyData[idx].wind_deg)}
                               </span>
                             </td>
                           ))}
                         </tr>
-                        
-                        {/* Wind Row */}
-                        <tr className={`border-b ${isDarkMode ? 'border-white/5' : 'border-gray-100'}`}>
-                          <td className={`py-3 px-2 font-medium text-xs sm:text-sm ${
-                            isDarkMode ? 'text-white/80' : 'text-gray-700'
-                          }`}>
-                            <div className="flex items-center gap-2">
-                              <Wind className="h-4 w-4 text-green-500" />
-                              Wind
-                            </div>
-                          </td>
-                          {compareHours.map((hourIndex) => (
-                            <td key={hourIndex} className="text-center py-3 px-2">
-                              <div className="flex flex-col items-center">
-                                <span className={`text-base sm:text-lg font-bold ${
-                                  isDarkMode ? 'text-white' : 'text-gray-900'
-                                }`}>
-                                  {Math.round(hourlyData[hourIndex].wind_speed * 3.6)} km/h
-                                </span>
-                                <span className={`text-xs ${isDarkMode ? 'text-white/50' : 'text-gray-500'}`}>
-                                  {getWindDirection(hourlyData[hourIndex].wind_deg)}
-                                </span>
-                              </div>
-                            </td>
-                          ))}
-                        </tr>
-                        
-                        {/* Visibility Row */}
+
+                        {/* SATELLITE VISIBILITY */}
                         <tr>
-                          <td className={`py-3 px-2 font-medium text-xs sm:text-sm ${
-                            isDarkMode ? 'text-white/80' : 'text-gray-700'
-                          }`}>
-                            <div className="flex items-center gap-2">
+                          <td className="py-4 px-3 text-left">
+                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
                               <Eye className="h-4 w-4 text-purple-500" />
-                              Visibility
+                              <span>Satellite Visibility</span>
                             </div>
                           </td>
-                          {compareHours.map((hourIndex) => (
-                            <td key={hourIndex} className="text-center py-3 px-2">
-                              <span className={`text-base sm:text-lg font-bold ${
-                                isDarkMode ? 'text-white' : 'text-gray-900'
-                              }`}>
-                                {(hourlyData[hourIndex].visibility / 1000).toFixed(1)} km
-                              </span>
+                          {compareHours.map((idx) => (
+                            <td key={idx} className="py-4 px-2 text-center">
+                              <span className="text-base font-black">{(hourlyData[idx].visibility / 1000).toFixed(1)} km</span>
                             </td>
                           ))}
                         </tr>
@@ -1622,250 +1389,227 @@ export default function HourlyForecastPage() {
               </Card>
             )}
 
-            {/* Detailed Hour View */}
+            {/* Detailed Single Hour Inspector Drawer */}
             {selectedHour !== null && hourlyData[selectedHour] && (
-              <div className="mb-4 sm:mb-6">
-                <Card className={`${
-                  isDarkMode 
-                    ? 'bg-white/10 border-white/20 text-white' 
-                    : 'bg-white border-gray-200 text-gray-900'
-                } backdrop-blur-xl`}>
-                  <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
-                    <div className="space-y-1">
-                      <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm sm:text-base md:text-lg">
-                          <Activity className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-                          <span className="truncate">Detailed - {formatTime(hourlyData[selectedHour].dt)}</span>
-                        </div>
-                        <Button
-                          onClick={() => setSelectedHour(null)}
-                          size="sm"
-                          variant="ghost"
-                          className={isDarkMode ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-gray-900'}
-                        >
-                          ✕
-                        </Button>
+              <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
+                isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
+              }`}>
+                <CardHeader className="p-4 sm:p-6 pb-2 border-b border-slate-250/20 dark:border-slate-800/20 text-left">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
+                        <Activity className="h-5 w-5 text-indigo-500" />
+                        <span>Meteorological Details: {formatTime(hourlyData[selectedHour].dt)}</span>
                       </CardTitle>
-                      <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-white/60' : 'text-gray-500'} pl-6 sm:pl-7`}>
-                        {formatDate(hourlyData[selectedHour].dt)}
+                      <p className={`text-[10px] font-black uppercase tracking-wider mt-0.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {formatDate(hourlyData[selectedHour].dt)} Index Details
                       </p>
                     </div>
-                  </CardHeader>
-                  <CardContent className="px-3 sm:px-6 space-y-4">
-                    {/* Main Metrics */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-                      {[
-                        {
-                          icon: Thermometer,
-                          label: "Temperature",
-                          value: `${formatTemp(hourlyData[selectedHour].temp)}°${isCelsius ? 'C' : 'F'}`,
-                          subValue: `Feels like ${formatTemp(hourlyData[selectedHour].feels_like)}°`,
-                          color: "from-red-500 to-orange-500"
-                        },
-                        {
-                          icon: Droplets,
-                          label: "Humidity",
-                          value: `${hourlyData[selectedHour].humidity}%`,
-                          subValue: hourlyData[selectedHour].pop > 0 ? `Rain: ${Math.round(hourlyData[selectedHour].pop)}%` : 'No rain',
-                          color: "from-blue-500 to-cyan-500"
-                        },
-                        {
-                          icon: Wind,
-                          label: "Wind Speed",
-                          value: `${Math.round(hourlyData[selectedHour].wind_speed * 3.6)} km/h`,
-                          subValue: `${getWindDirection(hourlyData[selectedHour].wind_deg)} ${(hourlyData[selectedHour].wind_speed * 2.237).toFixed(1)} mph`,
-                          color: "from-green-500 to-teal-500"
-                        },
-                        {
-                          icon: Eye,
-                          label: "Visibility",
-                          value: `${(hourlyData[selectedHour].visibility / 1000).toFixed(1)} km`,
-                          subValue: `${(hourlyData[selectedHour].visibility * 0.000621371).toFixed(1)} mi`,
-                          color: "from-purple-500 to-pink-500"
-                        },
-                      ].map((stat, index) => {
-                        const Icon = stat.icon
-                        return (
-                          <Card
-                            key={index}
-                            className={`${
-                              isDarkMode 
-                                ? 'bg-white/5 border-white/10' 
-                                : 'bg-gray-50 border-gray-200'
-                            } backdrop-blur-lg hover:scale-105 transition-transform duration-300`}
-                          >
-                            <CardContent className="p-2.5 sm:p-3 md:p-4">
-                              <div className={`w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center mb-1.5 sm:mb-2 md:mb-3`}>
-                                <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />
-                              </div>
-                              <p className={`text-[10px] sm:text-xs md:text-sm ${isDarkMode ? 'text-white/60' : 'text-gray-500'} mb-0.5 sm:mb-1 truncate`}>
-                                {stat.label}
-                              </p>
-                              <p className={`text-base sm:text-lg md:text-xl lg:text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} truncate`}>
-                                {stat.value}
-                              </p>
-                              <p className={`text-[9px] sm:text-[10px] md:text-xs ${isDarkMode ? 'text-white/50' : 'text-gray-400'} mt-0.5 sm:mt-1 truncate`}>
-                                {stat.subValue}
-                              </p>
-                            </CardContent>
-                          </Card>
-                        )
-                      })}
-                    </div>
-
-                    {/* Additional Metrics */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {hourlyData[selectedHour].pressure && (
-                        <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}>
-                          <div className="flex items-center gap-2 mb-2">
-                            <Gauge className={`h-4 w-4 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
-                            <span className={`text-xs ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>Pressure</span>
+                    <Button
+                      onClick={() => setSelectedHour(null)}
+                      size="icon"
+                      variant="ghost"
+                      className={`h-8 w-8 rounded-xl ${isDarkMode ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'}`}
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      {
+                        icon: Thermometer,
+                        label: "Temperature",
+                        value: `${formatTemp(hourlyData[selectedHour].temp)}°${isCelsius ? 'C' : 'F'}`,
+                        subValue: `Feels like ${formatTemp(hourlyData[selectedHour].feels_like)}°`,
+                        color: "from-red-500 to-orange-500"
+                      },
+                      {
+                        icon: Droplets,
+                        label: "Humidity Index",
+                        value: `${hourlyData[selectedHour].humidity}%`,
+                        subValue: hourlyData[selectedHour].pop > 0 ? `Rain likelihood: ${Math.round(hourlyData[selectedHour].pop)}%` : 'Dry conditions',
+                        color: "from-blue-500 to-cyan-500"
+                      },
+                      {
+                        icon: Wind,
+                        label: "Wind Velocity",
+                        value: `${Math.round(hourlyData[selectedHour].wind_speed * 3.6)} km/h`,
+                        subValue: `Wind direction: ${getWindDirection(hourlyData[selectedHour].wind_deg)}`,
+                        color: "from-green-500 to-teal-500"
+                      },
+                      {
+                        icon: Eye,
+                        label: "Visibility Index",
+                        value: `${(hourlyData[selectedHour].visibility / 1000).toFixed(1)} km`,
+                        subValue: `Horizontal clarity`,
+                        color: "from-purple-500 to-pink-500"
+                      },
+                    ].map((stat, idx) => {
+                      const Icon = stat.icon
+                      return (
+                        <div
+                          key={idx}
+                          className={`p-4 rounded-2xl border text-left flex items-start gap-3.5 ${
+                            isDarkMode 
+                              ? 'bg-slate-950/40 border-slate-900/80 hover:bg-slate-950/60' 
+                              : 'bg-slate-50 border-slate-150 hover:bg-slate-100/50'
+                          } transition-all duration-300 hover:scale-[1.02]`}
+                        >
+                          <div className={`p-2 rounded-xl bg-gradient-to-r ${stat.color} text-white flex-shrink-0 shadow-md shadow-indigo-500/5`}>
+                            <Icon className="h-4 w-4" />
                           </div>
-                          <p className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {hourlyData[selectedHour].pressure} hPa
-                          </p>
-                        </div>
-                      )}
-                      
-                      {hourlyData[selectedHour].clouds !== undefined && (
-                        <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}>
-                          <div className="flex items-center gap-2 mb-2">
-                            <Cloud className={`h-4 w-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
-                            <span className={`text-xs ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>Cloud Cover</span>
-                          </div>
-                          <p className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {hourlyData[selectedHour].clouds}%
-                          </p>
-                        </div>
-                      )}
-
-                      {hourlyData[selectedHour].dew_point && (
-                        <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}>
-                          <div className="flex items-center gap-2 mb-2">
-                            <Droplets className={`h-4 w-4 ${isDarkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
-                            <span className={`text-xs ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>Dew Point</span>
-                          </div>
-                          <p className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {formatTemp(hourlyData[selectedHour].dew_point)}°
-                          </p>
-                        </div>
-                      )}
-
-                      {(() => {
-                        const comfort = getComfortLevel(hourlyData[selectedHour].temp, hourlyData[selectedHour].humidity)
-                        return (
-                          <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}>
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-lg">{comfort.emoji}</span>
-                              <span className={`text-xs ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>Comfort</span>
-                            </div>
-                            <p className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                              {comfort.level}
+                          <div className="min-w-0">
+                            <p className={`text-[9px] font-black uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                              {stat.label}
+                            </p>
+                            <p className={`text-lg font-black mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                              {stat.value}
+                            </p>
+                            <p className={`text-[10px] font-semibold mt-1 truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                              {stat.subValue}
                             </p>
                           </div>
-                        )
-                      })()}
-                    </div>
+                        </div>
+                      )
+                    })}
+                  </div>
 
-                    {/* Weather Description */}
-                    <div className={`p-4 rounded-xl ${
-                      isDarkMode 
-                        ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20' 
-                        : 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200'
-                    }`}>
-                      <div className="flex items-center gap-3">
-                        {(() => {
-                          const WeatherIcon = weatherIcons[hourlyData[selectedHour].weather[0]?.main as keyof typeof weatherIcons] || Cloud
-                          return <WeatherIcon className={`h-8 w-8 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                        })()}
-                        <div>
-                          <p className={`text-lg font-semibold capitalize ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {hourlyData[selectedHour].weather[0]?.main}
-                          </p>
-                          <p className={`text-sm capitalize ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>
-                            {hourlyData[selectedHour].weather[0]?.description}
+                  {/* Grid elements for pressure and clouds */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                    {hourlyData[selectedHour].pressure && (
+                      <div className={`p-3.5 rounded-2xl border text-left ${isDarkMode ? 'bg-slate-950/40 border-slate-900/85' : 'bg-slate-50 border-slate-150'}`}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <Gauge className={`h-4 w-4 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
+                          <span className={`text-[10px] font-black uppercase tracking-wide ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Pressure</span>
+                        </div>
+                        <p className={`text-base font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                          {hourlyData[selectedHour].pressure} hPa
+                        </p>
+                      </div>
+                    )}
+                    
+                    {hourlyData[selectedHour].clouds !== undefined && (
+                      <div className={`p-3.5 rounded-2xl border text-left ${isDarkMode ? 'bg-slate-950/40 border-slate-900/85' : 'bg-slate-50 border-slate-150'}`}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <Cloud className={`h-4 w-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                          <span className={`text-[10px] font-black uppercase tracking-wide ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Cloud Cover</span>
+                        </div>
+                        <p className={`text-base font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                          {hourlyData[selectedHour].clouds}%
+                        </p>
+                      </div>
+                    )}
+
+                    {hourlyData[selectedHour].dew_point && (
+                      <div className={`p-3.5 rounded-2xl border text-left ${isDarkMode ? 'bg-slate-950/40 border-slate-900/85' : 'bg-slate-50 border-slate-150'}`}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <Droplets className={`h-4 w-4 ${isDarkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                          <span className={`text-[10px] font-black uppercase tracking-wide ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Dew Point</span>
+                        </div>
+                        <p className={`text-base font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                          {formatTemp(hourlyData[selectedHour].dew_point)}°
+                        </p>
+                      </div>
+                    )}
+
+                    {(() => {
+                      const comfort = getComfortLevel(hourlyData[selectedHour].temp, hourlyData[selectedHour].humidity)
+                      return (
+                        <div className={`p-3.5 rounded-2xl border text-left ${isDarkMode ? 'bg-slate-950/40 border-slate-900/85' : 'bg-slate-50 border-slate-150'}`}>
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <span className="text-sm">{comfort.emoji}</span>
+                            <span className={`text-[10px] font-black uppercase tracking-wide ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Comfort Index</span>
+                          </div>
+                          <p className={`text-base font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                            {comfort.level}
                           </p>
                         </div>
-                      </div>
+                      )
+                    })()}
+                  </div>
+
+                  {/* Weather Status Box */}
+                  <div className={`p-4 rounded-2xl border flex items-center gap-3.5 text-left ${
+                    isDarkMode 
+                      ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/20 text-white' 
+                      : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-150 text-slate-805'
+                  }`}>
+                    {(() => {
+                      const WeatherIcon = weatherIcons[hourlyData[selectedHour].weather[0]?.main as keyof typeof weatherIcons] || Cloud
+                      return <WeatherIcon className={`h-8 w-8 flex-shrink-0 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                    })()}
+                    <div>
+                      <p className={`text-sm font-black capitalize ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {hourlyData[selectedHour].weather[0]?.main}
+                      </p>
+                      <p className={`text-xs font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-655'}`}>
+                        Weather Status: {hourlyData[selectedHour].weather[0]?.description}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
 
-            {/* Sun Times */}
+            {/* Sunrise and Sunset times */}
             {weatherData?.sys && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                {/* Sunrise Card */}
-                <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-yellow-600 via-amber-700 to-orange-800' : 'from-yellow-400 via-amber-500 to-orange-600'} text-white cursor-pointer active:scale-100`}>
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-orange-300/30 via-yellow-200/20 to-amber-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                  <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-                  <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-                  <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                  
-                  <div className="relative z-10">
-                    <CardHeader className="p-3 sm:p-4">
-                      <CardTitle className="flex items-center gap-2 sm:gap-3">
-                        <div className="p-2 sm:p-2.5 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-lg ring-1 ring-white/25 group-hover:ring-2 group-hover:ring-white/50">
-                          <Sunrise className="h-5 w-5 sm:h-6 sm:w-6 text-white drop-shadow group-hover:drop-shadow-lg" />
-                        </div>
-                        <span className="font-bold text-base sm:text-lg text-white group-hover:scale-105 transition-transform origin-left">Sunrise</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3 sm:p-4 pt-0">
-                      <div className="group-hover:scale-110 transition-transform origin-left">
-                        <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg mb-1 sm:mb-2">
-                          {new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true
-                          })}
-                        </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Sunrise card */}
+                <div className={`p-5 rounded-3xl border text-left shadow-xl relative overflow-hidden flex items-center justify-between transition-transform duration-300 hover:scale-[1.02] ${
+                  isDarkMode 
+                    ? 'bg-gradient-to-br from-yellow-950/40 to-amber-950/30 border-yellow-900/50 text-yellow-100'
+                    : 'bg-gradient-to-br from-yellow-50/90 to-amber-50/80 border-yellow-100 text-yellow-950'
+                }`}>
+                  <div className="relative z-10 text-left">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-1.5 rounded-xl bg-white/20 text-white flex-shrink-0 shadow">
+                        <Sunrise className="h-4 w-4" />
                       </div>
-                      <p className="text-xs sm:text-sm text-white/80 font-medium group-hover:text-white/95 transition-colors">
-                        Morning begins
-                      </p>
-                    </CardContent>
+                      <span className="text-[10px] font-black uppercase tracking-wider opacity-75">Sunrise Phase</span>
+                    </div>
+                    <h2 className="text-3xl font-black mt-1 leading-none">
+                      {new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </h2>
+                    <p className="text-xs font-semibold opacity-75 mt-2">
+                      Morning twilight begins
+                    </p>
                   </div>
-                </Card>
+                </div>
 
-                {/* Sunset Card */}
-                <Card className={`relative overflow-hidden border-0 ${isDarkMode ? 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.7)]' : 'shadow-[0_18px_55px_-25px_rgba(0,0,0,0.45)]'} hover:shadow-[0_30px_90px_-25px_rgba(0,0,0,0.6)] transition-all duration-500 hover:-translate-y-2 hover:scale-105 group rounded-2xl backdrop-blur-2xl bg-gradient-to-br ${isDarkMode ? 'from-indigo-600 via-purple-700 to-pink-800' : 'from-indigo-400 via-purple-500 to-pink-600'} text-white cursor-pointer active:scale-100`}>
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-300/30 via-pink-200/20 to-indigo-300/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
-                  <div className={`absolute inset-0 ${isDarkMode ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.15),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_45%)]'}`} />
-                  <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/10' : 'bg-white/5'} mix-blend-overlay`} />
-                  <div className={`absolute inset-0 border ${isDarkMode ? 'border-white/15' : 'border-white/20'} rounded-2xl group-hover:border-white/40 transition-colors`} />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                  
-                  <div className="relative z-10">
-                    <CardHeader className="p-3 sm:p-4">
-                      <CardTitle className="flex items-center gap-2 sm:gap-3">
-                        <div className="p-2 sm:p-2.5 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-lg ring-1 ring-white/25 group-hover:ring-2 group-hover:ring-white/50">
-                          <Sunset className="h-5 w-5 sm:h-6 sm:w-6 text-white drop-shadow group-hover:drop-shadow-lg" />
-                        </div>
-                        <span className="font-bold text-base sm:text-lg text-white group-hover:scale-105 transition-transform origin-left">Sunset</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3 sm:p-4 pt-0">
-                      <div className="group-hover:scale-110 transition-transform origin-left">
-                        <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg mb-1 sm:mb-2">
-                          {new Date(weatherData.sys.sunset * 1000).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true
-                          })}
-                        </p>
+                {/* Sunset card */}
+                <div className={`p-5 rounded-3xl border text-left shadow-xl relative overflow-hidden flex items-center justify-between transition-transform duration-300 hover:scale-[1.02] ${
+                  isDarkMode 
+                    ? 'bg-gradient-to-br from-indigo-950/40 to-purple-950/30 border-indigo-900/50 text-indigo-100'
+                    : 'bg-gradient-to-br from-indigo-50/90 to-purple-50/80 border-indigo-100 text-indigo-950'
+                }`}>
+                  <div className="relative z-10 text-left">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-1.5 rounded-xl bg-white/20 text-white flex-shrink-0 shadow">
+                        <Sunset className="h-4 w-4" />
                       </div>
-                      <p className="text-xs sm:text-sm text-white/80 font-medium group-hover:text-white/95 transition-colors">
-                        Evening begins
-                      </p>
-                    </CardContent>
+                      <span className="text-[10px] font-black uppercase tracking-wider opacity-75">Sunset Phase</span>
+                    </div>
+                    <h2 className="text-3xl font-black mt-1 leading-none">
+                      {new Date(weatherData.sys.sunset * 1000).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </h2>
+                    <p className="text-xs font-semibold opacity-75 mt-2">
+                      Evening twilight begins
+                    </p>
                   </div>
-                </Card>
+                </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
 
@@ -1881,69 +1625,6 @@ export default function HourlyForecastPage() {
           }
         }
         
-        @keyframes shimmer {
-          0% {
-            background-position: -1000px 0;
-          }
-          100% {
-            background-position: 1000px 0;
-          }
-        }
-        
-        @keyframes pulse-glow {
-          0%, 100% {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-          }
-          50% {
-            box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
-          }
-        }
-        
-        @keyframes slide-in-right {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        
-        @keyframes fade-in-up {
-          from {
-            transform: translateY(20px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        
-        .animate-shimmer {
-          animation: shimmer 2s infinite linear;
-          background: linear-gradient(
-            to right,
-            transparent 0%,
-            rgba(255, 255, 255, 0.1) 50%,
-            transparent 100%
-          );
-          background-size: 1000px 100%;
-        }
-        
-        .animate-pulse-glow {
-          animation: pulse-glow 2s ease-in-out infinite;
-        }
-        
-        .animate-slide-in {
-          animation: slide-in-right 0.5s ease-out;
-        }
-        
-        .animate-fade-in-up {
-          animation: fade-in-up 0.6s ease-out;
-        }
-        
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
@@ -1952,24 +1633,8 @@ export default function HourlyForecastPage() {
           scrollbar-width: none;
         }
         
-        /* Smooth transitions for all interactive elements */
         button, a, [role="button"] {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        /* Hover effects */
-        button:hover:not(:disabled) {
-          transform: translateY(-2px);
-        }
-        
-        button:active:not(:disabled) {
-          transform: translateY(0);
-        }
-        
-        /* Glass morphism effect */
-        .backdrop-blur-xl {
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
         }
       `}</style>
     </div>
