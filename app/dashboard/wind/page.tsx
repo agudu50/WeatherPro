@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -57,7 +59,7 @@ export default function WindPage() {
   const [windData, setWindData] = useState<WindData | null>(null)
   const [loading, setLoading] = useState(true)
   const [unit, setUnit] = useState("kmh")
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const [searchCity, setSearchCity] = useState("")
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationStatus, setLocationStatus] = useState<'loading' | 'success' | 'error' | 'denied'>('loading')
@@ -219,18 +221,14 @@ export default function WindPage() {
     // Load dark mode preference
     const savedDarkMode = localStorage.getItem("windDarkMode")
     if (savedDarkMode !== null) {
-      setIsDarkMode(savedDarkMode === "true")
+      
     }
 
     // Get user location
     getUserLocation()
   }, [])
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem("windDarkMode", String(newDarkMode))
-  }
+  
 
   const convertSpeed = (speed: number) => {
     if (unit === "mph") return Math.round(speed * 0.621371)

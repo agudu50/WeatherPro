@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -64,7 +66,7 @@ export default function WeeklyForecastPage() {
   const [loading, setLoading] = useState(true)
   const [temperatureUnit, setTemperatureUnit] = useState("celsius")
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const [searchCity, setSearchCity] = useState("")
   const [locationStatus, setLocationStatus] = useState<'loading' | 'success' | 'error' | 'denied'>('loading')
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lon: number } | null>(null)
@@ -270,18 +272,14 @@ export default function WeeklyForecastPage() {
     // Load dark mode preference
     const savedDarkMode = localStorage.getItem("weeklyForecastDarkMode")
     if (savedDarkMode !== null) {
-      setIsDarkMode(savedDarkMode === "true")
+      
     }
 
     // Get user location
     getUserLocation()
   }, [])
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem("weeklyForecastDarkMode", String(newDarkMode))
-  }
+  
 
   const convertTemperature = (temp: number) => {
     if (temperatureUnit === "fahrenheit") {

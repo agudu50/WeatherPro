@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect } from "react"
 import {
   Area,

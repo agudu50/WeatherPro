@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -69,7 +71,7 @@ export default function WeatherMapPage() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, delay: number}>>([])
   const [nearbyLocations, setNearbyLocations] = useState<Array<{name: string, lat: number, lon: number, temp: number}>>([])
-  const [isDarkMode, setIsDarkMode] = useState(false) // Default to light mode
+  const { isDarkMode, toggleDarkMode } = useTheme() // Default to light mode
   const [locationStatus, setLocationStatus] = useState<'loading' | 'success' | 'error' | 'denied'>('loading')
   const [showLayersMobile, setShowLayersMobile] = useState(false)
   const [showDetailsMobile, setShowDetailsMobile] = useState(false)
@@ -119,7 +121,7 @@ export default function WeatherMapPage() {
     const savedDarkMode = localStorage.getItem("darkMode")
     if (savedDarkMode !== null) {
       const isDark = savedDarkMode === "true"
-      setIsDarkMode(isDark)
+      
       if (isDark) {
         document.documentElement.classList.add('dark')
       } else {
@@ -154,16 +156,7 @@ export default function WeatherMapPage() {
     return () => clearInterval(refreshTimer)
   }, [currentLocation])
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem("darkMode", String(newDarkMode))
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }
+  
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {

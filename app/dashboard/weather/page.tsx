@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -38,7 +40,7 @@ export default function WeatherDashboard() {
   const [error, setError] = useState("")
   const [searchCity, setSearchCity] = useState("")
   const [isCelsius, setIsCelsius] = useState(true)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const [lastCity, setLastCity] = useState("")
 
   // API Configuration
@@ -317,16 +319,13 @@ export default function WeatherDashboard() {
   }
 
   // Toggle Dark Mode
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode)
-    document.documentElement.classList.toggle('dark')
-  }
+  
 
   // Set current date on load
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode')
     if (savedDarkMode === 'true') {
-      setIsDarkMode(true)
+      
       document.documentElement.classList.add('dark')
     }
   }, [])

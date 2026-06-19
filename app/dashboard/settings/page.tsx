@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -123,7 +125,7 @@ const defaultSettings: SettingsData = {
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SettingsData>(defaultSettings)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const [saved, setSaved] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -144,7 +146,7 @@ export default function SettingsPage() {
           weather: { ...defaultSettings.weather, ...parsed.weather },
           advanced: { ...defaultSettings.advanced, ...parsed.advanced }
         })
-        setIsDarkMode(parsed.display?.darkMode || false)
+        
       } catch (error) {
         console.error("Error loading settings:", error)
         setSettings(defaultSettings)
@@ -154,7 +156,7 @@ export default function SettingsPage() {
       const savedDarkMode = localStorage.getItem("weatherAppDarkMode")
       if (savedDarkMode !== null) {
         const darkMode = savedDarkMode === "true"
-        setIsDarkMode(darkMode)
+        
         setSettings(prev => ({
           ...prev,
           display: {
@@ -177,22 +179,12 @@ export default function SettingsPage() {
     window.dispatchEvent(new Event('settingsUpdated'))
   }
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !settings.display.darkMode
-    setIsDarkMode(newDarkMode)
-    setSettings(prev => ({
-      ...prev,
-      display: {
-        ...prev.display,
-        darkMode: newDarkMode
-      }
-    }))
-  }
+  
 
   const resetToDefaults = () => {
     if (confirm("Are you sure you want to reset all settings to default values?")) {
       setSettings(defaultSettings)
-      setIsDarkMode(false)
+      
       localStorage.removeItem("weatherAppSettings")
       localStorage.removeItem("weatherAppDarkMode")
       setSaved(true)
@@ -769,7 +761,7 @@ export default function SettingsPage() {
               <Switch
                 checked={settings.display.darkMode}
                 onCheckedChange={(checked) => {
-                  setIsDarkMode(checked)
+                  
                   setSettings(prev => ({
                     ...prev,
                     display: { ...prev.display, darkMode: checked }

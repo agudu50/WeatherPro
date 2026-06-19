@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -58,7 +60,7 @@ interface UVData {
 export default function UVIndexPage() {
   const [uvData, setUvData] = useState<UVData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const [searchCity, setSearchCity] = useState("")
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationStatus, setLocationStatus] = useState<'loading' | 'success' | 'error' | 'denied'>('loading')
@@ -270,18 +272,14 @@ export default function UVIndexPage() {
     // Load dark mode preference
     const savedDarkMode = localStorage.getItem("uvIndexDarkMode")
     if (savedDarkMode !== null) {
-      setIsDarkMode(savedDarkMode === "true")
+      
     }
 
     // Get user location
     getUserLocation()
   }, [])
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem("uvIndexDarkMode", String(newDarkMode))
-  }
+  
 
   const getUVColor = (uv: number, dark: boolean): string => {
     if (uv <= 2) return dark ? "text-green-300" : "text-green-600"

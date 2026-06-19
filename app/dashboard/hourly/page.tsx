@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -99,7 +101,7 @@ export default function HourlyForecastPage() {
   const [selectedHour, setSelectedHour] = useState<number | null>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isCelsius, setIsCelsius] = useState(true)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, delay: number}>>([])
   const [showComparison, setShowComparison] = useState(false)
   const [chartMetric, setChartMetric] = useState<'temp' | 'humidity' | 'wind' | 'pressure'>('temp')
@@ -120,7 +122,7 @@ export default function HourlyForecastPage() {
     const savedDarkMode = localStorage.getItem("darkMode")
     if (savedDarkMode !== null) {
       const isDark = savedDarkMode === "true"
-      setIsDarkMode(isDark)
+      
       if (isDark) {
         document.documentElement.classList.add('dark')
       } else {
@@ -148,16 +150,7 @@ export default function HourlyForecastPage() {
     }
   }, [])
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem("darkMode", String(newDarkMode))
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }
+  
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {

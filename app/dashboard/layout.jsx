@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { ThemeProvider, useTheme } from "@/lib/ThemeContext"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -101,35 +102,12 @@ const quickActions = [
   { name: "Bookmarks", icon: Bookmark, action: "bookmarks" },
 ]
 
-export default function DashboardLayout({ children }) {
+function DashboardLayoutContent({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const pathname = usePathname()
-
-  // Sync dark mode state from localStorage on mount
-  useEffect(() => {
-    const savedDarkMode = localStorage.getItem("darkMode")
-    const isDark = savedDarkMode === "true"
-    setIsDarkMode(isDark)
-    if (isDark) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [])
-
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem("darkMode", String(newDarkMode))
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }
 
   // Get all navigation items for search
   const allNavItems = navigationGroups.flatMap(group => group.items)
@@ -520,5 +498,13 @@ export default function DashboardLayout({ children }) {
         </div>
       </div>
     </TooltipProvider>
+  )
+}
+
+export default function DashboardLayout({ children }) {
+  return (
+    <ThemeProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </ThemeProvider>
   )
 }

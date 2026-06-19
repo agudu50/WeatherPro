@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -65,7 +67,7 @@ export default function PrecipitationPage() {
   const [loading, setLoading] = useState(true)
   const [unit, setUnit] = useState("mm")
   const [viewMode, setViewMode] = useState("hourly")
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const [searchCity, setSearchCity] = useState("")
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationStatus, setLocationStatus] = useState<'loading' | 'success' | 'error' | 'denied'>('loading')
@@ -254,18 +256,14 @@ export default function PrecipitationPage() {
     // Load dark mode preference
     const savedDarkMode = localStorage.getItem("precipitationDarkMode")
     if (savedDarkMode !== null) {
-      setIsDarkMode(savedDarkMode === "true")
+      
     }
 
     // Get user location
     getUserLocation()
   }, [])
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem("precipitationDarkMode", String(newDarkMode))
-  }
+  
 
   const convertPrecipitation = (amount: number) => {
     if (unit === "inches") {

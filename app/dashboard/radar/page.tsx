@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -51,7 +53,7 @@ export default function RadarPage() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentFrame, setCurrentFrame] = useState(0)
   const [activeView, setActiveView] = useState("clouds")
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(true)
   const [searchCity, setSearchCity] = useState("")
@@ -177,7 +179,7 @@ export default function RadarPage() {
     // Load dark mode preference
     const savedDarkMode = localStorage.getItem("radarDarkMode")
     if (savedDarkMode !== null) {
-      setIsDarkMode(savedDarkMode === "true")
+      
     }
 
     // Get user location
@@ -202,11 +204,7 @@ export default function RadarPage() {
     }
   }, [isPlaying])
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem("radarDarkMode", String(newDarkMode))
-  }
+  
 
   const currentView = getCurrentView()
 

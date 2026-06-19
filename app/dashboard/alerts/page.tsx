@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -59,14 +61,14 @@ export default function AlertsPage() {
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationStatus, setLocationStatus] = useState<'loading' | 'success' | 'error' | 'denied'>('loading')
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
 
   // Get user's location on component mount
   useEffect(() => {
     // Load dark mode preference
     const savedDarkMode = localStorage.getItem("weatherAlertsDarkMode")
     if (savedDarkMode !== null) {
-      setIsDarkMode(savedDarkMode === "true")
+      
     }
 
     if (navigator.geolocation) {
@@ -91,11 +93,7 @@ export default function AlertsPage() {
     }
   }, [])
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem("weatherAlertsDarkMode", String(newDarkMode))
-  }
+  
 
   const fetchAlerts = async (lat: number, lon: number) => {
     setLoading(true)

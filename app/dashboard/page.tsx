@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import React, { useState, useEffect, useRef } from "react"
 import {
   Cloud,
@@ -333,7 +335,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isCelsius, setIsCelsius] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const [weatherMessage, setWeatherMessage] = useState("🌞 It's getting warm! Stay hydrated.")
   const [lastUpdated, setLastUpdated] = useState<Date | null>(new Date("2026-06-10T22:08:50Z"))
   const [recommendations, setRecommendations] = useState<string[]>([
@@ -489,7 +491,7 @@ export default function DashboardPage() {
     setIsLoaded(true)
     
     const savedDarkMode = localStorage.getItem("darkMode") === "true"
-    setIsDarkMode(savedDarkMode)
+    
     if (savedDarkMode) {
       document.documentElement.classList.add('dark')
     } else {
@@ -794,16 +796,7 @@ export default function DashboardPage() {
     setIsCelsius(!isCelsius)
   }
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem("darkMode", String(newDarkMode))
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }
+  
 
   const handleVoiceSearch = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {

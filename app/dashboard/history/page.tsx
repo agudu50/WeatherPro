@@ -1,5 +1,7 @@
 "use client"
 
+import { useTheme } from "@/lib/ThemeContext"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -66,7 +68,7 @@ interface HistoryData {
 export default function HistoryPage() {
   const [historyData, setHistoryData] = useState<HistoryData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const [selectedPeriod, setSelectedPeriod] = useState("week")
   const [selectedMetric, setSelectedMetric] = useState("temperature")
   const [searchCity, setSearchCity] = useState("")
@@ -465,18 +467,14 @@ export default function HistoryPage() {
     // Load dark mode preference
     const savedDarkMode = localStorage.getItem("weatherHistoryDarkMode")
     if (savedDarkMode !== null) {
-      setIsDarkMode(savedDarkMode === "true")
+      
     }
 
     // Get user location
     getUserLocation()
   }, [])
 
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem("weatherHistoryDarkMode", String(newDarkMode))
-  }
+  
 
   const getTrendIcon = (trend: string, dark: boolean) => {
     const color = trend === 'increasing' ? (dark ? 'text-red-300' : 'text-red-600') :
