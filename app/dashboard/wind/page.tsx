@@ -301,7 +301,7 @@ export default function WindPage() {
                   <MapPin className="h-4 w-4 text-rose-500" />
                   <span>{windData.current.location}, {windData.current.country}</span>
                   {locationStatus === 'success' && (
-                    <Badge variant="outline" className={`text-[10px] font-bold px-2 py-0.5 border ${
+                    <Badge variant="outline" className={`text-xs font-bold px-2 py-0.5 border ${
                       isDarkMode 
                         ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
                         : 'bg-blue-50 text-blue-700 border-blue-200'
@@ -436,7 +436,7 @@ export default function WindPage() {
                 : 'bg-white border-slate-200 text-slate-900'
             } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                <CardTitle className="text-base font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
                   <Compass className="h-4 w-4 text-blue-500" />
                   <span>Compass Dial</span>
                 </CardTitle>
@@ -480,16 +480,16 @@ export default function WindPage() {
                     })}
 
                     {/* Cardinal Labels */}
-                    <text x="100" y="24" textAnchor="middle" dominantBaseline="central" className="text-[12px] font-black fill-slate-800 dark:fill-slate-100">N</text>
-                    <text x="176" y="100" textAnchor="middle" dominantBaseline="central" className="text-[12px] font-black fill-slate-800 dark:fill-slate-100">E</text>
-                    <text x="100" y="176" textAnchor="middle" dominantBaseline="central" className="text-[12px] font-black fill-slate-800 dark:fill-slate-100">S</text>
-                    <text x="24" y="100" textAnchor="middle" dominantBaseline="central" className="text-[12px] font-black fill-slate-800 dark:fill-slate-100">W</text>
+                    <text x="100" y="24" textAnchor="middle" dominantBaseline="central" className="text-[14px] font-black fill-slate-800 dark:fill-slate-100">N</text>
+                    <text x="176" y="100" textAnchor="middle" dominantBaseline="central" className="text-[14px] font-black fill-slate-800 dark:fill-slate-100">E</text>
+                    <text x="100" y="176" textAnchor="middle" dominantBaseline="central" className="text-[14px] font-black fill-slate-800 dark:fill-slate-100">S</text>
+                    <text x="24" y="100" textAnchor="middle" dominantBaseline="central" className="text-[14px] font-black fill-slate-800 dark:fill-slate-100">W</text>
 
                     {/* Ordinal Labels */}
-                    <text x="151" y="49" textAnchor="middle" dominantBaseline="central" className="text-[9px] font-extrabold fill-slate-400 dark:fill-slate-600">NE</text>
-                    <text x="151" y="151" textAnchor="middle" dominantBaseline="central" className="text-[9px] font-extrabold fill-slate-400 dark:fill-slate-600">SE</text>
-                    <text x="49" y="151" textAnchor="middle" dominantBaseline="central" className="text-[9px] font-extrabold fill-slate-400 dark:fill-slate-600">SW</text>
-                    <text x="49" y="49" textAnchor="middle" dominantBaseline="central" className="text-[9px] font-extrabold fill-slate-400 dark:fill-slate-600">NW</text>
+                    <text x="151" y="49" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-extrabold fill-slate-400 dark:fill-slate-600">NE</text>
+                    <text x="151" y="151" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-extrabold fill-slate-400 dark:fill-slate-600">SE</text>
+                    <text x="49" y="151" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-extrabold fill-slate-400 dark:fill-slate-600">SW</text>
+                    <text x="49" y="49" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-extrabold fill-slate-400 dark:fill-slate-600">NW</text>
 
                     {/* Active Rotation Indicator Arrow */}
                     <g 
@@ -529,13 +529,13 @@ export default function WindPage() {
                       className="fill-white dark:fill-slate-950 stroke-slate-200 dark:stroke-slate-800" 
                       strokeWidth="1.5" 
                     />
-                    <text x="100" y="93" textAnchor="middle" dominantBaseline="central" className="text-xl font-black fill-slate-900 dark:fill-white">
+                    <text x="100" y="92" textAnchor="middle" dominantBaseline="central" className="text-2xl font-black fill-slate-900 dark:fill-white">
                       {convertSpeed(windData.current.speed)}
                     </text>
-                    <text x="100" y="108" textAnchor="middle" dominantBaseline="central" className="text-[9px] font-bold uppercase tracking-wider fill-slate-400 dark:fill-slate-500">
+                    <text x="100" y="109" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-bold uppercase tracking-wider fill-slate-400 dark:fill-slate-500">
                       {getSpeedUnit()}
                     </text>
-                    <text x="100" y="120" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-extrabold fill-blue-500 dark:fill-blue-400">
+                    <text x="100" y="121" textAnchor="middle" dominantBaseline="central" className="text-xs font-extrabold fill-blue-500 dark:fill-blue-400">
                       {getDirectionName(windData.current.direction)}
                     </text>
                   </svg>
@@ -543,10 +543,10 @@ export default function WindPage() {
                 
                 {/* Secondary metadata summary */}
                 <div className="text-center">
-                  <div className="text-base font-bold text-slate-800 dark:text-slate-200">
+                  <div className="text-lg font-bold text-slate-800 dark:text-slate-200">
                     Direction {windData.current.direction}°
                   </div>
-                  <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                  <div className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
                     Angle measured clockwise from North
                   </div>
                 </div>
@@ -561,7 +561,7 @@ export default function WindPage() {
                 : 'bg-white border-slate-200 text-slate-900'
             } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                <CardTitle className="text-base font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
                   <Activity className="h-4 w-4 text-blue-500" />
                   <span>Real-time Wind Metrics</span>
                 </CardTitle>
@@ -575,7 +575,7 @@ export default function WindPage() {
                   <div className={`p-5 rounded-2xl border ${
                     isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
                   } flex flex-col items-center text-center justify-between min-h-[190px] hover:border-blue-500/30 transition-all duration-300`}>
-                    <div className="flex items-center gap-1.5 self-start text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    <div className="flex items-center gap-1.5 self-start text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                       <Compass className="h-4 w-4 text-blue-500" />
                       <span>Beaufort Scale</span>
                     </div>
@@ -602,20 +602,20 @@ export default function WindPage() {
                           strokeLinecap="round"
                           transform="rotate(-90 50 50)"
                         />
-                        <text x="50" y="52" textAnchor="middle" dominantBaseline="central" className="text-2xl font-black fill-slate-900 dark:fill-white">
+                        <text x="50" y="52" textAnchor="middle" dominantBaseline="central" className="text-3xl font-black fill-slate-900 dark:fill-white">
                           {windData.current.beaufortScale}
                         </text>
-                        <text x="50" y="70" textAnchor="middle" dominantBaseline="central" className="text-[8px] font-bold uppercase tracking-wider fill-slate-400 dark:fill-slate-500">
+                        <text x="50" y="70" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-bold uppercase tracking-wider fill-slate-400 dark:fill-slate-500">
                           Force
                         </text>
                       </svg>
                     </div>
                     
                     <div>
-                      <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
                         {getBeaufortDescription(windData.current.beaufortScale)}
                       </div>
-                      <div className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">
+                      <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                         Range F0 to F12
                       </div>
                     </div>
@@ -630,17 +630,17 @@ export default function WindPage() {
                       <div className={`p-5 rounded-2xl border ${
                         isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
                       } flex flex-col justify-between min-h-[190px] hover:border-rose-500/30 transition-all duration-300`}>
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                           <Activity className="h-4 w-4 text-rose-500" />
                           <span>Wind Gusts</span>
                         </div>
                         
                         <div className="my-2 text-left">
                           <div className="flex items-baseline justify-between mb-1">
-                            <span className="text-3xl font-black text-rose-500 tracking-tight">
+                            <span className="text-4xl font-black text-rose-500 tracking-tight">
                               {convertSpeed(gustVal)}
                             </span>
-                            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">
+                            <span className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase">
                               {getSpeedUnit()}
                             </span>
                           </div>
@@ -652,7 +652,7 @@ export default function WindPage() {
                             />
                           </div>
                           
-                          <div className="flex justify-between text-[8px] text-slate-400 dark:text-slate-500 font-bold">
+                          <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold">
                             <span>0</span>
                             <span>60 Gale</span>
                             <span>120 Max</span>
@@ -660,7 +660,7 @@ export default function WindPage() {
                         </div>
                         
                         <div>
-                          <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-md border ${
+                          <span className={`inline-block text-xs font-bold px-2.5 py-1 rounded-md border ${
                             gustVal > 60 
                               ? isDarkMode ? 'bg-rose-500/10 text-rose-450 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200'
                               : gustVal > 30
@@ -684,17 +684,17 @@ export default function WindPage() {
                       <div className={`p-5 rounded-2xl border ${
                         isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
                       } flex flex-col justify-between min-h-[190px] hover:border-purple-500/30 transition-all duration-300`}>
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                           <Gauge className="h-4 w-4 text-purple-500" />
                           <span>Atm. Pressure</span>
                         </div>
                         
                         <div className="my-2 text-left">
                           <div className="flex items-baseline justify-between mb-1">
-                            <span className="text-3xl font-black text-purple-505 tracking-tight">
+                            <span className="text-4xl font-black text-purple-505 tracking-tight">
                               {pressure}
                             </span>
-                            <span className="text-xs font-bold text-slate-400 dark:text-slate-500">
+                            <span className="text-sm font-bold text-slate-400 dark:text-slate-500">
                               hPa
                             </span>
                           </div>
@@ -713,14 +713,14 @@ export default function WindPage() {
                             />
                           </div>
                           
-                          <div className="flex justify-between text-[8px] text-slate-400 dark:text-slate-500 font-bold">
+                          <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold">
                             <span>960 Low</span>
                             <span>1013 Standard</span>
                             <span>1060 High</span>
                           </div>
                         </div>
                         
-                        <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-450 leading-relaxed">
+                        <div className="text-xs font-semibold text-slate-500 dark:text-slate-450 leading-relaxed">
                           {pressure < 1009 ? "Cyclonic System (Stormy)" : pressure > 1018 ? "Anticyclonic System (Dry)" : "Barometric Normal State"}
                         </div>
                       </div>
@@ -760,7 +760,7 @@ export default function WindPage() {
                           : 'bg-slate-50 border-slate-200 hover:border-slate-350'
                       }`}
                     >
-                      <div className="text-[9px] font-extrabold tracking-wider text-slate-450 dark:text-slate-500 uppercase mb-2">
+                      <div className="text-[11px] font-extrabold tracking-wider text-slate-450 dark:text-slate-500 uppercase mb-2">
                         {hour.time}
                       </div>
                       
@@ -769,22 +769,22 @@ export default function WindPage() {
                           className="h-5 w-5 text-blue-550 dark:text-blue-400"
                           style={{ transform: `rotate(${hour.direction}deg)` }}
                         />
-                        <span className="absolute text-[8px] font-black text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 px-0.5" style={{ transform: 'translate(0px, 12px)' }}>
+                        <span className="absolute text-[10px] font-black text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 px-0.5 animate-none" style={{ transform: 'translate(0px, 12px)' }}>
                           {getDirectionName(hour.direction)}
                         </span>
                       </div>
 
                       <div className="mt-4">
-                        <div className={`text-base font-extrabold ${getWindColor(hour.speed, isDarkMode)}`}>
+                        <div className={`text-lg font-extrabold ${getWindColor(hour.speed, isDarkMode)}`}>
                           {convertSpeed(hour.speed)}
                         </div>
-                        <div className="text-[8px] font-bold text-slate-400 dark:text-slate-500 leading-none">
+                        <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none mt-0.5">
                           {getSpeedUnit()}
                         </div>
                       </div>
 
-                      <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/50 text-[9px] text-slate-450 dark:text-slate-500">
-                        <span className="font-semibold text-rose-500/90 dark:text-rose-450">G: {convertSpeed(hour.gust)}</span>
+                      <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/50 text-xs text-slate-450 dark:text-slate-500">
+                        <span className="font-semibold text-rose-500/90 dark:text-rose-450">Gust: {convertSpeed(hour.gust)}</span>
                       </div>
                     </div>
                   )
@@ -834,7 +834,7 @@ export default function WindPage() {
                               className="h-3.5 w-3.5 text-blue-550 dark:text-blue-400"
                               style={{ transform: `rotate(${day.direction === "N" ? 0 : day.direction === "NE" ? 45 : day.direction === "E" ? 90 : day.direction === "SE" ? 135 : day.direction === "S" ? 180 : day.direction === "SW" ? 225 : day.direction === "W" ? 270 : 315}deg)` }}
                             />
-                            <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 border-slate-300/30">
+                            <Badge variant="outline" className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 border-slate-300/30">
                               {day.direction}
                             </Badge>
                           </div>
@@ -854,7 +854,7 @@ export default function WindPage() {
                               style={{ left: `${avgPercent}%` }}
                             />
                           </div>
-                          <div className="flex justify-between text-[9px] text-slate-400 dark:text-slate-500 font-bold mt-1.5">
+                          <div className="flex justify-between text-xs text-slate-400 dark:text-slate-500 font-bold mt-1.5">
                             <span>Avg: {convertSpeed(day.avgSpeed)} {getSpeedUnit()}</span>
                             <span>Max: {convertSpeed(day.maxSpeed)} {getSpeedUnit()}</span>
                           </div>
@@ -863,7 +863,7 @@ export default function WindPage() {
                         {/* Peak Gust Badge */}
                         <div className="w-full sm:w-44 text-right flex items-center justify-between sm:justify-end gap-2">
                           <span className="sm:hidden text-xs text-slate-400 font-semibold">Peak Gust:</span>
-                          <Badge className={`${getWindBg(day.gustMax, isDarkMode)} border text-[9px] font-bold px-2 py-0.5`}>
+                          <Badge className={`${getWindBg(day.gustMax, isDarkMode)} border text-xs font-bold px-2 py-0.5`}>
                             Gust: {convertSpeed(day.gustMax)} {getSpeedUnit()}
                           </Badge>
                         </div>
@@ -909,13 +909,13 @@ export default function WindPage() {
                       <div key={`beaufort-${index}`} className={`p-4.5 rounded-2xl border transition-all duration-300 ${colorClasses}`}>
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-sm font-black tracking-tight">{item.scale}</span>
-                          <Badge variant="outline" className={`text-[8px] font-bold uppercase tracking-wider ${badgeClasses}`}>
+                          <Badge variant="outline" className={`text-[10px] font-bold uppercase tracking-wider ${badgeClasses}`}>
                             {item.label}
                           </Badge>
                         </div>
-                        <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 mb-0.5">{item.name}</h4>
-                        <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-2">{item.speed}</div>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-0.5">{item.name}</h4>
+                        <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">{item.speed}</div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
                       </div>
                     )
                   })}
