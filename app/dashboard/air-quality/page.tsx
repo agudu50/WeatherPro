@@ -380,9 +380,7 @@ export default function AirQualityPage() {
   if (loading && !airQualityData) {
     return (
       <div className={`min-h-screen ${
-        isDarkMode 
-          ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-950' 
-          : 'bg-gradient-to-br from-green-50 via-cyan-50 to-blue-50'
+        isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
       } p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
           <Loader2 className={`h-16 w-16 ${
@@ -403,19 +401,13 @@ export default function AirQualityPage() {
 
   return (
     <div className={`min-h-screen ${
-      isDarkMode 
-        ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-950' 
-        : 'bg-gradient-to-br from-green-50 via-cyan-50 to-blue-50'
+      isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
     } p-6 transition-colors duration-500`}>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl ${
-              isDarkMode 
-                ? 'bg-gradient-to-r from-green-500 to-cyan-600' 
-                : 'bg-gradient-to-r from-green-400 to-cyan-500'
-            }`}>
+            <div className="p-2 rounded-xl bg-green-500">
               <Activity className="h-8 w-8 text-white" />
             </div>
             <div>
@@ -836,20 +828,18 @@ export default function AirQualityPage() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {[
-                { range: "0-50", label: "Good", color: "green", desc: "Excellent" },
-                { range: "51-100", label: "Moderate", color: "yellow", desc: "Acceptable" },
-                { range: "101-150", label: "Unhealthy for Sensitive", color: "orange", desc: "Some risk" },
-                { range: "151-200", label: "Unhealthy", color: "red", desc: "Everyone affected" },
-                { range: "201-300", label: "Very Unhealthy", color: "purple", desc: "Health alert" },
-                { range: "301+", label: "Hazardous", color: "gray", desc: "Emergency" }
+                { range: "0-50", label: "Good", bgDark: "bg-green-500/20 border-green-400/30", bgLight: "bg-green-100 border-green-300", textDark: "text-green-300", textLight: "text-green-600", desc: "Excellent" },
+                { range: "51-100", label: "Moderate", bgDark: "bg-yellow-500/20 border-yellow-400/30", bgLight: "bg-yellow-100 border-yellow-300", textDark: "text-yellow-300", textLight: "text-yellow-600", desc: "Acceptable" },
+                { range: "101-150", label: "Unhealthy for Sensitive", bgDark: "bg-orange-500/20 border-orange-400/30", bgLight: "bg-orange-100 border-orange-300", textDark: "text-orange-300", textLight: "text-orange-600", desc: "Some risk" },
+                { range: "151-200", label: "Unhealthy", bgDark: "bg-red-500/20 border-red-400/30", bgLight: "bg-red-100 border-red-300", textDark: "text-red-300", textLight: "text-red-600", desc: "Everyone affected" },
+                { range: "201-300", label: "Very Unhealthy", bgDark: "bg-purple-500/20 border-purple-400/30", bgLight: "bg-purple-100 border-purple-300", textDark: "text-purple-300", textLight: "text-purple-600", desc: "Health alert" },
+                { range: "301+", label: "Hazardous", bgDark: "bg-slate-500/20 border-slate-400/30", bgLight: "bg-slate-100 border-slate-300", textDark: "text-slate-300", textLight: "text-slate-600", desc: "Emergency" }
               ].map((level, index) => (
                 <div key={`aqi-scale-${index}`} className={`p-4 rounded-lg text-center border ${
-                  isDarkMode 
-                    ? `bg-${level.color}-500/20 border-${level.color}-400/30` 
-                    : `bg-${level.color}-100 border-${level.color}-300`
+                  isDarkMode ? level.bgDark : level.bgLight
                 }`}>
                   <div className={`text-xl font-bold mb-1 ${
-                    isDarkMode ? `text-${level.color}-300` : `text-${level.color}-600`
+                    isDarkMode ? level.textDark : level.textLight
                   }`}>{level.range}</div>
                   <div className="font-medium text-sm mb-1">{level.label}</div>
                   <div className={`text-xs ${

@@ -233,7 +233,7 @@ export default function DashboardLayout({ children }) {
                             className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
                               isActive
                                 ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
-                                : "text-slate-700 dark:text-slate-350 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400"
+                                : "text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400"
                             } ${isCollapsed ? "justify-center" : ""} ${
                               item.important && !isActive ? "text-orange-600 hover:text-orange-700" : ""
                             }`}
@@ -296,7 +296,7 @@ export default function DashboardLayout({ children }) {
                             size="sm"
                             className="flex-1 h-9 border-slate-200 dark:border-slate-800 hover:bg-blue-50 dark:hover:bg-slate-800 hover:border-blue-300 dark:hover:border-blue-700 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900"
                           >
-                            <action.icon className="h-4 w-4 text-slate-500 dark:text-slate-450" />
+                            <action.icon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -340,7 +340,7 @@ export default function DashboardLayout({ children }) {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="shrink-0 md:hidden border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-850"
+                  className="shrink-0 md:hidden border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Toggle navigation menu</span>
@@ -395,7 +395,7 @@ export default function DashboardLayout({ children }) {
                                   className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all ${
                                     isActive
                                       ? "bg-blue-600 text-white shadow-md"
-                                      : "text-slate-700 dark:text-slate-350 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 active:scale-95"
+                                      : "text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 active:scale-95"
                                   } ${item.important && !isActive ? "text-orange-600" : ""}`}
                                   onClick={() => setIsMobileMenuOpen(false)}
                                 >
@@ -480,7 +480,7 @@ export default function DashboardLayout({ children }) {
                     onClick={toggleDarkMode}
                     variant="outline"
                     size="icon"
-                    className="h-9 w-9 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 transition-transform hover:scale-105 active:scale-95"
+                    className="h-9 w-9 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 transition-transform hover:scale-105 active:scale-95"
                     title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
                   >
                     {isDarkMode ? <Sun className="h-4 w-4 text-yellow-500 animate-pulse" /> : <Moon className="h-4 w-4 text-slate-500" />}
@@ -496,7 +496,7 @@ export default function DashboardLayout({ children }) {
                   <Button 
                     variant="outline" 
                     size="icon" 
-                    className="h-9 w-9 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 relative"
+                    className="h-9 w-9 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 relative"
                   >
                     <Bell className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                     <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">

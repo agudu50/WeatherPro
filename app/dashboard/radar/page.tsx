@@ -240,8 +240,8 @@ export default function RadarPage() {
     return (
       <div className={`min-h-screen ${
         isDarkMode 
-          ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950' 
-          : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+          ? 'bg-slate-950 text-slate-100' 
+          : 'bg-slate-50 text-slate-900'
       } p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
           <Loader2 className={`h-16 w-16 ${
@@ -258,8 +258,8 @@ export default function RadarPage() {
   return (
     <div className={`min-h-screen ${
       isDarkMode 
-        ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950' 
-        : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+        ? 'bg-slate-950 text-slate-100' 
+        : 'bg-slate-50 text-slate-900'
     } p-6 transition-colors duration-500`}>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
@@ -267,8 +267,8 @@ export default function RadarPage() {
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-xl ${
               isDarkMode 
-                ? 'bg-gradient-to-r from-blue-500 to-purple-600' 
-                : 'bg-gradient-to-r from-blue-400 to-purple-500'
+                ? 'bg-blue-600' 
+                : 'bg-blue-500'
             }`}>
               <Satellite className="h-8 w-8 text-white" />
             </div>
@@ -624,8 +624,8 @@ export default function RadarPage() {
                         {/* Base map representation */}
                         <div className={`absolute inset-0 ${
                           isDarkMode 
-                            ? 'bg-gradient-to-br from-slate-700 to-slate-900' 
-                            : 'bg-gradient-to-br from-blue-100 to-indigo-100'
+                            ? 'bg-slate-800' 
+                            : 'bg-slate-100'
                         }`}>
                           {/* Grid overlay */}
                           <div className="absolute inset-0 opacity-10">

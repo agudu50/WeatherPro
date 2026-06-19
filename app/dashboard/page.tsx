@@ -1188,22 +1188,22 @@ export default function DashboardPage() {
           isLoaded ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0'
         }`}>
           {/* Ambient glow effects inside the card */}
-          <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-tr from-blue-500/10 via-purple-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-gradient-to-tr from-indigo-500/10 via-cyan-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             {/* Left side - branding & warnings */}
             <div className="space-y-3 sm:space-y-4 max-w-2xl text-left">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                  <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 bg-clip-text text-transparent">Live Weather</span> Dashboard
+                  <span className="text-blue-600 dark:text-blue-400">Live Weather</span> Dashboard
                 </h1>
                 <div className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider animate-pulse shadow-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   Live Feed
                 </div>
               </div>
-              <p className={`text-xs sm:text-sm md:text-base ${isDarkMode ? 'text-slate-350' : 'text-slate-600'} font-medium`}>
+              <p className={`text-xs sm:text-sm md:text-base ${isDarkMode ? 'text-slate-300' : 'text-slate-600'} font-medium`}>
                 Real-time weather data & forecasts from your location
               </p>
               
@@ -1278,7 +1278,7 @@ export default function DashboardPage() {
                   variant="ghost"
                   size="sm"
                   onClick={handleUserProfile}
-                  className="w-9 h-9 p-0 rounded-xl bg-transparent hover:bg-white/40 dark:hover:bg-white/10 text-slate-650 dark:text-slate-300 hover:scale-105 active:scale-95 transition-all"
+                  className="w-9 h-9 p-0 rounded-xl bg-transparent hover:bg-white/40 dark:hover:bg-white/10 text-slate-500 dark:text-slate-300 hover:scale-105 active:scale-95 transition-all"
                   title="My Profile Settings"
                 >
                   <User className="h-4 w-4" />
@@ -1312,7 +1312,7 @@ export default function DashboardPage() {
                   {loading && !weatherData ? "Locating..." : userLocation.name || "Default Station"}
                 </p>
                 {userLocation.lat && userLocation.lon && (
-                  <p className="text-[10px] text-slate-450 dark:text-slate-500 font-medium truncate mt-0.5">
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate mt-0.5">
                     GPS: {userLocation.lat.toFixed(4)}°, {userLocation.lon.toFixed(4)}°
                   </p>
                 )}
@@ -1329,7 +1329,7 @@ export default function DashboardPage() {
                 <p className="text-sm font-extrabold text-slate-900 dark:text-white truncate">
                   {formatClientDate(currentTime, { weekday: 'long', month: 'short', day: 'numeric' })}
                 </p>
-                <p className="text-[10px] text-slate-450 dark:text-slate-500 font-medium truncate mt-0.5">
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate mt-0.5">
                   Year 2026 Season
                 </p>
               </div>
@@ -1346,7 +1346,7 @@ export default function DashboardPage() {
                   {loading ? "Syncing..." : "Data Up To Date"}
                 </p>
                 {lastUpdated && (
-                  <p className="text-[10px] text-slate-450 dark:text-slate-500 font-medium truncate mt-0.5">
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate mt-0.5">
                     Updated: {formatClientTime(lastUpdated)}
                   </p>
                 )}
@@ -1527,11 +1527,11 @@ export default function DashboardPage() {
                     </div>
                     {weatherData?.main && (
                       <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 mt-2 sm:mt-3 text-xs sm:text-sm">
-                        <span className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-slate-200 dark:border-slate-750">
+                        <span className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
                           <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
                           <span className="font-semibold text-slate-800 dark:text-slate-100">{formatTemp(weatherData.main.temp_max)}°</span>
                         </span>
-                        <span className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-slate-200 dark:border-slate-750">
+                        <span className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
                           <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
                           <span className="font-semibold text-slate-800 dark:text-slate-100">{formatTemp(weatherData.main.temp_min)}°</span>
                         </span>
@@ -1619,7 +1619,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 
-                <div className="relative flex-shrink-0 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-slate-100/50 dark:bg-slate-850/50 rounded-full shadow-inner p-1">
+                <div className="relative flex-shrink-0 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-slate-100/50 dark:bg-slate-800/50 rounded-full shadow-inner p-1">
                   <svg className="w-full h-full transform -rotate-90">
                     <circle
                       cx="50%" cy="50%" r="28"
@@ -1669,7 +1669,7 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                <div className="relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-slate-200/50 dark:bg-slate-850 rounded-full flex items-center justify-center border border-slate-300 dark:border-slate-700 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                <div className="relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-slate-200/50 dark:bg-slate-800 rounded-full flex items-center justify-center border border-slate-300 dark:border-slate-700 shadow-inner group-hover:scale-110 transition-transform duration-500">
                   <span className="absolute top-0.5 text-[8px] font-extrabold text-slate-400">N</span>
                   <span className="absolute right-0.5 text-[8px] font-extrabold text-slate-400">E</span>
                   <span className="absolute bottom-0.5 text-[8px] font-extrabold text-slate-400">S</span>
@@ -1714,7 +1714,7 @@ export default function DashboardPage() {
                 <div className="space-y-1.5">
                   <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full relative overflow-hidden">
                     <div 
-                      className="h-full bg-gradient-to-r from-slate-400/80 via-blue-400 to-indigo-500 rounded-full transition-all duration-1000 ease-out"
+                      className="h-full bg-indigo-500 rounded-full transition-all duration-1000 ease-out"
                       style={{ width: `${Math.min(((weatherData?.visibility || 0) / 10000) * 100, 100)}%` }}
                     />
                   </div>
@@ -1751,7 +1751,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
 
-                <div className="relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-slate-200/50 dark:bg-slate-850 rounded-full flex items-center justify-center border border-slate-300 dark:border-slate-700 shadow-inner group-hover:scale-110 transition-transform duration-500 overflow-hidden">
+                <div className="relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-slate-200/50 dark:bg-slate-800 rounded-full flex items-center justify-center border border-slate-300 dark:border-slate-700 shadow-inner group-hover:scale-110 transition-transform duration-500 overflow-hidden">
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center relative">
                     <Gauge className="h-5 w-5 text-rose-500/80 animate-pulse" />
                     
@@ -1759,7 +1759,7 @@ export default function DashboardPage() {
                       className="absolute inset-0 w-full h-full flex items-center justify-center transition-transform duration-1000 ease-out"
                       style={{ transform: `rotate(${Math.min(Math.max(((weatherData?.main.pressure || 1013) - 1013) * 2.5, -90), 90)}deg)` }}
                     >
-                      <div className="w-0.5 h-6 sm:h-8 bg-rose-550 -translate-y-2 relative rounded-full">
+                      <div className="w-0.5 h-6 sm:h-8 bg-rose-500 -translate-y-2 relative rounded-full">
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-rose-600" />
                       </div>
                     </div>
@@ -1795,14 +1795,14 @@ export default function DashboardPage() {
                     <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">of 11+</span>
                   </div>
 
-                  <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-400 via-yellow-450 via-orange-500 via-red-500 to-purple-600 rounded-full" />
-                    <div 
-                      className="absolute top-0 bottom-0 w-1.5 bg-white border border-slate-400 shadow-md rounded-full transition-all duration-1000 ease-out animate-pulse" 
-                      style={{ left: `calc(${Math.min((uvIndexData.value / 11) * 100, 100)}% - 3px)` }} 
-                    />
+                  <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full relative overflow-hidden flex gap-0.5">
+                    <div className="h-full flex-1 bg-green-500" />
+                    <div className="h-full flex-1 bg-yellow-500" />
+                    <div className="h-full flex-1 bg-orange-500" />
+                    <div className="h-full flex-1 bg-red-500" />
+                    <div className="h-full flex-1 bg-purple-500" />
                   </div>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-450 font-medium">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                     {uvIndexData.value <= 2 ? "Minimal protection required" :
                      uvIndexData.value <= 5 ? "Moderate sun protection needed" :
                      uvIndexData.value <= 7 ? "High sun protection required" :
@@ -1855,14 +1855,14 @@ export default function DashboardPage() {
                       <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white leading-none">
                         {airQuality.list[0].main.aqi}
                       </span>
-                      <span className="text-slate-550 dark:text-slate-400 text-xs font-semibold">/ 5</span>
+                      <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">/ 5</span>
                     </div>
                     <p className="text-[10px] text-slate-400 dark:text-slate-400 font-medium leading-tight">
                       Index scale (1 - 5)
                     </p>
                   </div>
 
-                  <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center bg-slate-100/50 dark:bg-slate-850/50 rounded-full shadow-inner p-1">
+                  <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center bg-slate-100/50 dark:bg-slate-800/50 rounded-full shadow-inner p-1">
                     <svg className="w-full h-full transform -rotate-90">
                       <circle cx="50%" cy="50%" r="18" className="stroke-slate-200 dark:stroke-slate-800 fill-none" strokeWidth="4" />
                       <circle 
@@ -1884,8 +1884,8 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-emerald-250/30 dark:border-emerald-900/30 text-[10px] font-semibold text-slate-505 dark:text-slate-400">
-                  <div className="bg-slate-200/30 dark:bg-slate-850/40 p-1 rounded-lg border border-slate-300/10 hover:scale-[1.02] hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all flex flex-col items-center">
+                <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-emerald-200/30 dark:border-emerald-900/30 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                  <div className="bg-slate-200/30 dark:bg-slate-800/40 p-1 rounded-lg border border-slate-300/10 hover:scale-[1.02] hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all flex flex-col items-center">
                     <div className="flex items-center gap-1">
                       <div className={`w-1.5 h-1.5 rounded-full ${airQuality.list[0].components.pm2_5 <= 12 ? 'bg-green-500' : airQuality.list[0].components.pm2_5 <= 35 ? 'bg-yellow-500' : 'bg-red-500'}`} />
                       <span>PM2.5</span>
@@ -1893,7 +1893,7 @@ export default function DashboardPage() {
                     <span className="text-slate-900 dark:text-white font-bold text-xs mt-0.5">{airQuality.list[0].components.pm2_5.toFixed(1)} <span className="text-[8px] font-normal text-slate-400">μg/m³</span></span>
                   </div>
 
-                  <div className="bg-slate-200/30 dark:bg-slate-850/40 p-1 rounded-lg border border-slate-300/10 hover:scale-[1.02] hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all flex flex-col items-center">
+                  <div className="bg-slate-200/30 dark:bg-slate-800/40 p-1 rounded-lg border border-slate-300/10 hover:scale-[1.02] hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all flex flex-col items-center">
                     <div className="flex items-center gap-1">
                       <div className={`w-1.5 h-1.5 rounded-full ${airQuality.list[0].components.pm10 <= 54 ? 'bg-green-500' : airQuality.list[0].components.pm10 <= 154 ? 'bg-yellow-500' : 'bg-red-500'}`} />
                       <span>PM10</span>
@@ -1936,7 +1936,7 @@ export default function DashboardPage() {
                           stroke="currentColor" 
                           strokeWidth="1.2" 
                           strokeDasharray="2,2" 
-                          className="text-slate-350 dark:text-slate-700" 
+                          className="text-slate-300 dark:text-slate-700" 
                         />
                         {/* Ground Horizon line */}
                         <line 
@@ -1973,11 +1973,11 @@ export default function DashboardPage() {
 
                 <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 pt-1.5 border-t border-orange-250/30 dark:border-orange-900/30">
                   <div className="flex flex-col items-start">
-                    <span className="text-[9px] font-semibold text-slate-450">Sunrise</span>
+                    <span className="text-[9px] font-semibold text-slate-400">Sunrise</span>
                     <span className="text-slate-900 dark:text-white font-extrabold">{formatClientTime(weatherData.sys.sunrise, { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-[9px] font-semibold text-slate-450">Sunset</span>
+                    <span className="text-[9px] font-semibold text-slate-400">Sunset</span>
                     <span className="text-slate-900 dark:text-white font-extrabold">{formatClientTime(weatherData.sys.sunset, { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 </div>
@@ -1995,7 +1995,7 @@ export default function DashboardPage() {
               <div className="relative z-10">
                 <CardHeader className="p-3 sm:p-4">
                   <CardTitle className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base text-slate-900 dark:text-white group-hover:scale-105 transition-transform origin-left">
-                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-750 group-hover:scale-110 transition-all duration-500">
+                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 group-hover:scale-110 transition-all duration-500">
                       <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-500 dark:text-indigo-400 group-hover:animate-pulse" />
                     </div>
                     Hourly Forecast
@@ -2012,7 +2012,7 @@ export default function DashboardPage() {
                             key={index} 
                             className={`flex-shrink-0 text-center p-3 rounded-2xl ${
                               isDarkMode 
-                                ? 'bg-slate-900/50 hover:bg-slate-850/70 border-slate-800 hover:border-slate-700' 
+                                ? 'bg-slate-900/50 hover:bg-slate-800/70 border-slate-800 hover:border-slate-700' 
                                 : 'bg-blue-50/30 hover:bg-blue-50/70 border-blue-100 hover:border-blue-200'
                             } snap-center hover:scale-[1.05] hover:shadow-lg transition-all duration-300 border w-[95px] sm:w-[115px] cursor-pointer group/hour flex flex-col justify-between min-h-[165px]`}
                           >
@@ -2129,7 +2129,7 @@ export default function DashboardPage() {
                             {/* Temp Range Slider visual */}
                             <div className="h-1.5 flex-1 bg-slate-200 dark:bg-slate-800 rounded-full relative overflow-hidden hidden sm:block min-w-[50px]">
                               <div 
-                                className="absolute h-full bg-gradient-to-r from-blue-400 to-red-400 rounded-full"
+                                className="absolute h-full bg-blue-500 rounded-full"
                                 style={{ 
                                   left: '15%', 
                                   right: '15%' 

@@ -63,7 +63,6 @@ export default function App() {
       title: "Analytics Dashboard",
       description: "Comprehensive analytics with interactive charts and real-time data visualization.",
       color: "bg-blue-500",
-      gradient: "from-blue-400 to-blue-600",
       link: "/dashboard/analytics"
     },
     {
@@ -71,7 +70,6 @@ export default function App() {
       title: "User Management",
       description: "Complete user management system with roles, permissions, and advanced filtering.",
       color: "bg-green-500",
-      gradient: "from-green-400 to-green-600",
       link: "/dashboard/users"
     },
     {
@@ -79,7 +77,6 @@ export default function App() {
       title: "Weather Integration",
       description: "Real-time weather data with forecasts and location-based services.",
       color: "bg-yellow-500",
-      gradient: "from-yellow-400 to-yellow-600",
       link: "/dashboard"
     },
     {
@@ -87,7 +84,6 @@ export default function App() {
       title: "Advanced Settings",
       description: "Comprehensive settings panel with themes, notifications, and security options.",
       color: "bg-purple-500",
-      gradient: "from-purple-400 to-purple-600",
       link: "/dashboard/settings"
     },
     {
@@ -95,7 +91,6 @@ export default function App() {
       title: "Performance Monitoring",
       description: "Track key metrics, monitor performance, and get actionable insights.",
       color: "bg-red-500",
-      gradient: "from-red-400 to-red-600",
       link: "/dashboard/performance"
     },
     {
@@ -103,7 +98,6 @@ export default function App() {
       title: "Security & Privacy",
       description: "Enterprise-grade security features with 2FA and data encryption.",
       color: "bg-indigo-500",
-      gradient: "from-indigo-400 to-indigo-600",
       link: "/dashboard/security"
     },
   ]
@@ -387,7 +381,7 @@ export default function App() {
                       })()}
                     </div>
                     <h3 className="text-3xl font-black mb-4 text-slate-900 dark:text-white">{features[currentFeature].title}</h3>
-                    <p className="text-slate-500 dark:text-slate-350 text-lg mb-6 leading-relaxed">{features[currentFeature].description}</p>
+                    <p className="text-slate-500 dark:text-slate-300 text-lg mb-6 leading-relaxed">{features[currentFeature].description}</p>
                     <Button asChild className={`rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 ${
                       isDarkMode 
                         ? 'bg-white/10 hover:bg-white/20 text-white border-white/10' 
@@ -483,7 +477,7 @@ export default function App() {
                       <div className="text-slate-405 text-slate-400 dark:text-white/60 text-sm">{testimonial.role}</div>
                     </div>
                   </div>
-                  <p className="text-slate-650 dark:text-white/80 italic">&quot;{testimonial.content}&quot;</p>
+                  <p className="text-slate-600 dark:text-white/80 italic">&quot;{testimonial.content}&quot;</p>
                   <div className="flex gap-1 mt-4">
                     {[...Array(5)].map((_, i) => (
                       <Star key={`star-${i}`} className="h-4 w-4 text-amber-500 fill-current" />
@@ -542,7 +536,7 @@ export default function App() {
             <p className="text-slate-500 dark:text-slate-400">&copy; 2024 Climafy Dashboard. Built with precision and care.</p>
             <div className="flex justify-center gap-6 mt-4">
               <Link href="#" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">Privacy</Link>
-              <Link href="#" className="text-slate-550 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">Terms</Link>
+              <Link href="#" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">Terms</Link>
               <Link href="#" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">Support</Link>
             </div>
           </div>

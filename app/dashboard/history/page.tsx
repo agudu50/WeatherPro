@@ -498,8 +498,8 @@ export default function HistoryPage() {
     return (
       <div className={`min-h-screen ${
         isDarkMode 
-          ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-950' 
-          : 'bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50'
+          ? 'bg-slate-950 text-slate-100' 
+          : 'bg-slate-50 text-slate-900'
       } p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
           <Loader2 className={`h-16 w-16 ${
@@ -523,14 +523,14 @@ export default function HistoryPage() {
   return (
     <div className={`min-h-screen ${
       isDarkMode 
-        ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-950' 
-        : 'bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50'
+        ? 'bg-slate-950 text-slate-100' 
+        : 'bg-slate-50 text-slate-900'
     } p-6 transition-colors duration-500`}>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 shadow-md">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-600 text-white shadow-md">
               <History className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -874,8 +874,8 @@ export default function HistoryPage() {
                           <div 
                             className={`w-full ${
                               isDarkMode 
-                                ? 'bg-gradient-to-t from-purple-500 to-indigo-400' 
-                                : 'bg-gradient-to-t from-purple-400 to-indigo-300'
+                                ? 'bg-purple-500' 
+                                : 'bg-purple-600'
                             } rounded-t transition-all hover:opacity-80`}
                             style={{ height: `${Math.max(height, 5)}%`, minHeight: '8px' }}
                             title={`${point.date}: ${point.value}${selectedMetricInfo.unit}`}

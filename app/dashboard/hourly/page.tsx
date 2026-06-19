@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -70,7 +70,7 @@ interface WeatherData {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-950/95 border border-slate-800 backdrop-blur-md rounded-2xl p-3 sm:p-4 shadow-2xl text-left">
+      <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-2xl text-left">
         <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider mb-2">{label}</p>
         <div className="space-y-1.5">
           {payload.map((item: any, idx: number) => (
@@ -102,7 +102,6 @@ export default function HourlyForecastPage() {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, delay: number}>>([])
   const [showComparison, setShowComparison] = useState(false)
-  const [viewMode, setViewMode] = useState<'card' | 'list' | 'chart'>('card')
   const [chartMetric, setChartMetric] = useState<'temp' | 'humidity' | 'wind' | 'pressure'>('temp')
   const [compareHours, setCompareHours] = useState<number[]>([])
   const [showAlerts, setShowAlerts] = useState(true)
@@ -247,14 +246,14 @@ export default function HourlyForecastPage() {
     return 'night'
   }
 
-  const getGradientForTimeOfDay = (timeOfDay: string) => {
-    const gradients = {
-      morning: 'from-orange-400 via-yellow-400 to-blue-400',
-      afternoon: 'from-blue-400 via-cyan-400 to-blue-500',
-      evening: 'from-purple-500 via-pink-500 to-orange-500',
-      night: 'from-indigo-900 via-purple-900 to-blue-900'
+  const getColorForTimeOfDay = (timeOfDay: string) => {
+    const colors = {
+      morning: 'bg-amber-500',
+      afternoon: 'bg-blue-500',
+      evening: 'bg-rose-500',
+      night: 'bg-indigo-600'
     }
-    return gradients[timeOfDay as keyof typeof gradients] || gradients.afternoon
+    return colors[timeOfDay as keyof typeof colors] || colors.afternoon
   }
 
   const getWeatherInsights = () => {
@@ -457,7 +456,7 @@ export default function HourlyForecastPage() {
         temp: avgTemp,
         rain: maxRain,
         description: morningHours[0].weather[0]?.main,
-        gradient: 'from-orange-400 via-yellow-300 to-amber-400'
+        color: 'bg-amber-500'
       })
     }
     
@@ -476,7 +475,7 @@ export default function HourlyForecastPage() {
         temp: avgTemp,
         rain: maxRain,
         description: afternoonHours[0].weather[0]?.main,
-        gradient: 'from-blue-400 via-sky-400 to-cyan-400'
+        color: 'bg-blue-500'
       })
     }
     
@@ -495,7 +494,7 @@ export default function HourlyForecastPage() {
         temp: avgTemp,
         rain: maxRain,
         description: eveningHours[0].weather[0]?.main,
-        gradient: 'from-purple-500 via-pink-400 to-rose-400'
+        color: 'bg-rose-500'
       })
     }
     
@@ -514,7 +513,7 @@ export default function HourlyForecastPage() {
         temp: avgTemp,
         rain: maxRain,
         description: nightHours[0].weather[0]?.main,
-        gradient: 'from-indigo-900 via-blue-900 to-purple-900'
+        color: 'bg-indigo-500'
       })
     }
     
@@ -581,7 +580,7 @@ export default function HourlyForecastPage() {
 
   return (
     <div className={`min-h-screen relative overflow-x-hidden min-w-0 transition-colors duration-500 ${
-      isDarkMode ? 'dark bg-slate-955 bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
+      isDarkMode ? 'dark bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
     }`}>
       {/* Animated Background Glow Spots */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -589,7 +588,7 @@ export default function HourlyForecastPage() {
           <div
             key={particle.id}
             className={`absolute w-1 h-1 ${
-              isDarkMode ? 'bg-blue-400/20' : 'bg-blue-600/10'
+              isDarkMode ? 'bg-blue-450/20 bg-blue-400/20' : 'bg-blue-600/10'
             } rounded-full animate-float`}
             style={{
               left: `${particle.x}%`,
@@ -624,11 +623,11 @@ export default function HourlyForecastPage() {
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2.5 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/25">
+                    <div className="p-2.5 rounded-2xl bg-indigo-650 bg-indigo-600 text-white shadow-lg shadow-indigo-500/25">
                       <Clock className="h-6 w-6" />
                     </div>
-                    <div>
-                      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">
+                    <div className="text-left">
+                      <h1 className={`text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                         Hourly Weather Forecast
                       </h1>
                       <p className={`text-xs sm:text-sm font-medium mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -637,12 +636,12 @@ export default function HourlyForecastPage() {
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-3 text-xs font-semibold mt-3">
-                    <div className={`flex items-center gap-1 px-2.5 py-1 rounded-xl ${isDarkMode ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'}`}>
+                    <div className={`flex items-center gap-1 px-2.5 py-1 rounded-xl ${isDarkMode ? 'bg-slate-805 bg-slate-900 text-slate-200' : 'bg-slate-100 text-slate-700'}`}>
                       <MapPin className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />
                       <span className="truncate">{weatherData?.name || 'Loading location...'}{weatherData?.sys.country ? `, ${weatherData.sys.country}` : ''}</span>
                     </div>
-                    <div className={`flex items-center gap-1 px-2.5 py-1 rounded-xl ${isDarkMode ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'}`}>
-                      <Calendar className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                    <div className={`flex items-center gap-1 px-2.5 py-1 rounded-xl ${isDarkMode ? 'bg-slate-805 bg-slate-900 text-slate-200' : 'bg-slate-100 text-slate-700'}`}>
+                      <Calendar className="h-3.5 w-3.5 text-blue-550 text-blue-500 flex-shrink-0" />
                       <span>{currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                     </div>
                     <Badge className="bg-green-500/10 hover:bg-green-500/15 text-green-600 dark:text-green-400 border border-green-500/20 py-0.5 px-2.5 rounded-full flex gap-1 items-center">
@@ -653,13 +652,13 @@ export default function HourlyForecastPage() {
                 </div>
 
                 {/* Actions Bar */}
-                <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-start lg:justify-end border-t border-slate-250/20 dark:border-slate-800/20 pt-4 lg:pt-0 lg:border-t-0">
+                <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-start lg:justify-end border-t border-slate-800/20 pt-4 lg:pt-0 lg:border-t-0">
                   <Button
                     onClick={toggleDarkMode}
                     variant="outline"
                     size="icon"
                     className={`w-10 h-10 rounded-2xl ${
-                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
+                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-55 hover:bg-slate-100'
                     }`}
                     title={isDarkMode ? "Light Mode" : "Dark Mode"}
                   >
@@ -669,7 +668,7 @@ export default function HourlyForecastPage() {
                     onClick={() => setIsCelsius(!isCelsius)}
                     variant="outline"
                     className={`w-10 h-10 rounded-2xl font-bold ${
-                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
+                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-55 hover:bg-slate-100'
                     }`}
                   >
                     °{isCelsius ? 'C' : 'F'}
@@ -682,7 +681,7 @@ export default function HourlyForecastPage() {
                     variant="outline"
                     className={`h-10 rounded-2xl font-bold px-3 sm:px-4 ${
                       showComparison
-                        ? 'bg-indigo-600 hover:bg-indigo-700 border-transparent text-white shadow-lg shadow-indigo-500/25'
+                        ? 'bg-indigo-600 hover:bg-indigo-700 border-transparent text-white shadow shadow-indigo-500/20'
                         : isDarkMode 
                           ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' 
                           : 'bg-white border-slate-200 text-slate-850 hover:bg-slate-55 hover:bg-slate-100'
@@ -695,7 +694,7 @@ export default function HourlyForecastPage() {
                     variant="outline"
                     size="icon"
                     className={`w-10 h-10 rounded-2xl ${
-                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
+                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-55 hover:bg-slate-100'
                     }`}
                   >
                     <Share2 className="h-4 w-4" />
@@ -712,7 +711,7 @@ export default function HourlyForecastPage() {
                     variant="outline"
                     size="icon"
                     className={`w-10 h-10 rounded-2xl ${
-                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
+                      isDarkMode ? 'bg-slate-900 border-slate-800 text-white hover:bg-slate-850' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-55 hover:bg-slate-100'
                     }`}
                   >
                     <Download className="h-4 w-4" />
@@ -725,7 +724,7 @@ export default function HourlyForecastPage() {
 
         {loading ? (
           <Card className={`border rounded-3xl backdrop-blur-xl ${
-            isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
+            isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-805 text-slate-800'
           }`}>
             <CardContent className="p-16 flex flex-col items-center justify-center">
               <Loader2 className="h-12 w-12 text-indigo-500 animate-spin mb-4" />
@@ -735,7 +734,7 @@ export default function HourlyForecastPage() {
           </Card>
         ) : (
           <div className="space-y-6">
-            {/* Weather Insights Grid */}
+            {/* Weather Insights Grid (Flat Colored Accents) */}
             {hourlyData.length > 0 && (() => {
               const insights = getWeatherInsights()
               if (!insights) return null
@@ -745,11 +744,11 @@ export default function HourlyForecastPage() {
                   {/* HOTTEST HOUR */}
                   <div className={`p-4 rounded-3xl border shadow-xl flex items-center justify-between transition-transform duration-300 hover:scale-[1.03] ${
                     isDarkMode 
-                      ? 'bg-gradient-to-br from-rose-950/40 to-pink-950/30 border-rose-900/50 text-rose-100'
-                      : 'bg-gradient-to-br from-rose-50/90 to-pink-50/90 border-rose-100 text-rose-950'
+                      ? 'bg-slate-900/60 border-slate-800/80 text-white'
+                      : 'bg-white/90 border-slate-200 text-slate-800'
                   }`}>
                     <div className="text-left">
-                      <p className="text-[10px] font-black uppercase tracking-wider opacity-75">Hottest Hour</p>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-rose-500 dark:text-rose-450 dark:text-rose-400">Hottest Hour</p>
                       <h3 className="text-3xl font-black mt-1 leading-none">
                         {formatTemp(insights.hottestHour.temp)}°
                       </h3>
@@ -757,7 +756,7 @@ export default function HourlyForecastPage() {
                         at {formatTime(insights.hottestHour.dt)}
                       </p>
                     </div>
-                    <div className="p-2.5 rounded-2xl bg-rose-500 text-white shadow-lg shadow-rose-500/25">
+                    <div className="p-2.5 rounded-2xl bg-rose-500 text-white shadow shadow-rose-500/25">
                       <Thermometer className="h-5 w-5" />
                     </div>
                   </div>
@@ -765,11 +764,11 @@ export default function HourlyForecastPage() {
                   {/* COLDEST HOUR */}
                   <div className={`p-4 rounded-3xl border shadow-xl flex items-center justify-between transition-transform duration-300 hover:scale-[1.03] ${
                     isDarkMode 
-                      ? 'bg-gradient-to-br from-blue-950/40 to-cyan-950/30 border-blue-900/50 text-blue-100'
-                      : 'bg-gradient-to-br from-blue-50/90 to-cyan-50/90 border-blue-100 text-blue-950'
+                      ? 'bg-slate-900/60 border-slate-800/80 text-white'
+                      : 'bg-white/90 border-slate-200 text-slate-800'
                   }`}>
                     <div className="text-left">
-                      <p className="text-[10px] font-black uppercase tracking-wider opacity-75">Coldest Hour</p>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-blue-500 dark:text-blue-450 dark:text-blue-400">Coldest Hour</p>
                       <h3 className="text-3xl font-black mt-1 leading-none">
                         {formatTemp(insights.coldestHour.temp)}°
                       </h3>
@@ -777,7 +776,7 @@ export default function HourlyForecastPage() {
                         at {formatTime(insights.coldestHour.dt)}
                       </p>
                     </div>
-                    <div className="p-2.5 rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/25">
+                    <div className="p-2.5 rounded-2xl bg-blue-500 text-white shadow shadow-blue-500/25">
                       <Thermometer className="h-5 w-5" />
                     </div>
                   </div>
@@ -785,11 +784,11 @@ export default function HourlyForecastPage() {
                   {/* RAINIEST HOUR */}
                   <div className={`p-4 rounded-3xl border shadow-xl flex items-center justify-between transition-transform duration-300 hover:scale-[1.03] ${
                     isDarkMode 
-                      ? 'bg-gradient-to-br from-violet-950/40 to-purple-950/30 border-violet-900/50 text-violet-100'
-                      : 'bg-gradient-to-br from-violet-50/90 to-purple-50/90 border-violet-100 text-violet-950'
+                      ? 'bg-slate-900/60 border-slate-800/80 text-white'
+                      : 'bg-white/90 border-slate-200 text-slate-800'
                   }`}>
                     <div className="text-left">
-                      <p className="text-[10px] font-black uppercase tracking-wider opacity-75">Rain Peak</p>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-violet-500 dark:text-violet-450 dark:text-violet-400">Rain Peak</p>
                       <h3 className="text-3xl font-black mt-1 leading-none">
                         {Math.round(insights.rainiestHour.pop)}%
                       </h3>
@@ -797,7 +796,7 @@ export default function HourlyForecastPage() {
                         at {formatTime(insights.rainiestHour.dt)}
                       </p>
                     </div>
-                    <div className="p-2.5 rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/25">
+                    <div className="p-2.5 rounded-2xl bg-violet-500 text-white shadow shadow-violet-500/25">
                       <CloudRain className="h-5 w-5" />
                     </div>
                   </div>
@@ -805,11 +804,11 @@ export default function HourlyForecastPage() {
                   {/* PEAK WIND SPEED */}
                   <div className={`p-4 rounded-3xl border shadow-xl flex items-center justify-between transition-transform duration-300 hover:scale-[1.03] ${
                     isDarkMode 
-                      ? 'bg-gradient-to-br from-emerald-950/40 to-teal-950/30 border-emerald-900/50 text-emerald-100'
-                      : 'bg-gradient-to-br from-emerald-50/90 to-teal-50/90 border-emerald-100 text-emerald-950'
+                      ? 'bg-slate-900/60 border-slate-800/80 text-white'
+                      : 'bg-white/90 border-slate-200 text-slate-800'
                   }`}>
                     <div className="text-left">
-                      <p className="text-[10px] font-black uppercase tracking-wider opacity-75">Max Wind Speed</p>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-emerald-505 text-emerald-500 dark:text-emerald-450 dark:text-emerald-400">Max Wind Speed</p>
                       <h3 className="text-3xl font-black mt-1 leading-none">
                         {Math.round(insights.maxWind * 3.6)}<span className="text-xs font-bold ml-0.5">km/h</span>
                       </h3>
@@ -817,7 +816,7 @@ export default function HourlyForecastPage() {
                         Peak velocity scans
                       </p>
                     </div>
-                    <div className="p-2.5 rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/25">
+                    <div className="p-2.5 rounded-2xl bg-emerald-500 text-white shadow shadow-emerald-500/25">
                       <Wind className="h-5 w-5" />
                     </div>
                   </div>
@@ -831,54 +830,90 @@ export default function HourlyForecastPage() {
               if (alerts.length === 0) return null
 
               return (
-                <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
-                  isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
-                }`}>
-                  <CardHeader className="p-4 sm:p-6 pb-3 flex flex-row items-center justify-between">
-                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
-                      <AlertCircle className="h-5 w-5 text-yellow-500 animate-pulse" />
+                <Card className={`border rounded-3xl overflow-hidden shadow-2xl relative ${
+                  isDarkMode 
+                    ? 'bg-slate-900/40 border-white/10 text-white' 
+                    : 'bg-white/40 border-slate-200/80 text-slate-800'
+                } backdrop-blur-2xl`}>
+                  <CardHeader className="p-5 pb-4 flex flex-row items-center justify-between border-b border-white/10 dark:border-white/5">
+                    <CardTitle className="flex items-center gap-3 text-sm sm:text-base font-black tracking-wider uppercase">
+                      <div className="relative flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                      </div>
                       <span>Environmental Conditions Check</span>
                     </CardTitle>
                     <Button
                       onClick={() => setShowAlerts(false)}
                       size="sm"
-                      variant="ghost"
-                      className={`h-8 rounded-xl px-2.5 ${isDarkMode ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'}`}
+                      variant="outline"
+                      className={`h-8 rounded-xl px-3 border-slate-200 dark:border-slate-800 text-xs font-extrabold shadow-sm ${
+                        isDarkMode 
+                          ? 'bg-slate-900 hover:bg-slate-800 text-slate-300' 
+                          : 'bg-white hover:bg-slate-50 text-slate-700'
+                      }`}
                     >
                       Dismiss Alert List
                     </Button>
                   </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-0 space-y-3">
-                    {alerts.map((alert, index) => (
-                      <div
-                        key={index}
-                        className={`flex items-start gap-3.5 p-4 rounded-2xl border-l-4 ${
-                          alert.type === 'danger'
-                            ? isDarkMode ? 'bg-red-500/10 border-red-500' : 'bg-red-50/90 border-red-500 text-red-950'
-                            : alert.type === 'warning'
-                              ? isDarkMode ? 'bg-yellow-500/10 border-yellow-500' : 'bg-yellow-50/90 border-yellow-500 text-yellow-950'
-                              : isDarkMode ? 'bg-blue-500/10 border-blue-500' : 'bg-blue-50/90 border-blue-500 text-blue-950'
-                        }`}
-                      >
-                        <span className="text-2xl flex-shrink-0">{alert.icon}</span>
-                        <div className="flex-1 min-w-0 text-left">
-                          <p className={`text-[10px] font-black uppercase tracking-wider mb-0.5 ${
-                            alert.type === 'danger' ? 'text-red-550' : alert.type === 'warning' ? 'text-amber-550' : 'text-blue-550'
-                          }`}>
-                            {alert.type === 'danger' ? 'Severe Warning' : alert.type === 'warning' ? 'Advisory' : 'Information'}
-                          </p>
-                          <p className={`text-xs font-semibold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
-                            {alert.message}
-                          </p>
+                  <CardContent className="p-5 space-y-4">
+                    {alerts.map((alert, index) => {
+                      const alertStyles = alert.type === 'danger' 
+                        ? {
+                            bg: 'bg-red-500/5 dark:bg-red-950/10',
+                            border: 'border-red-500/20 dark:border-red-500/30',
+                            badge: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+                            label: 'Severe Warning',
+                            iconBg: 'bg-red-500/10 text-red-500'
+                          }
+                        : alert.type === 'warning'
+                          ? {
+                              bg: 'bg-amber-500/5 dark:bg-amber-950/10',
+                              border: 'border-amber-500/20 dark:border-amber-500/30',
+                              badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+                              label: 'Advisory',
+                              iconBg: 'bg-amber-500/10 text-amber-500'
+                            }
+                          : {
+                              bg: 'bg-blue-500/5 dark:bg-blue-950/10',
+                              border: 'border-blue-500/20 dark:border-blue-500/30',
+                              badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+                              label: 'Information',
+                              iconBg: 'bg-blue-500/10 text-blue-500'
+                            };
+
+                      return (
+                        <div
+                          key={index}
+                          className={`flex items-start gap-4 p-4 rounded-2xl border transition-all duration-300 hover:shadow-md ${alertStyles.bg} ${alertStyles.border}`}
+                        >
+                          <div className={`flex h-11 w-11 items-center justify-center rounded-xl flex-shrink-0 text-xl font-bold shadow-sm ${alertStyles.iconBg}`}>
+                            {alert.icon}
+                          </div>
+                          <div className="flex-1 min-w-0 text-left">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                                Status Check
+                              </span>
+                              <Badge variant="outline" className={`rounded-xl px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${alertStyles.badge}`}>
+                                {alertStyles.label}
+                              </Badge>
+                            </div>
+                            <p className={`text-xs sm:text-sm font-semibold leading-relaxed ${
+                              isDarkMode ? 'text-slate-105 text-white' : 'text-slate-800'
+                            }`}>
+                              {alert.message}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </CardContent>
                 </Card>
               )
             })()}
 
-            {/* Day Part Summaries Grid */}
+            {/* Day Part Summaries Grid (Flat accents) */}
             {hourlyData.length > 0 && (() => {
               const summaries = getDayPartSummary()
               if (summaries.length === 0) return null
@@ -892,75 +927,89 @@ export default function HourlyForecastPage() {
                     <span>Today's Phase Progression</span>
                   </h3>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    {summaries.map((summary, index) => (
-                      <Card
-                        key={index}
-                        className={`border rounded-3xl backdrop-blur-xl overflow-hidden group hover:scale-[1.03] transition-transform duration-300 ${
-                          isDarkMode 
-                            ? 'bg-slate-900/60 border-slate-800/80 text-white' 
-                            : 'bg-white/80 border-slate-200/80 text-slate-850'
-                        }`}
-                      >
-                        <div className={`h-2.5 bg-gradient-to-r ${summary.gradient}`} />
-                        <CardContent className="p-4 flex flex-col text-left">
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-3xl">{summary.icon}</span>
-                            <Badge className={`rounded-xl border border-transparent font-bold ${
-                              isDarkMode ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'
-                            }`}>
-                              {summary.description}
-                            </Badge>
-                          </div>
-                          <span className={`text-[10px] font-black uppercase tracking-wide opacity-75 ${
-                            isDarkMode ? 'text-slate-400' : 'text-slate-500'
-                          }`}>
-                            {summary.period}
-                          </span>
-                          <span className={`text-3xl font-black mt-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                            {formatTemp(summary.temp)}°
-                          </span>
-                          {summary.rain > 0 && (
-                            <div className="flex items-center gap-1.5 mt-2.5 text-blue-500 dark:text-blue-400 text-xs font-bold">
-                              <CloudRain className="h-3.5 w-3.5" />
-                              <span>{Math.round(summary.rain)}% rain</span>
+                    {summaries.map((summary, index) => {
+                      const getPhaseIcon = (period: string) => {
+                        switch (period) {
+                          case 'Morning':
+                            return <Sunrise className="h-5 w-5 text-amber-500" />
+                          case 'Afternoon':
+                            return <Sun className="h-5 w-5 text-yellow-500" />
+                          case 'Evening':
+                            return <Sunset className="h-5 w-5 text-orange-500" />
+                          case 'Night':
+                            return <Moon className="h-5 w-5 text-indigo-400" />
+                          default:
+                            return <Sun className="h-5 w-5 text-slate-400" />
+                        }
+                      }
+
+                      return (
+                        <Card
+                          key={index}
+                          className={`border rounded-2xl transition-all duration-300 hover:scale-[1.01] hover:shadow-lg ${
+                            isDarkMode 
+                              ? 'bg-slate-900/40 border-slate-800/80 text-white shadow-md' 
+                              : 'bg-white border-slate-100 text-slate-800 shadow-sm'
+                          } backdrop-blur-2xl`}
+                        >
+                          <CardContent className="p-5 flex flex-col text-left space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                {summary.period}
+                              </span>
+                              <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/60">
+                                {getPhaseIcon(summary.period)}
+                              </div>
                             </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
+                            
+                            <div className="space-y-0.5">
+                              <div className={`text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                {formatTemp(summary.temp)}°
+                              </div>
+                              <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                {summary.description}
+                              </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800/45 space-y-1.5">
+                              <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                                <span className="uppercase tracking-wider">Precipitation</span>
+                                <span className="text-blue-500 dark:text-blue-400 font-extrabold">{Math.round(summary.rain)}%</span>
+                              </div>
+                              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800/60 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-blue-500 rounded-full transition-all duration-500" 
+                                  style={{ width: `${summary.rain}%` }}
+                                />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
                   </div>
                 </div>
               )
             })()}
 
-            {/* Main Interactive Graphs Container */}
+            {/* Main Interactive Graphs Container (Recharts flat line charts) */}
             {hourlyData.length > 0 && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
-                {/* 1. Actual Temp vs Feels Like graph */}
+                {/* 1. Actual Temp vs Feels Like line chart */}
                 <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
                   isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
                 }`}>
                   <CardHeader className="p-4 sm:p-6 pb-2 text-left">
                     <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
-                      <Thermometer className="h-5 w-5 text-rose-500" />
+                      <Thermometer className="h-5 w-5 text-rose-550 text-rose-500" />
                       <span>Temperature Trend: Actual vs Feels Like</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-3">
                     <div className="h-[250px] w-full text-xs">
                       <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={tempChartData} margin={{ top: 15, right: 10, left: -25, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="tempActualGrad" x1="0" y1="0" x2="0" y2="100%">
-                              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                              <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                            </linearGradient>
-                            <linearGradient id="tempFeelsGrad" x1="0" y1="0" x2="0" y2="100%">
-                              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
-                              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                            </linearGradient>
-                          </defs>
+                        <LineChart data={tempChartData} margin={{ top: 15, right: 10, left: -25, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"} />
                           <XAxis 
                             dataKey="name" 
@@ -977,28 +1026,28 @@ export default function HourlyForecastPage() {
                             tickLine={false}
                           />
                           <Tooltip content={<CustomTooltip />} />
-                          <Area 
+                          <Line 
                             type="monotone" 
                             dataKey="Actual Temp" 
                             name="Actual Temp"
                             stroke="#ef4444" 
                             strokeWidth={3}
-                            fillOpacity={1} 
-                            fill="url(#tempActualGrad)" 
+                            dot={{ r: 3, strokeWidth: 1 }}
+                            activeDot={{ r: 6 }}
                             unit={isCelsius ? "°C" : "°F"}
                           />
-                          <Area 
+                          <Line 
                             type="monotone" 
                             dataKey="Feels Like" 
                             name="Feels Like"
                             stroke="#3b82f6" 
                             strokeWidth={2.5}
                             strokeDasharray="4 4"
-                            fillOpacity={1} 
-                            fill="url(#tempFeelsGrad)" 
+                            dot={{ r: 2, strokeWidth: 1 }}
+                            activeDot={{ r: 5 }}
                             unit={isCelsius ? "°C" : "°F"}
                           />
-                        </AreaChart>
+                        </LineChart>
                       </ResponsiveContainer>
                     </div>
                     <div className="flex justify-center gap-6 mt-4 text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -1014,7 +1063,7 @@ export default function HourlyForecastPage() {
                   </CardContent>
                 </Card>
 
-                {/* 2. Interactive Analytics graph */}
+                {/* 2. Interactive Analytics line chart */}
                 <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
                   isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
                 }`}>
@@ -1032,10 +1081,10 @@ export default function HourlyForecastPage() {
                           variant="ghost"
                           className={`h-8 rounded-xl px-2.5 text-xs font-bold capitalize ${
                             chartMetric === metric
-                              ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow shadow-indigo-500/20'
+                              ? 'bg-indigo-650 bg-indigo-600 hover:bg-indigo-700 text-white shadow'
                               : isDarkMode 
                                 ? 'bg-slate-800 text-slate-200 hover:bg-slate-750' 
-                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                : 'bg-slate-105 bg-slate-100 text-slate-700 hover:bg-slate-200'
                           }`}
                         >
                           {metric === 'temp' && 'Temp'}
@@ -1049,13 +1098,7 @@ export default function HourlyForecastPage() {
                   <CardContent className="p-4 sm:p-6 pt-3">
                     <div className="h-[250px] w-full text-xs">
                       <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={analyticsChartData} margin={{ top: 15, right: 10, left: -25, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="analyticsGrad" x1="0" y1="0" x2="0" y2="100%">
-                              <stop offset="5%" stopColor={activeColor} stopOpacity={0.3}/>
-                              <stop offset="95%" stopColor={activeColor} stopOpacity={0}/>
-                            </linearGradient>
-                          </defs>
+                        <LineChart data={analyticsChartData} margin={{ top: 15, right: 10, left: -25, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"} />
                           <XAxis 
                             dataKey="time" 
@@ -1072,21 +1115,21 @@ export default function HourlyForecastPage() {
                             tickLine={false}
                           />
                           <Tooltip content={<CustomTooltip />} />
-                          <Area 
+                          <Line 
                             type="monotone" 
                             dataKey={activeMetricName} 
                             name={activeMetricName}
                             stroke={activeColor} 
                             strokeWidth={3}
-                            fillOpacity={1} 
-                            fill="url(#analyticsGrad)" 
+                            dot={{ r: 3, strokeWidth: 1 }}
+                            activeDot={{ r: 6 }}
                             unit={
                               chartMetric === 'temp' ? (isCelsius ? "°C" : "°F") :
                               chartMetric === 'humidity' ? "%" :
                               chartMetric === 'wind' ? " km/h" : " hPa"
                             }
                           />
-                        </AreaChart>
+                        </LineChart>
                       </ResponsiveContainer>
                     </div>
                     <div className="flex justify-center gap-6 mt-4 text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -1100,7 +1143,7 @@ export default function HourlyForecastPage() {
               </div>
             )}
 
-            {/* Precipitation Probability timeline */}
+            {/* Precipitation Probability timeline (Solid color bars) */}
             {hourlyData.length > 0 && Math.max(...hourlyData.map(h => h.pop)) > 0 && (
               <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
                 isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
@@ -1119,12 +1162,12 @@ export default function HourlyForecastPage() {
                       </span>
                       <div className="flex-1 h-3.5 bg-slate-100 dark:bg-slate-950/40 rounded-full overflow-hidden relative">
                         <div
-                          className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-blue-400 to-indigo-500"
+                          className="h-full rounded-full transition-all duration-500 bg-blue-500"
                           style={{ width: `${hour.pop}%` }}
                         />
                       </div>
                       <span className={`text-xs font-extrabold w-12 text-right ${
-                        hour.pop > 50 ? 'text-blue-500 font-black' : isDarkMode ? 'text-slate-400' : 'text-slate-650'
+                        hour.pop > 50 ? 'text-blue-500 font-black' : isDarkMode ? 'text-slate-400' : 'text-slate-600'
                       }`}>
                         {Math.round(hour.pop)}%
                       </span>
@@ -1134,7 +1177,7 @@ export default function HourlyForecastPage() {
               </Card>
             )}
 
-            {/* Weather Recommendations */}
+            {/* Weather Recommendations (Solid color cards) */}
             {hourlyData.length > 0 && (() => {
               const recommendations = getRecommendations()
               if (recommendations.length === 0) return null
@@ -1142,8 +1185,8 @@ export default function HourlyForecastPage() {
               return (
                 <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
                   isDarkMode 
-                    ? 'bg-gradient-to-br from-indigo-950/45 to-purple-950/40 border-indigo-900/50 text-white' 
-                    : 'bg-gradient-to-br from-indigo-50/80 to-purple-50/70 border-indigo-100 text-slate-800'
+                    ? 'bg-slate-900/60 border-slate-800/80 text-white' 
+                    : 'bg-white/80 border-slate-200/80 text-slate-800'
                 }`}>
                   <CardHeader className="p-4 sm:p-6 pb-2 text-left">
                     <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
@@ -1159,11 +1202,11 @@ export default function HourlyForecastPage() {
                           className={`flex items-start gap-3 p-3 rounded-2xl border text-left ${
                             isDarkMode 
                               ? 'bg-slate-950/40 border-slate-900/80 hover:bg-slate-950/60' 
-                              : 'bg-white border-slate-150 hover:bg-slate-50'
+                              : 'bg-slate-50 border-slate-150 hover:bg-slate-100/50'
                           } transition-colors duration-200`}
                         >
                           <span className="text-2xl flex-shrink-0">{rec.split(' ')[0]}</span>
-                          <p className={`text-xs font-semibold leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                          <p className={`text-xs font-semibold leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-655'}`}>
                             {rec.substring(rec.indexOf(' ') + 1)}
                           </p>
                         </div>
@@ -1181,7 +1224,7 @@ export default function HourlyForecastPage() {
               <CardHeader className="p-4 sm:p-6 pb-3 text-left">
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
-                    <Clock className="h-5 w-5 text-indigo-500" />
+                    <Clock className="h-5 w-5 text-indigo-555 text-indigo-500" />
                     <span>Selected Timeline Inspection</span>
                   </CardTitle>
                   {showComparison && compareHours.length > 0 && (
@@ -1220,7 +1263,7 @@ export default function HourlyForecastPage() {
                                 : 'bg-indigo-50/90 border-indigo-500 scale-[1.03] shadow-lg shadow-indigo-500/5 text-indigo-950'
                               : isDarkMode
                                 ? 'bg-slate-900/40 border-slate-800/80 hover:bg-slate-800/40 hover:scale-[1.02] text-slate-200'
-                                : 'bg-white/80 border-slate-200/80 hover:bg-slate-100/50 hover:scale-[1.02] text-slate-800'
+                                : 'bg-white/80 border-slate-200/80 hover:bg-slate-100/50 hover:scale-[1.02] text-slate-805'
                         }`}
                       >
                         {isCompared && (
@@ -1231,7 +1274,7 @@ export default function HourlyForecastPage() {
                         <p className="text-[10px] font-black uppercase tracking-wider opacity-75 text-center w-full">
                           {index === 0 ? 'Now' : formatTime(hour.dt)}
                         </p>
-                        <div className={`w-10 h-10 mx-auto rounded-2xl bg-gradient-to-br ${getGradientForTimeOfDay(timeOfDay)} p-2 flex items-center justify-center shadow`}>
+                        <div className={`w-10 h-10 mx-auto rounded-2xl ${getColorForTimeOfDay(timeOfDay)} p-2 flex items-center justify-center shadow`}>
                           <WeatherIcon className="h-6 w-6 text-white" />
                         </div>
                         <div className="text-center w-full">
@@ -1254,7 +1297,7 @@ export default function HourlyForecastPage() {
               }`}>
                 <CardHeader className="p-4 sm:p-6 pb-2 text-left">
                   <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
-                    <Activity className="h-5 w-5 text-indigo-550" />
+                    <Activity className="h-5 w-5 text-indigo-500" />
                     <span>Hourly Grid Comparison Board</span>
                   </CardTitle>
                 </CardHeader>
@@ -1278,12 +1321,12 @@ export default function HourlyForecastPage() {
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="text-xs font-bold">
+                      <tbody className="text-xs font-bold text-left">
                         {/* TEMPERATURE COMPARISON */}
                         <tr className={`border-b ${isDarkMode ? 'border-slate-850/50' : 'border-slate-100'}`}>
                           <td className="py-4 px-3 text-left">
-                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
-                              <Thermometer className="h-4 w-4 text-red-500" />
+                            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                              <Thermometer className="h-4 w-4 text-red-505 text-red-500" />
                               <span>Temperature</span>
                             </div>
                           </td>
@@ -1300,7 +1343,7 @@ export default function HourlyForecastPage() {
                         {/* WEATHER DESCRIPTION */}
                         <tr className={`border-b ${isDarkMode ? 'border-slate-850/50' : 'border-slate-100'}`}>
                           <td className="py-4 px-3 text-left">
-                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
+                            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                               <Cloud className="h-4 w-4 text-blue-500" />
                               <span>Weather Status</span>
                             </div>
@@ -1321,8 +1364,8 @@ export default function HourlyForecastPage() {
                         {/* RAIN PROBABILITY */}
                         <tr className={`border-b ${isDarkMode ? 'border-slate-850/50' : 'border-slate-100'}`}>
                           <td className="py-4 px-3 text-left">
-                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
-                              <CloudRain className="h-4 w-4 text-blue-500" />
+                            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                              <CloudRain className="h-4 w-4 text-blue-550 text-blue-500" />
                               <span>Rain Probability</span>
                             </div>
                           </td>
@@ -1338,7 +1381,7 @@ export default function HourlyForecastPage() {
                         {/* HUMIDITY INDEX */}
                         <tr className={`border-b ${isDarkMode ? 'border-slate-850/50' : 'border-slate-100'}`}>
                           <td className="py-4 px-3 text-left">
-                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
+                            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                               <Droplets className="h-4 w-4 text-cyan-500" />
                               <span>Humidity Index</span>
                             </div>
@@ -1353,7 +1396,7 @@ export default function HourlyForecastPage() {
                         {/* WIND VELOCITY */}
                         <tr className={`border-b ${isDarkMode ? 'border-slate-850/50' : 'border-slate-100'}`}>
                           <td className="py-4 px-3 text-left">
-                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
+                            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                               <Wind className="h-4 w-4 text-emerald-500" />
                               <span>Wind & Direction</span>
                             </div>
@@ -1371,7 +1414,7 @@ export default function HourlyForecastPage() {
                         {/* SATELLITE VISIBILITY */}
                         <tr>
                           <td className="py-4 px-3 text-left">
-                            <div className="flex items-center gap-2 text-slate-550 dark:text-slate-350">
+                            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                               <Eye className="h-4 w-4 text-purple-500" />
                               <span>Satellite Visibility</span>
                             </div>
@@ -1394,7 +1437,7 @@ export default function HourlyForecastPage() {
               <Card className={`border rounded-3xl backdrop-blur-xl overflow-hidden ${
                 isDarkMode ? 'bg-slate-900/60 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200/80 text-slate-800'
               }`}>
-                <CardHeader className="p-4 sm:p-6 pb-2 border-b border-slate-250/20 dark:border-slate-800/20 text-left">
+                <CardHeader className="p-4 sm:p-6 pb-2 border-b border-slate-800/20 text-left">
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-black tracking-wide">
@@ -1423,28 +1466,28 @@ export default function HourlyForecastPage() {
                         label: "Temperature",
                         value: `${formatTemp(hourlyData[selectedHour].temp)}°${isCelsius ? 'C' : 'F'}`,
                         subValue: `Feels like ${formatTemp(hourlyData[selectedHour].feels_like)}°`,
-                        color: "from-red-500 to-orange-500"
+                        color: "bg-rose-500"
                       },
                       {
                         icon: Droplets,
                         label: "Humidity Index",
                         value: `${hourlyData[selectedHour].humidity}%`,
                         subValue: hourlyData[selectedHour].pop > 0 ? `Rain likelihood: ${Math.round(hourlyData[selectedHour].pop)}%` : 'Dry conditions',
-                        color: "from-blue-500 to-cyan-500"
+                        color: "bg-blue-500"
                       },
                       {
                         icon: Wind,
                         label: "Wind Velocity",
                         value: `${Math.round(hourlyData[selectedHour].wind_speed * 3.6)} km/h`,
                         subValue: `Wind direction: ${getWindDirection(hourlyData[selectedHour].wind_deg)}`,
-                        color: "from-green-500 to-teal-500"
+                        color: "bg-teal-500"
                       },
                       {
                         icon: Eye,
                         label: "Visibility Index",
                         value: `${(hourlyData[selectedHour].visibility / 1000).toFixed(1)} km`,
                         subValue: `Horizontal clarity`,
-                        color: "from-purple-500 to-pink-500"
+                        color: "bg-purple-500"
                       },
                     ].map((stat, idx) => {
                       const Icon = stat.icon
@@ -1457,7 +1500,7 @@ export default function HourlyForecastPage() {
                               : 'bg-slate-50 border-slate-150 hover:bg-slate-100/50'
                           } transition-all duration-300 hover:scale-[1.02]`}
                         >
-                          <div className={`p-2 rounded-xl bg-gradient-to-r ${stat.color} text-white flex-shrink-0 shadow-md shadow-indigo-500/5`}>
+                          <div className={`p-2 rounded-xl ${stat.color} text-white flex-shrink-0 shadow-md shadow-indigo-500/5`}>
                             <Icon className="h-4 w-4" />
                           </div>
                           <div className="min-w-0">
@@ -1530,18 +1573,18 @@ export default function HourlyForecastPage() {
                     })()}
                   </div>
 
-                  {/* Weather Status Box */}
+                  {/* Weather Status Box (Solid Colors) */}
                   <div className={`p-4 rounded-2xl border flex items-center gap-3.5 text-left ${
                     isDarkMode 
-                      ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/20 text-white' 
-                      : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-150 text-slate-805'
+                      ? 'bg-slate-950/40 border-slate-900/80 text-white' 
+                      : 'bg-indigo-50 border-indigo-150 text-indigo-950'
                   }`}>
                     {(() => {
                       const WeatherIcon = weatherIcons[hourlyData[selectedHour].weather[0]?.main as keyof typeof weatherIcons] || Cloud
                       return <WeatherIcon className={`h-8 w-8 flex-shrink-0 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                     })()}
                     <div>
-                      <p className={`text-sm font-black capitalize ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                      <p className={`text-sm font-black capitalize ${isDarkMode ? 'text-white' : 'text-indigo-950'}`}>
                         {hourlyData[selectedHour].weather[0]?.main}
                       </p>
                       <p className={`text-xs font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-655'}`}>
@@ -1553,21 +1596,21 @@ export default function HourlyForecastPage() {
               </Card>
             )}
 
-            {/* Sunrise and Sunset times */}
+            {/* Sunrise and Sunset times (Solid glass cards) */}
             {weatherData?.sys && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Sunrise card */}
                 <div className={`p-5 rounded-3xl border text-left shadow-xl relative overflow-hidden flex items-center justify-between transition-transform duration-300 hover:scale-[1.02] ${
                   isDarkMode 
-                    ? 'bg-gradient-to-br from-yellow-950/40 to-amber-950/30 border-yellow-900/50 text-yellow-100'
-                    : 'bg-gradient-to-br from-yellow-50/90 to-amber-50/80 border-yellow-100 text-yellow-950'
+                    ? 'bg-slate-900/60 border-slate-800 text-white'
+                    : 'bg-white border-slate-250/70 text-slate-800'
                 }`}>
                   <div className="relative z-10 text-left">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="p-1.5 rounded-xl bg-white/20 text-white flex-shrink-0 shadow">
+                      <div className="p-1.5 rounded-xl bg-amber-500/10 text-amber-500 flex-shrink-0 shadow">
                         <Sunrise className="h-4 w-4" />
                       </div>
-                      <span className="text-[10px] font-black uppercase tracking-wider opacity-75">Sunrise Phase</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-500 dark:text-amber-400">Sunrise Phase</span>
                     </div>
                     <h2 className="text-3xl font-black mt-1 leading-none">
                       {new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString('en-US', {
@@ -1585,15 +1628,15 @@ export default function HourlyForecastPage() {
                 {/* Sunset card */}
                 <div className={`p-5 rounded-3xl border text-left shadow-xl relative overflow-hidden flex items-center justify-between transition-transform duration-300 hover:scale-[1.02] ${
                   isDarkMode 
-                    ? 'bg-gradient-to-br from-indigo-950/40 to-purple-950/30 border-indigo-900/50 text-indigo-100'
-                    : 'bg-gradient-to-br from-indigo-50/90 to-purple-50/80 border-indigo-100 text-indigo-950'
+                    ? 'bg-slate-900/60 border-slate-800 text-white'
+                    : 'bg-white border-slate-250/70 text-slate-850'
                 }`}>
                   <div className="relative z-10 text-left">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="p-1.5 rounded-xl bg-white/20 text-white flex-shrink-0 shadow">
+                      <div className="p-1.5 rounded-xl bg-indigo-500/10 text-indigo-500 flex-shrink-0 shadow">
                         <Sunset className="h-4 w-4" />
                       </div>
-                      <span className="text-[10px] font-black uppercase tracking-wider opacity-75">Sunset Phase</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500 dark:text-indigo-400">Sunset Phase</span>
                     </div>
                     <h2 className="text-3xl font-black mt-1 leading-none">
                       {new Date(weatherData.sys.sunset * 1000).toLocaleTimeString('en-US', {

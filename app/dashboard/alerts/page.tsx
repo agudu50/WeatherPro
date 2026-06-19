@@ -247,11 +247,11 @@ export default function AlertsPage() {
     return (
       <div className={`flex items-center justify-center h-[600px] ${
         isDarkMode 
-          ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950' 
-          : 'bg-gradient-to-b from-slate-50 via-blue-50/30 to-slate-50'
+          ? 'bg-slate-950 text-slate-100' 
+          : 'bg-slate-50 text-slate-900'
       } transition-colors duration-500`}>
         <div className="text-center space-y-4">
-          <div className="inline-flex p-4 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
+          <div className="inline-flex p-4 rounded-lg bg-blue-600 text-white shadow-lg">
             <Loader2 className="h-8 w-8 animate-spin text-white" />
           </div>
           <p className={`font-medium ${
@@ -265,14 +265,14 @@ export default function AlertsPage() {
   return (
     <div className={`flex-1 space-y-4 p-4 md:p-6 lg:p-8 ${
       isDarkMode 
-        ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950' 
-        : 'bg-gradient-to-b from-slate-50 via-blue-50/30 to-slate-50'
+        ? 'bg-slate-950 text-slate-100' 
+        : 'bg-slate-50 text-slate-900'
     } transition-colors duration-500`}>
       {/* Header Section - Sidebar Style */}
       <div className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-white shadow-md">
               <AlertTriangle className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -315,7 +315,7 @@ export default function AlertsPage() {
           } shadow-sm hover:shadow-md transition-all backdrop-blur-lg`}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white">
                   <MapPinned className="h-5 w-5 text-white" />
                 </div>
                 <div className="flex-1">
@@ -347,7 +347,7 @@ export default function AlertsPage() {
               <div className="flex items-center gap-3">
                 <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${
                   notificationsEnabled 
-                    ? "bg-gradient-to-br from-blue-500 to-blue-600" 
+                    ? "bg-blue-600 text-white" 
                     : isDarkMode ? "bg-white/10" : "bg-slate-200"
                 }`}>
                   {notificationsEnabled ? (
@@ -421,7 +421,7 @@ export default function AlertsPage() {
             <Button 
               type="submit" 
               disabled={loading}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
             >
               <Search className="h-4 w-4" />
             </Button>

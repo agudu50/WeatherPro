@@ -203,10 +203,10 @@ export default function SettingsPage() {
   // Don't render until settings are loaded to prevent undefined values
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center">
         <div className="text-center">
           <Settings className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading settings...</p>
+          <p className="text-slate-600">Loading settings...</p>
         </div>
       </div>
     )
@@ -214,19 +214,13 @@ export default function SettingsPage() {
 
   return (
     <div className={`min-h-screen ${
-      isDarkMode 
-        ? 'bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950' 
-        : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+      isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
     } p-6 transition-colors duration-500`}>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl ${
-              isDarkMode 
-                ? 'bg-gradient-to-r from-blue-500 to-indigo-600' 
-                : 'bg-gradient-to-r from-blue-400 to-indigo-500'
-            }`}>
+            <div className="p-2 rounded-xl bg-blue-500">
               <Settings className="h-8 w-8 text-white" />
             </div>
             <div>

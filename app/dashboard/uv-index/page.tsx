@@ -313,9 +313,7 @@ export default function UVIndexPage() {
   if (loading && !uvData) {
     return (
       <div className={`min-h-screen ${
-        isDarkMode 
-          ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-950' 
-          : 'bg-gradient-to-br from-orange-50 via-yellow-50 to-amber-50'
+        isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
       } p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
           <Loader2 className={`h-16 w-16 ${
@@ -331,19 +329,13 @@ export default function UVIndexPage() {
 
   return (
     <div className={`min-h-screen ${
-      isDarkMode 
-        ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-950' 
-        : 'bg-gradient-to-br from-orange-50 via-yellow-50 to-amber-50'
+      isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
     } p-6 transition-colors duration-500`}>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl ${
-              isDarkMode 
-                ? 'bg-gradient-to-r from-orange-500 to-yellow-600' 
-                : 'bg-gradient-to-r from-orange-400 to-yellow-500'
-            }`}>
+            <div className="p-2 rounded-xl bg-orange-500">
               <Sun className="h-8 w-8 text-white" />
             </div>
             <div>
