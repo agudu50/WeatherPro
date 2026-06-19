@@ -311,7 +311,7 @@ function DashboardLayoutContent({ children }) {
         </div>
 
         {/* Enhanced Mobile Menu */}
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0 overflow-hidden">
           <header className="flex h-14 items-center gap-4 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6 sticky top-0 z-50 text-slate-800 dark:text-slate-200">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
