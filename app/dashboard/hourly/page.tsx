@@ -931,56 +931,108 @@ export default function HourlyForecastPage() {
                       const getPhaseIcon = (period: string) => {
                         switch (period) {
                           case 'Morning':
-                            return <Sunrise className="h-5 w-5 text-amber-500" />
+                            return <Sunrise className="h-3.5 w-3.5" />
                           case 'Afternoon':
-                            return <Sun className="h-5 w-5 text-yellow-500" />
+                            return <Sun className="h-3.5 w-3.5 animate-spin-slow" />
                           case 'Evening':
-                            return <Sunset className="h-5 w-5 text-orange-500" />
+                            return <Sunset className="h-3.5 w-3.5" />
                           case 'Night':
-                            return <Moon className="h-5 w-5 text-indigo-400" />
+                            return <Moon className="h-3.5 w-3.5" />
                           default:
-                            return <Sun className="h-5 w-5 text-slate-400" />
+                            return <Sun className="h-3.5 w-3.5" />
                         }
                       }
+
+                      const phaseThemes = summary.period === 'Morning'
+                        ? {
+                            badgeBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+                            iconBg: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+                            borderHover: 'hover:border-amber-500/30 dark:hover:border-amber-500/40',
+                            indicatorColor: 'bg-amber-500'
+                          }
+                        : summary.period === 'Afternoon'
+                          ? {
+                              badgeBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+                              iconBg: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                              borderHover: 'hover:border-blue-500/30 dark:hover:border-blue-500/40',
+                              indicatorColor: 'bg-blue-500'
+                            }
+                          : summary.period === 'Evening'
+                            ? {
+                                badgeBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+                                iconBg: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
+                                borderHover: 'hover:border-rose-500/30 dark:hover:border-rose-500/40',
+                                indicatorColor: 'bg-rose-500'
+                              }
+                            : {
+                                badgeBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+                                iconBg: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+                                borderHover: 'hover:border-indigo-500/30 dark:hover:border-indigo-500/40',
+                                indicatorColor: 'bg-indigo-500'
+                              };
 
                       return (
                         <Card
                           key={index}
-                          className={`border rounded-2xl transition-all duration-300 hover:scale-[1.01] hover:shadow-lg ${
+                          className={`border rounded-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${phaseThemes.borderHover} ${
                             isDarkMode 
-                              ? 'bg-slate-900/40 border-slate-800/80 text-white shadow-md' 
-                              : 'bg-white border-slate-100 text-slate-800 shadow-sm'
-                          } backdrop-blur-2xl`}
+                              ? 'bg-slate-900/60 border-slate-800/80 text-white' 
+                              : 'bg-white border-slate-200/60 text-slate-800'
+                          } backdrop-blur-2xl relative overflow-hidden group`}
                         >
-                          <CardContent className="p-5 flex flex-col text-left space-y-3">
+                          {/* Inner glowing corner flare */}
+                          <div className={`absolute -top-10 -right-10 w-24 h-24 rounded-full blur-2xl opacity-20 pointer-events-none ${phaseThemes.indicatorColor}`} />
+
+                          <CardContent className="p-6 flex flex-col text-left space-y-4">
+                            {/* Card Header: Phase badge & Emoji icon */}
                             <div className="flex items-center justify-between">
-                              <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                              <Badge className={`rounded-xl border font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 shadow-sm ${phaseThemes.badgeBg}`}>
+                                <span className="mr-1.5 flex items-center">{getPhaseIcon(summary.period)}</span>
                                 {summary.period}
-                              </span>
-                              <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/60">
-                                {getPhaseIcon(summary.period)}
+                              </Badge>
+                              
+                              <div className="text-2xl h-10 w-10 rounded-2xl flex items-center justify-center border border-slate-200/40 dark:border-slate-800/85 bg-slate-50/50 dark:bg-slate-950/60 shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                {summary.icon}
                               </div>
                             </div>
                             
-                            <div className="space-y-0.5">
-                              <div className={`text-4xl font-extrabold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                            {/* Temperature and description */}
+                            <div className="space-y-1 pt-1">
+                              <div className={`text-4xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                                 {formatTemp(summary.temp)}°
                               </div>
-                              <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                                {summary.description}
+                              
+                              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span>{summary.description}</span>
                               </div>
                             </div>
 
-                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800/45 space-y-1.5">
-                              <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500">
-                                <span className="uppercase tracking-wider">Precipitation</span>
-                                <span className="text-blue-500 dark:text-blue-400 font-extrabold">{Math.round(summary.rain)}%</span>
+                            {/* Divider line */}
+                            <div className="w-full border-t border-slate-100 dark:border-slate-800/40" />
+
+                            {/* Precipitation Tracker */}
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                <span className="flex items-center gap-1">
+                                  <CloudRain className="h-3.5 w-3.5 text-blue-500" />
+                                  Precipitation
+                                </span>
+                                <span className="text-blue-500 dark:text-blue-400 font-extrabold text-xs">
+                                  {Math.round(summary.rain)}%
+                                </span>
                               </div>
-                              <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800/60 rounded-full overflow-hidden">
+                              
+                              {/* Sleek dynamic progress track */}
+                              <div className="h-2 w-full bg-slate-100 dark:bg-slate-800/60 rounded-full overflow-hidden relative">
                                 <div 
-                                  className="h-full bg-blue-500 rounded-full transition-all duration-500" 
+                                  className="h-full bg-blue-500 rounded-full transition-all duration-700 relative" 
                                   style={{ width: `${summary.rain}%` }}
-                                />
+                                >
+                                  {summary.rain > 0 && (
+                                    <div className="absolute right-0 top-0 h-full w-1 bg-white/40 rounded-full" />
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </CardContent>
