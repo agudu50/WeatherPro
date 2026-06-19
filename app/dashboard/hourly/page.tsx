@@ -1652,54 +1652,76 @@ export default function HourlyForecastPage() {
             {weatherData?.sys && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Sunrise card */}
-                <div className={`p-5 rounded-3xl border text-left shadow-xl relative overflow-hidden flex items-center justify-between transition-transform duration-300 hover:scale-[1.02] ${
+                <div className={`p-6 rounded-3xl border text-left shadow-xl relative overflow-hidden flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl group ${
                   isDarkMode 
                     ? 'bg-slate-900/60 border-slate-800 text-white'
-                    : 'bg-white border-slate-250/70 text-slate-800'
-                }`}>
-                  <div className="relative z-10 text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="p-1.5 rounded-xl bg-amber-500/10 text-amber-500 flex-shrink-0 shadow">
-                        <Sunrise className="h-4 w-4" />
-                      </div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-500 dark:text-amber-400">Sunrise Phase</span>
+                    : 'bg-white border-slate-200 text-slate-800'
+                } backdrop-blur-2xl`}>
+                  {/* Inner glowing corner flare */}
+                  <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-2xl opacity-20 bg-amber-500 pointer-events-none" />
+                  
+                  <div className="relative z-10 text-left space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Badge className="rounded-xl border font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 shadow-sm bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
+                        <Sunrise className="mr-1.5 h-3.5 w-3.5 flex items-center" />
+                        Sunrise Phase
+                      </Badge>
                     </div>
-                    <h2 className="text-3xl font-black mt-1 leading-none">
-                      {new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
-                    </h2>
-                    <p className="text-xs font-semibold opacity-75 mt-2">
-                      Morning twilight begins
-                    </p>
+                    
+                    <div className="space-y-1">
+                      <h2 className={`text-4xl font-black tracking-tighter leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </h2>
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Morning twilight begins</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-3xl h-12 w-12 rounded-2xl flex items-center justify-center border border-slate-200/40 dark:border-slate-800/85 bg-slate-50/50 dark:bg-slate-950/60 shadow-inner group-hover:scale-110 transition-transform duration-300 relative z-10">
+                    🌅
                   </div>
                 </div>
 
                 {/* Sunset card */}
-                <div className={`p-5 rounded-3xl border text-left shadow-xl relative overflow-hidden flex items-center justify-between transition-transform duration-300 hover:scale-[1.02] ${
+                <div className={`p-6 rounded-3xl border text-left shadow-xl relative overflow-hidden flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl group ${
                   isDarkMode 
                     ? 'bg-slate-900/60 border-slate-800 text-white'
-                    : 'bg-white border-slate-250/70 text-slate-850'
-                }`}>
-                  <div className="relative z-10 text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="p-1.5 rounded-xl bg-indigo-500/10 text-indigo-500 flex-shrink-0 shadow">
-                        <Sunset className="h-4 w-4" />
-                      </div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500 dark:text-indigo-400">Sunset Phase</span>
+                    : 'bg-white border-slate-200 text-slate-800'
+                } backdrop-blur-2xl`}>
+                  {/* Inner glowing corner flare */}
+                  <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-2xl opacity-20 bg-indigo-500 pointer-events-none" />
+                  
+                  <div className="relative z-10 text-left space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Badge className="rounded-xl border font-bold uppercase tracking-wider text-[10px] px-2.5 py-1 shadow-sm bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20">
+                        <Sunset className="mr-1.5 h-3.5 w-3.5 flex items-center" />
+                        Sunset Phase
+                      </Badge>
                     </div>
-                    <h2 className="text-3xl font-black mt-1 leading-none">
-                      {new Date(weatherData.sys.sunset * 1000).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
-                    </h2>
-                    <p className="text-xs font-semibold opacity-75 mt-2">
-                      Evening twilight begins
-                    </p>
+                    
+                    <div className="space-y-1">
+                      <h2 className={`text-4xl font-black tracking-tighter leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {new Date(weatherData.sys.sunset * 1000).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </h2>
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                        <span>Evening twilight begins</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-3xl h-12 w-12 rounded-2xl flex items-center justify-center border border-slate-200/40 dark:border-slate-800/85 bg-slate-50/50 dark:bg-slate-950/60 shadow-inner group-hover:scale-110 transition-transform duration-300 relative z-10">
+                    🌇
                   </div>
                 </div>
               </div>
