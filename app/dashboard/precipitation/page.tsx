@@ -316,7 +316,7 @@ export default function PrecipitationPage() {
       } p-4 md:p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
           <Loader2 className={`h-16 w-16 ${
-            isDarkMode ? 'text-white' : 'text-blue-600'
+            isDarkMode ? 'text-white' : 'text-indigo-600'
           } animate-spin mx-auto mb-4`} />
           <p className="text-xl font-bold tracking-tight">Loading precipitation data...</p>
         </div>
@@ -336,7 +336,7 @@ export default function PrecipitationPage() {
         {/* Header Console */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-blue-600 text-white shadow-md">
+            <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md">
               <CloudRain className="h-7 w-7" />
             </div>
             <div>
@@ -350,8 +350,8 @@ export default function PrecipitationPage() {
                   {locationStatus === 'success' && (
                     <Badge variant="outline" className={`text-xs font-bold px-2 py-0.5 border ${
                       isDarkMode 
-                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
-                        : 'bg-blue-50 text-blue-700 border-blue-200'
+                        ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' 
+                        : 'bg-indigo-50 text-indigo-700 border-indigo-200'
                     }`}>
                       📍 Detected Location
                     </Badge>
@@ -373,12 +373,12 @@ export default function PrecipitationPage() {
                   onChange={(e) => setSearchCity(e.target.value)}
                   className={`pl-9 pr-3 py-2 w-full rounded-xl transition-all duration-300 ${
                     isDarkMode 
-                      ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500' 
-                      : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:ring-1 focus:ring-blue-600'
+                      ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' 
+                      : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600'
                   }`}
                 />
               </div>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide">
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide">
                 Search
               </Button>
             </form>
@@ -597,7 +597,7 @@ export default function PrecipitationPage() {
             } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-                  <TrendingUp className="h-4 w-4 text-blue-500" />
+                  <TrendingUp className="h-4 w-4 text-indigo-500" />
                   <span>Real-time Water Metrics</span>
                 </CardTitle>
               </CardHeader>
@@ -608,7 +608,7 @@ export default function PrecipitationPage() {
                   {/* Panel 1: Current Volume accumulation details */}
                   <div className={`p-5 rounded-2xl border ${
                     isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
-                  } flex flex-col justify-between min-h-[190px] hover:border-blue-500/30 transition-all duration-300`}>
+                  } flex flex-col justify-between min-h-[190px] hover:border-indigo-500/30 transition-all duration-300`}>
                     <div className="flex items-center gap-1.5 text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                       <Umbrella className="h-4 w-4 text-blue-500" />
                       <span>Rain Accumulation</span>
@@ -785,7 +785,7 @@ export default function PrecipitationPage() {
           } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                <TrendingUp className="h-5 w-5 text-blue-500" />
+                <TrendingUp className="h-5 w-5 text-indigo-500" />
                 <span>24-Hour Precipitation Stream</span>
               </CardTitle>
             </CardHeader>
@@ -849,7 +849,7 @@ export default function PrecipitationPage() {
             } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                  <Calendar className="h-5 w-5 text-blue-500" />
+                  <Calendar className="h-5 w-5 text-indigo-500" />
                   <span>7-Day Rain Volume Forecast</span>
                 </CardTitle>
               </CardHeader>
@@ -915,7 +915,7 @@ export default function PrecipitationPage() {
             } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                  <BarChart3 className="h-5 w-5 text-blue-500" />
+                  <BarChart3 className="h-5 w-5 text-indigo-500" />
                   <span>Monthly Stats</span>
                 </CardTitle>
               </CardHeader>
@@ -926,7 +926,7 @@ export default function PrecipitationPage() {
                   <div className={`p-4 rounded-2xl border ${
                     isDarkMode ? 'border-slate-800 bg-slate-500/5' : 'border-slate-200 bg-slate-50/50'
                   }`}>
-                    <div className="text-2xl font-black text-blue-600 dark:text-blue-400 mb-1">
+                    <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mb-1">
                       {convertPrecipitation(precipitationData.monthly.totalRainfall)} {getUnitSymbol()}
                     </div>
                     <div className="text-xs font-bold text-slate-800 dark:text-slate-100 mb-0.5">Total Estimated</div>
@@ -977,7 +977,7 @@ export default function PrecipitationPage() {
           } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                <Umbrella className="h-5 w-5 text-blue-500" />
+                <Umbrella className="h-5 w-5 text-indigo-500" />
                 <span>Precipitation Outlook & Tips</span>
               </CardTitle>
             </CardHeader>

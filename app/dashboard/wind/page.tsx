@@ -269,7 +269,7 @@ export default function WindPage() {
       } p-4 md:p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
           <Loader2 className={`h-16 w-16 ${
-            isDarkMode ? 'text-white' : 'text-blue-600'
+            isDarkMode ? 'text-white' : 'text-indigo-600'
           } animate-spin mx-auto mb-4`} />
           <p className="text-xl font-bold tracking-tight">Loading wind data...</p>
         </div>
@@ -289,7 +289,7 @@ export default function WindPage() {
         {/* Header Console */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-blue-600 text-white shadow-md">
+            <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md">
               <Wind className="h-7 w-7" />
             </div>
             <div>
@@ -303,8 +303,8 @@ export default function WindPage() {
                   {locationStatus === 'success' && (
                     <Badge variant="outline" className={`text-xs font-bold px-2 py-0.5 border ${
                       isDarkMode 
-                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
-                        : 'bg-blue-50 text-blue-700 border-blue-200'
+                        ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' 
+                        : 'bg-indigo-50 text-indigo-700 border-indigo-200'
                     }`}>
                       📍 Detected Location
                     </Badge>
@@ -326,12 +326,12 @@ export default function WindPage() {
                   onChange={(e) => setSearchCity(e.target.value)}
                   className={`pl-9 pr-3 py-2 w-full rounded-xl transition-all duration-300 ${
                     isDarkMode 
-                      ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500' 
-                      : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:ring-1 focus:ring-blue-600'
+                      ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' 
+                      : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600'
                   }`}
                 />
               </div>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide">
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide">
                 Search
               </Button>
             </form>
@@ -437,7 +437,7 @@ export default function WindPage() {
             } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-                  <Compass className="h-4 w-4 text-blue-500" />
+                  <Compass className="h-4 w-4 text-indigo-500" />
                   <span>Compass Dial</span>
                 </CardTitle>
               </CardHeader>
@@ -502,7 +502,7 @@ export default function WindPage() {
                       {/* Arrow Pointer Vane */}
                       <path 
                         d="M100,28 L106,50 L102,48 L100,26 L98,48 L94,50 Z" 
-                        className="fill-blue-500 dark:fill-blue-400" 
+                        className="fill-indigo-500 dark:fill-indigo-400" 
                       />
                       {/* Grey Counter-weight Tail */}
                       <path 
@@ -535,7 +535,7 @@ export default function WindPage() {
                     <text x="100" y="109" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-bold uppercase tracking-wider fill-slate-400 dark:fill-slate-500">
                       {getSpeedUnit()}
                     </text>
-                    <text x="100" y="121" textAnchor="middle" dominantBaseline="central" className="text-xs font-extrabold fill-blue-500 dark:fill-blue-400">
+                    <text x="100" y="121" textAnchor="middle" dominantBaseline="central" className="text-xs font-extrabold fill-indigo-500 dark:fill-indigo-400">
                       {getDirectionName(windData.current.direction)}
                     </text>
                   </svg>
@@ -562,7 +562,7 @@ export default function WindPage() {
             } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-                  <Activity className="h-4 w-4 text-blue-500" />
+                  <Activity className="h-4 w-4 text-indigo-500" />
                   <span>Real-time Wind Metrics</span>
                 </CardTitle>
               </CardHeader>
@@ -574,9 +574,9 @@ export default function WindPage() {
                   {/* Gauge 1: Beaufort Force Circular Indicator */}
                   <div className={`p-5 rounded-2xl border ${
                     isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
-                  } flex flex-col items-center text-center justify-between min-h-[190px] hover:border-blue-500/30 transition-all duration-300`}>
+                  } flex flex-col items-center text-center justify-between min-h-[190px] hover:border-indigo-500/30 transition-all duration-300`}>
                     <div className="flex items-center gap-1.5 self-start text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                      <Compass className="h-4 w-4 text-blue-500" />
+                      <Compass className="h-4 w-4 text-indigo-500" />
                       <span>Beaufort Scale</span>
                     </div>
                     
@@ -594,7 +594,7 @@ export default function WindPage() {
                           cx="50"
                           cy="50"
                           r="40"
-                          className="stroke-blue-500 transition-all duration-1000 ease-out"
+                          className="stroke-indigo-500 transition-all duration-1000 ease-out"
                           strokeWidth="6.5"
                           fill="transparent"
                           strokeDasharray={251.2}
@@ -744,7 +744,7 @@ export default function WindPage() {
           } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                <TrendingUp className="h-5 w-5 text-blue-500" />
+                <TrendingUp className="h-5 w-5 text-indigo-500" />
                 <span>24-Hour Hourly Wind Stream</span>
               </CardTitle>
             </CardHeader>
@@ -766,7 +766,7 @@ export default function WindPage() {
                       
                       <div className="relative w-8 h-8 mx-auto my-2.5 flex items-center justify-center">
                         <Navigation 
-                          className="h-5 w-5 text-blue-550 dark:text-blue-400"
+                          className="h-5 w-5 text-indigo-500 dark:text-indigo-400"
                           style={{ transform: `rotate(${hour.direction}deg)` }}
                         />
                         <span className="absolute text-[10px] font-black text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 px-0.5 animate-none" style={{ transform: 'translate(0px, 12px)' }}>
@@ -806,7 +806,7 @@ export default function WindPage() {
             } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                  <Wind className="h-5 w-5 text-blue-500" />
+                  <Wind className="h-5 w-5 text-indigo-500" />
                   <span>7-Day Wind Range Forecast</span>
                 </CardTitle>
               </CardHeader>
@@ -831,7 +831,7 @@ export default function WindPage() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Navigation 
-                              className="h-3.5 w-3.5 text-blue-550 dark:text-blue-400"
+                              className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400"
                               style={{ transform: `rotate(${day.direction === "N" ? 0 : day.direction === "NE" ? 45 : day.direction === "E" ? 90 : day.direction === "SE" ? 135 : day.direction === "S" ? 180 : day.direction === "SW" ? 225 : day.direction === "W" ? 270 : 315}deg)` }}
                             />
                             <Badge variant="outline" className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 border-slate-300/30">
@@ -845,12 +845,12 @@ export default function WindPage() {
                           <div className="relative w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full">
                             {/* Track bar representing wind range */}
                             <div 
-                              className="absolute h-full bg-blue-500 dark:bg-blue-400 rounded-full" 
+                              className="absolute h-full bg-indigo-500 dark:bg-indigo-400 rounded-full" 
                               style={{ left: `${avgPercent}%`, width: `${maxPercent - avgPercent}%` }}
                             />
                             {/* Current Point Dot */}
                             <div 
-                              className="absolute w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-300 border border-white dark:border-slate-950 -translate-y-1/4"
+                              className="absolute w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-300 border border-white dark:border-slate-950 -translate-y-1/4"
                               style={{ left: `${avgPercent}%` }}
                             />
                           </div>
@@ -882,7 +882,7 @@ export default function WindPage() {
             } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                  <Info className="h-5 w-5 text-blue-500" />
+                  <Info className="h-5 w-5 text-indigo-500" />
                   <span>Beaufort Reference</span>
                 </CardTitle>
               </CardHeader>
