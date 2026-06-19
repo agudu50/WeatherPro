@@ -1,11 +1,10 @@
 "use client"
 
 import { useTheme } from "@/lib/ThemeContext"
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { 
   CloudRain, 
@@ -23,7 +22,9 @@ import {
   RefreshCw,
   Cloud,
   CloudDrizzle,
-  CloudSnow
+  CloudSnow,
+  AlertTriangle,
+  Info
 } from "lucide-react"
 
 interface PrecipitationData {
@@ -65,8 +66,8 @@ interface PrecipitationData {
 export default function PrecipitationPage() {
   const [precipitationData, setPrecipitationData] = useState<PrecipitationData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [unit, setUnit] = useState("mm")
-  const [viewMode, setViewMode] = useState("hourly")
+  const [unit, setUnit] = useState<"mm" | "inches">("mm")
+  const [viewMode, setViewMode] = useState<"hourly" | "daily">("hourly")
   const { isDarkMode, toggleDarkMode } = useTheme()
   const [searchCity, setSearchCity] = useState("")
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lon: number } | null>(null)
@@ -158,9 +159,8 @@ export default function PrecipitationPage() {
         }
       })
 
-      // Calculate monthly statistics (using forecast data as approximation)
-      // Types for monthly calculation
-      interface HourlyData {
+      // Process hourly calculations
+      interface HourlyItem {
         time: string
         intensity: number
         probability: number
@@ -170,11 +170,11 @@ export default function PrecipitationPage() {
       }
 
       const totalPrecip = hourlyData.reduce(
-        (sum: number, h: HourlyData) => sum + h.accumulation,
+        (sum: number, h: HourlyItem) => sum + h.accumulation,
         0
       )
-      const rainyHours: number = (hourlyData as HourlyData[]).filter((h: HourlyData) => h.intensity > 0).length
-      const avgIntensity = rainyHours > 0 ? totalPrecip / rainyHours : 0
+      const rainyHoursCount = hourlyData.filter((h: HourlyItem) => h.intensity > 0).length
+      const avgIntensity = rainyHoursCount > 0 ? totalPrecip / rainyHoursCount : 0
 
       setPrecipitationData({
         current: {
@@ -191,7 +191,7 @@ export default function PrecipitationPage() {
         daily: dailyData,
         monthly: {
           totalRainfall: Math.round(totalPrecip * 30 / 24), // Extrapolate to month
-          rainyDays: Math.round(rainyHours * 30 / 24),
+          rainyDays: Math.round(rainyHoursCount * 30 / 24),
           averageIntensity: Math.round(avgIntensity * 10) / 10,
           comparison: Math.round((Math.random() - 0.5) * 40) // Simulated comparison
         },
@@ -253,17 +253,8 @@ export default function PrecipitationPage() {
   }
 
   useEffect(() => {
-    // Load dark mode preference
-    const savedDarkMode = localStorage.getItem("precipitationDarkMode")
-    if (savedDarkMode !== null) {
-      
-    }
-
-    // Get user location
     getUserLocation()
   }, [])
-
-  
 
   const convertPrecipitation = (amount: number) => {
     if (unit === "inches") {
@@ -277,26 +268,26 @@ export default function PrecipitationPage() {
   }
 
   const getIntensityColor = (intensity: number, dark: boolean) => {
-    if (intensity === 0) return dark ? "text-gray-300" : "text-gray-600"
-    if (intensity < 2) return dark ? "text-blue-300" : "text-blue-600"
-    if (intensity < 8) return dark ? "text-blue-400" : "text-blue-700"
-    if (intensity < 15) return dark ? "text-blue-500" : "text-blue-800"
-    return dark ? "text-blue-600" : "text-blue-900"
+    if (intensity === 0) return dark ? "text-slate-400" : "text-slate-500"
+    if (intensity < 2) return dark ? "text-sky-400" : "text-sky-655"
+    if (intensity < 8) return dark ? "text-blue-400" : "text-blue-655"
+    if (intensity < 15) return dark ? "text-indigo-400" : "text-indigo-655"
+    return dark ? "text-rose-400" : "text-rose-655"
   }
 
   const getIntensityBg = (intensity: number, dark: boolean) => {
-    if (intensity === 0) return dark ? "bg-gray-500/20 border-gray-400/30" : "bg-gray-100 border-gray-300"
-    if (intensity < 2) return dark ? "bg-blue-300/20 border-blue-300/30" : "bg-blue-100 border-blue-300"
-    if (intensity < 8) return dark ? "bg-blue-400/20 border-blue-400/30" : "bg-blue-200 border-blue-400"
-    if (intensity < 15) return dark ? "bg-blue-500/20 border-blue-500/30" : "bg-blue-300 border-blue-500"
-    return dark ? "bg-blue-600/20 border-blue-600/30" : "bg-blue-400 border-blue-600"
+    if (intensity === 0) return dark ? "bg-slate-800/80 border-slate-750 text-slate-400" : "bg-slate-100 border-slate-250 text-slate-700"
+    if (intensity < 2) return dark ? "bg-sky-500/20 border-sky-550/20 text-sky-400" : "bg-sky-50 border-sky-250 text-sky-800"
+    if (intensity < 8) return dark ? "bg-blue-500/20 border-blue-550/20 text-blue-400" : "bg-blue-50 border-blue-250 text-blue-800"
+    if (intensity < 15) return dark ? "bg-indigo-500/20 border-indigo-550/20 text-indigo-400" : "bg-indigo-50 border-indigo-250 text-indigo-800"
+    return dark ? "bg-rose-500/20 border-rose-550/20 text-rose-400" : "bg-rose-50 border-rose-250 text-rose-800"
   }
 
   const getProbabilityColor = (probability: number, dark: boolean) => {
-    if (probability < 25) return dark ? "text-green-300" : "text-green-600"
-    if (probability < 50) return dark ? "text-yellow-300" : "text-yellow-600"
-    if (probability < 75) return dark ? "text-orange-300" : "text-orange-600"
-    return dark ? "text-red-300" : "text-red-600"
+    if (probability < 25) return dark ? "text-emerald-400" : "text-emerald-600"
+    if (probability < 50) return dark ? "text-amber-400" : "text-amber-600"
+    if (probability < 75) return dark ? "text-orange-400" : "text-orange-600"
+    return dark ? "text-rose-400" : "text-rose-600"
   }
 
   const getRainfallCategory = (amount: number) => {
@@ -320,59 +311,49 @@ export default function PrecipitationPage() {
 
   if (loading && !precipitationData) {
     return (
-      <div className={`min-h-screen ${
-        isDarkMode 
-          ? 'bg-slate-950 text-slate-100' 
-          : 'bg-slate-50 text-slate-900'
-      } p-6 flex items-center justify-center transition-colors duration-500`}>
+      <div className={`w-full min-h-[calc(100vh-3.5rem)] ${
+        isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
+      } p-4 md:p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
           <Loader2 className={`h-16 w-16 ${
             isDarkMode ? 'text-white' : 'text-blue-600'
           } animate-spin mx-auto mb-4`} />
-          <p className={`text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Loading precipitation data...
-          </p>
+          <p className="text-xl font-bold tracking-tight">Loading precipitation data...</p>
         </div>
       </div>
     )
   }
 
+  const hasAlert = precipitationData && precipitationData.current.intensity > 8
+  const maxWeeklyRainfall = precipitationData ? Math.max(...precipitationData.daily.map(d => d.totalRainfall), 10) : 10
+
   return (
-    <div className={`min-h-screen ${
-      isDarkMode 
-        ? 'bg-slate-950 text-slate-100' 
-        : 'bg-slate-50 text-slate-900'
-    } p-6 transition-colors duration-500`}>
+    <div className={`w-full max-w-full overflow-x-hidden min-h-[calc(100vh-3.5rem)] ${
+      isDarkMode ? 'bg-slate-955 text-slate-100' : 'bg-slate-50 text-slate-900'
+    } p-4 md:p-6 transition-colors duration-500`}>
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
+
+        {/* Header Console */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl ${
-              isDarkMode 
-                ? 'bg-blue-600' 
-                : 'bg-blue-500'
-            }`}>
-              <CloudRain className="h-8 w-8 text-white" />
+            <div className="p-3 rounded-2xl bg-blue-600 text-white shadow-md">
+              <CloudRain className="h-7 w-7" />
             </div>
             <div>
-              <h1 className={`text-4xl font-bold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                Precipitation Forecast
+              <h1 className="text-3xl font-black tracking-tight">
+                Precipitation
               </h1>
               {precipitationData && (
-                <div className={`flex items-center gap-2 mt-1 text-sm ${
-                  isDarkMode ? 'text-white/70' : 'text-gray-600'
-                }`}>
-                  <MapPin className="h-4 w-4 text-red-500" />
+                <div className="flex items-center gap-2 mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+                  <MapPin className="h-4 w-4 text-rose-500" />
                   <span>{precipitationData.current.location}, {precipitationData.current.country}</span>
                   {locationStatus === 'success' && (
-                    <Badge className={`${
+                    <Badge variant="outline" className={`text-xs font-bold px-2 py-0.5 border ${
                       isDarkMode 
-                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' 
-                        : 'bg-blue-100 text-blue-700 border-blue-300'
+                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
+                        : 'bg-blue-50 text-blue-700 border-blue-200'
                     }`}>
-                      📍 Your Location
+                      📍 Detected Location
                     </Badge>
                   )}
                 </div>
@@ -380,490 +361,693 @@ export default function PrecipitationPage() {
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex flex-wrap gap-2">
-            <form onSubmit={handleSearchCity} className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Search city..."
-                value={searchCity}
-                onChange={(e) => setSearchCity(e.target.value)}
-                className={`${
-                  isDarkMode 
-                    ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
-                }`}
-              />
-              <Button type="submit" size="icon" className="bg-blue-600 hover:bg-blue-700">
-                <Search className="h-4 w-4" />
+          {/* Action Row */}
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <form onSubmit={handleSearchCity} className="flex gap-2 w-full sm:w-auto">
+              <div className="relative flex items-center w-full sm:w-64">
+                <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
+                <Input
+                  type="text"
+                  placeholder="Search city..."
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                  className={`pl-9 pr-3 py-2 w-full rounded-xl transition-all duration-300 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500' 
+                      : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:ring-1 focus:ring-blue-600'
+                  }`}
+                />
+              </div>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide">
+                Search
               </Button>
             </form>
             
-            <Button
-              onClick={getUserLocation}
-              size="icon"
-              className="bg-purple-600 hover:bg-purple-700"
-              title="Use My Location"
-            >
-              <Target className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+              <Button
+                type="button"
+                onClick={getUserLocation}
+                variant="outline"
+                size="icon"
+                className={`rounded-xl border h-10 w-10 ${
+                  isDarkMode 
+                    ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                    : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+                title="Use My Location"
+              >
+                <Target className="h-4 w-4" />
+              </Button>
 
-            <Button
-              onClick={() => currentLocation && fetchPrecipitationData(currentLocation.lat, currentLocation.lon)}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title="Refresh Data"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+              <Button
+                type="button"
+                onClick={() => currentLocation && fetchPrecipitationData(currentLocation.lat, currentLocation.lon)}
+                variant="outline"
+                size="icon"
+                className={`rounded-xl border h-10 w-10 ${
+                  isDarkMode 
+                    ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                    : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+                title="Refresh Data"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
 
-            <Button
-              onClick={toggleDarkMode}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title={isDarkMode ? "Light Mode" : "Dark Mode"}
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
+              <Button
+                type="button"
+                onClick={toggleDarkMode}
+                variant="outline"
+                size="icon"
+                className={`rounded-xl border h-10 w-10 ${
+                  isDarkMode 
+                    ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                    : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+                title={isDarkMode ? "Light Mode" : "Dark Mode"}
+              >
+                {isDarkMode ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-600" />}
+              </Button>
+            </div>
 
-            <Button
-              onClick={() => setUnit("mm")}
-              variant="outline"
-              className={`${
-                unit === "mm"
-                  ? isDarkMode
-                    ? "bg-white text-blue-900 border-white"
-                    : "bg-blue-600 text-white border-blue-600"
-                  : isDarkMode
-                    ? "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                    : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-              }`}
-            >
-              mm
-            </Button>
-            <Button
-              onClick={() => setUnit("inches")}
-              variant="outline"
-              className={`${
-                unit === "inches"
-                  ? isDarkMode
-                    ? "bg-white text-blue-900 border-white"
-                    : "bg-blue-600 text-white border-blue-600"
-                  : isDarkMode
-                    ? "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                    : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-              }`}
-            >
-              inches
-            </Button>
+            {/* Units Segment tab control */}
+            <div className="flex bg-slate-200/60 dark:bg-slate-900 border border-slate-300/30 dark:border-slate-800 rounded-xl p-1 gap-1">
+              {(["mm", "inches"] as const).map((u) => (
+                <button
+                  key={u}
+                  onClick={() => setUnit(u)}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-300 ${
+                    unit === u
+                      ? isDarkMode
+                        ? "bg-slate-850 text-white shadow-sm"
+                        : "bg-white text-slate-900 shadow-sm"
+                      : isDarkMode
+                        ? "text-slate-400 hover:text-slate-200"
+                        : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  {u === "mm" ? "mm" : "in"}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Current Precipitation */}
-        {precipitationData && (
-          <Card className={`${
+        {/* Rain Warning Alerts */}
+        {hasAlert && (
+          <div className={`p-4 rounded-2xl border ${
             isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardContent className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-                <div className="text-center lg:text-left">
-                  <h2 className="text-2xl font-bold mb-2">{precipitationData.current.location}</h2>
-                  <div className="flex items-center justify-center lg:justify-start gap-4 mb-4">
-                    <div className={`text-6xl font-bold ${getIntensityColor(precipitationData.current.intensity, isDarkMode)}`}>
+              ? 'bg-rose-500/10 border-rose-500/20 text-rose-200' 
+              : 'bg-rose-50 border-rose-200 text-rose-900'
+          } flex items-start gap-3 shadow-sm`}>
+            <AlertTriangle className="h-5 w-5 text-rose-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <div className="text-sm font-medium">
+                <span className="font-bold uppercase tracking-wider text-xs mr-2">Weather warning:</span>
+                Heavy precipitation of {convertPrecipitation(precipitationData.current.intensity)} {getUnitSymbol()}/hr active. Possible localized accumulation and reduced visibility.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dashboard Panels */}
+        {precipitationData && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+            {/* Circular SVG intensity Gauge */}
+            <Card className={`border ${
+              isDarkMode 
+                ? 'bg-slate-900/60 border-slate-800 text-white' 
+                : 'bg-white border-slate-200 text-slate-900'
+            } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <CloudRain className="h-4 w-4 text-blue-500" />
+                  <span>Rain Vane Dial</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center justify-center p-6 pb-8">
+                
+                <div className="relative w-full max-w-[240px] aspect-square mx-auto mb-6">
+                  <svg className="w-full h-full select-none" viewBox="0 0 200 200">
+                    
+                    {/* Ring Outlines */}
+                    <circle cx="100" cy="100" r="95" className="stroke-slate-200 dark:stroke-slate-800" fill="none" strokeWidth="1.5" />
+                    <circle cx="100" cy="100" r="85" className="stroke-slate-200/50 dark:stroke-slate-800/50" fill="none" strokeWidth="1" />
+                    
+                    {/* Concentric Ticks */}
+                    {Array.from({ length: 20 }).map((_, i) => {
+                      const degree = i * 18
+                      const rad = (degree * Math.PI) / 180
+                      const rOuter = 85
+                      const rInner = i % 2 === 0 ? 77 : 81
+                      const x1 = 100 + rOuter * Math.sin(rad)
+                      const y1 = 100 - rOuter * Math.cos(rad)
+                      const x2 = 100 + rInner * Math.sin(rad)
+                      const y2 = 100 - rInner * Math.cos(rad)
+                      return (
+                        <line
+                          key={i}
+                          x1={x1}
+                          y1={y1}
+                          x2={x2}
+                          y2={y2}
+                          className={
+                            i % 5 === 0
+                              ? "stroke-slate-450 dark:stroke-slate-500"
+                              : "stroke-slate-200 dark:stroke-slate-800"
+                          }
+                          strokeWidth={i % 5 === 0 ? "2" : "1"}
+                        />
+                      )
+                    })}
+
+                    {/* Scale markers */}
+                    <text x="100" y="24" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-black fill-slate-800 dark:fill-slate-100">0</text>
+                    <text x="176" y="100" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-black fill-slate-800 dark:fill-slate-100">5</text>
+                    <text x="100" y="176" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-black fill-slate-800 dark:fill-slate-100">10</text>
+                    <text x="24" y="100" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-black fill-slate-800 dark:fill-slate-100">15</text>
+
+                    {/* Circular arc filling based on intensity */}
+                    {(() => {
+                      const intensityVal = Math.min(precipitationData.current.intensity, 20)
+                      const fillPercent = intensityVal / 20
+                      const angle = fillPercent * 360
+                      const rad = (angle * Math.PI) / 180
+                      const x = 100 + 85 * Math.sin(rad)
+                      const y = 100 - 85 * Math.cos(rad)
+                      const largeArc = angle > 180 ? 1 : 0
+                      
+                      return (
+                        <>
+                          <path
+                            d={`M 100 15 A 85 85 0 ${largeArc} 1 ${x} ${y}`}
+                            className="stroke-blue-500 fill-none transition-all duration-1000 ease-out"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                          />
+                          <circle
+                            cx={x}
+                            cy={y}
+                            r="5"
+                            className="fill-blue-600 dark:fill-blue-300 stroke-white dark:stroke-slate-900"
+                            strokeWidth="1.5"
+                          />
+                        </>
+                      )
+                    })()}
+
+                    {/* Central readouts */}
+                    <circle 
+                      cx="100" 
+                      cy="100" 
+                      r="36" 
+                      className="fill-white dark:fill-slate-950 stroke-slate-200 dark:stroke-slate-800" 
+                      strokeWidth="1.5" 
+                    />
+                    <text x="100" y="91" textAnchor="middle" dominantBaseline="central" className="text-2xl font-black fill-slate-900 dark:fill-white">
                       {convertPrecipitation(precipitationData.current.intensity)}
-                    </div>
-                    <div>
-                      <div className={`text-xl ${
-                        isDarkMode ? 'text-white/80' : 'text-gray-600'
-                      }`}>{getUnitSymbol()}/hr</div>
-                      <Badge className={`border text-current ${getIntensityBg(precipitationData.current.intensity, isDarkMode)}`}>
-                        {precipitationData.current.type}
-                      </Badge>
-                    </div>
-                  </div>
-                  {precipitationData.current.duration > 0 && (
-                    <div className={isDarkMode ? 'text-white/80' : 'text-gray-600'}>
-                      Duration: {precipitationData.current.duration} minutes
-                    </div>
-                  )}
+                    </text>
+                    <text x="100" y="109" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-bold uppercase tracking-wider fill-slate-400 dark:fill-slate-500">
+                      {getUnitSymbol()}/hr
+                    </text>
+                    <text x="100" y="121" textAnchor="middle" dominantBaseline="central" className="text-xs font-extrabold fill-blue-500 dark:fill-blue-400">
+                      {precipitationData.current.type}
+                    </text>
+                  </svg>
                 </div>
-
+                
                 <div className="text-center">
-                  <div className="relative w-40 h-40 mx-auto mb-4">
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        fill="none"
-                        stroke={isDarkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)"}
-                        strokeWidth="8"
-                      />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        fill="none"
-                        stroke={isDarkMode ? "rgba(59, 130, 246, 0.8)" : "rgba(59, 130, 246, 1)"}
-                        strokeWidth="8"
-                        strokeDasharray={`${Math.min((precipitationData.current.intensity / 20) * 251.2, 251.2)} 251.2`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {getPrecipIcon(precipitationData.current.type, `h-12 w-12 ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`)}
-                    </div>
+                  <div className="text-lg font-bold text-slate-800 dark:text-slate-200">
+                    Intensity Gauge
                   </div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-600'
-                  }`}>Intensity Level</div>
+                  <div className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+                    Measured rate of rain or snow fall
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className={`rounded-lg p-4 text-center border ${
-                    isDarkMode 
-                      ? 'bg-blue-500/20 border-blue-400/30' 
-                      : 'bg-blue-100 border-blue-300'
-                  }`}>
-                    <Umbrella className={`h-6 w-6 mx-auto mb-2 ${
-                      isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                    }`} />
-                    <div className={`text-2xl font-bold ${
-                      isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                    }`}>
-                      {convertPrecipitation(precipitationData.current.accumulation)} {getUnitSymbol()}
+              </CardContent>
+            </Card>
+
+            {/* Metrics cards grid panel */}
+            <Card className={`md:col-span-1 xl:col-span-2 border ${
+              isDarkMode 
+                ? 'bg-slate-900/60 border-slate-800 text-white' 
+                : 'bg-white border-slate-200 text-slate-900'
+            } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <TrendingUp className="h-4 w-4 text-blue-500" />
+                  <span>Real-time Water Metrics</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 pt-2">
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                  {/* Panel 1: Current Volume accumulation details */}
+                  <div className={`p-5 rounded-2xl border ${
+                    isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
+                  } flex flex-col justify-between min-h-[190px] hover:border-blue-500/30 transition-all duration-300`}>
+                    <div className="flex items-center gap-1.5 text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <Umbrella className="h-4 w-4 text-blue-500" />
+                      <span>Rain Accumulation</span>
                     </div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Current</div>
-                  </div>
-                  <div className={`rounded-lg p-4 text-center border ${
-                    isDarkMode 
-                      ? 'bg-purple-500/20 border-purple-400/30' 
-                      : 'bg-purple-100 border-purple-300'
-                  }`}>
-                    <Droplets className={`h-6 w-6 mx-auto mb-2 ${
-                      isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                    }`} />
-                    <div className={`text-2xl font-bold ${
-                      isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                    }`}>
-                      {precipitationData.current.humidity}%
+
+                    <div className="my-2 text-left">
+                      <div className="flex items-baseline justify-between mb-1">
+                        <span className="text-4xl font-black text-blue-550 tracking-tight">
+                          {convertPrecipitation(precipitationData.current.accumulation)}
+                        </span>
+                        <span className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase">
+                          {getUnitSymbol()}
+                        </span>
+                      </div>
+                      
+                      <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden mb-1.5">
+                        <div 
+                          className="h-full bg-blue-500 rounded-full transition-all duration-1000 ease-out"
+                          style={{ width: `${Math.min((precipitationData.current.accumulation / 15) * 100, 100)}%` }}
+                        />
+                      </div>
+
+                      <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold">
+                        <span>0</span>
+                        <span>7.5 Moderate</span>
+                        <span>15 Max</span>
+                      </div>
                     </div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Humidity</div>
-                  </div>
-                  <div className={`rounded-lg p-4 text-center border col-span-2 ${
-                    isDarkMode 
-                      ? 'bg-cyan-500/20 border-cyan-400/30' 
-                      : 'bg-cyan-100 border-cyan-300'
-                  }`}>
-                    <Cloud className={`h-6 w-6 mx-auto mb-2 ${
-                      isDarkMode ? 'text-cyan-300' : 'text-cyan-600'
-                    }`} />
-                    <div className={`text-2xl font-bold ${
-                      isDarkMode ? 'text-cyan-300' : 'text-cyan-600'
-                    }`}>
-                      {precipitationData.current.clouds}%
+
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-450 leading-relaxed">
+                      Accumulated rainfall in the last hour
                     </div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Cloud Cover</div>
                   </div>
+
+                  {/* Panel 2: Humidity gauge dial */}
+                  {(() => {
+                    const humidity = precipitationData.current.humidity
+                    return (
+                      <div className={`p-5 rounded-2xl border ${
+                        isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
+                      } flex flex-col items-center text-center justify-between min-h-[190px] hover:border-purple-500/30 transition-all duration-300`}>
+                        <div className="flex items-center gap-1.5 self-start text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                          <Droplets className="h-4 w-4 text-purple-500" />
+                          <span>Humidity Scale</span>
+                        </div>
+
+                        <div className="relative w-24 h-24 my-2">
+                          <svg className="w-full h-full" viewBox="0 0 100 100">
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r="40"
+                              className="stroke-slate-200 dark:stroke-slate-850"
+                              strokeWidth="6.5"
+                              fill="transparent"
+                            />
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r="40"
+                              className="stroke-purple-500 transition-all duration-1000 ease-out"
+                              strokeWidth="6.5"
+                              fill="transparent"
+                              strokeDasharray={251.2}
+                              strokeDashoffset={251.2 * (1 - humidity / 100)}
+                              strokeLinecap="round"
+                              transform="rotate(-90 50 50)"
+                            />
+                            <text x="50" y="52" textAnchor="middle" dominantBaseline="central" className="text-3xl font-black fill-slate-900 dark:fill-white">
+                              {humidity}%
+                            </text>
+                            <text x="50" y="70" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-bold uppercase tracking-wider fill-slate-400 dark:fill-slate-500">
+                              Rel.
+                            </text>
+                          </svg>
+                        </div>
+
+                        <div className="text-xs font-semibold text-slate-500 dark:text-slate-450">
+                          Moisture levels in the local air
+                        </div>
+                      </div>
+                    )
+                  })()}
+
+                  {/* Panel 3: Cloud cover gauge dial */}
+                  {(() => {
+                    const clouds = precipitationData.current.clouds
+                    return (
+                      <div className={`p-5 rounded-2xl border ${
+                        isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
+                      } flex flex-col items-center text-center justify-between min-h-[190px] hover:border-cyan-500/30 transition-all duration-300`}>
+                        <div className="flex items-center gap-1.5 self-start text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                          <Cloud className="h-4 w-4 text-cyan-500" />
+                          <span>Cloud Cover</span>
+                        </div>
+
+                        <div className="relative w-24 h-24 my-2">
+                          <svg className="w-full h-full" viewBox="0 0 100 100">
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r="40"
+                              className="stroke-slate-200 dark:stroke-slate-850"
+                              strokeWidth="6.5"
+                              fill="transparent"
+                            />
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r="40"
+                              className="stroke-cyan-500 transition-all duration-1000 ease-out"
+                              strokeWidth="6.5"
+                              fill="transparent"
+                              strokeDasharray={251.2}
+                              strokeDashoffset={251.2 * (1 - clouds / 100)}
+                              strokeLinecap="round"
+                              transform="rotate(-90 50 50)"
+                            />
+                            <text x="50" y="52" textAnchor="middle" dominantBaseline="central" className="text-3xl font-black fill-slate-900 dark:fill-white">
+                              {clouds}%
+                            </text>
+                            <text x="50" y="70" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-bold uppercase tracking-wider fill-slate-400 dark:fill-slate-500">
+                              Cover
+                            </text>
+                          </svg>
+                        </div>
+
+                        <div className="text-xs font-semibold text-slate-500 dark:text-slate-450">
+                          Percentage of sky covered by cloud
+                        </div>
+                      </div>
+                    )
+                  })()}
+
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+
+              </CardContent>
+            </Card>
+
+          </div>
         )}
 
-        {/* View Mode Selection */}
+        {/* View Mode Selection pills */}
         {precipitationData && (
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardContent className="p-4">
-              <div className="flex gap-2 flex-wrap">
-                {["hourly", "daily", "weekly"].map((mode) => (
-                  <Button
-                    key={mode}
-                    onClick={() => setViewMode(mode)}
-                    variant="outline"
-                    className={`${
-                      viewMode === mode 
-                        ? isDarkMode
-                          ? "bg-white text-blue-900 border-white"
-                          : "bg-blue-600 text-white border-blue-600"
-                        : isDarkMode
-                          ? "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                          : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-                    }`}
-                  >
-                    {mode.charAt(0).toUpperCase() + mode.slice(1)} View
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex justify-start">
+            <div className="flex bg-slate-200/60 dark:bg-slate-900 border border-slate-300/30 dark:border-slate-800 rounded-2xl p-1 gap-1">
+              {(["hourly", "daily"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setViewMode(mode)}
+                  className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                    viewMode === mode
+                      ? isDarkMode
+                        ? "bg-slate-850 text-white shadow-sm"
+                        : "bg-white text-slate-900 shadow-sm"
+                      : isDarkMode
+                        ? "text-slate-400 hover:text-slate-200"
+                        : "text-slate-605 hover:text-slate-900"
+                  }`}
+                >
+                  {mode === "hourly" ? "24-Hour Stream" : "7-Day Weekly Outlook"}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
-        {/* Hourly Precipitation */}
+        {/* Hourly stream vertical bar scrolling ribbon */}
         {precipitationData && viewMode === "hourly" && (
-          <Card className={`${
+          <Card className={`border ${
             isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                24-Hour Precipitation Forecast
+              ? 'bg-slate-900/60 border-slate-800 text-white' 
+              : 'bg-white border-slate-200 text-slate-900'
+          } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                <TrendingUp className="h-5 w-5 text-blue-500" />
+                <span>24-Hour Precipitation Stream</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
-                {precipitationData.hourly.slice(0, 12).map((hour, index) => (
-                  <div key={`hourly-precip-${index}`} className={`rounded-lg p-2 text-center text-xs ${
-                    isDarkMode ? 'bg-white/10' : 'bg-gray-50'
-                  }`}>
-                    <div className="font-medium">{hour.time}</div>
-                    <div className={`text-lg font-bold ${getIntensityColor(hour.intensity, isDarkMode)}`}>
-                      {convertPrecipitation(hour.intensity)}
+            <CardContent className="px-6 pb-6 pt-2">
+              <div className="flex gap-3 overflow-x-auto pb-4 pt-1 scrollbar-thin scrollbar-thumb-slate-350 dark:scrollbar-thumb-slate-750 hover:scrollbar-thumb-slate-450">
+                {precipitationData.hourly.map((hour, index) => {
+                  const barHeight = Math.max(Math.min((hour.intensity / 5) * 100, 100), 5)
+                  return (
+                    <div 
+                      key={`hourly-precip-${index}`} 
+                      className={`flex-shrink-0 w-24 p-3.5 rounded-2xl border text-center transition-all duration-300 hover:scale-[1.04] hover:shadow-sm flex flex-col justify-between items-center ${
+                        isDarkMode 
+                          ? 'bg-slate-900/40 border-slate-800/80 hover:border-slate-700' 
+                          : 'bg-slate-50 border-slate-200 hover:border-slate-350'
+                      }`}
+                    >
+                      <div className="text-[11px] font-extrabold tracking-wider text-slate-450 dark:text-slate-500 uppercase mb-2">
+                        {hour.time}
+                      </div>
+
+                      {/* Visual bar tracking probability */}
+                      <div className="w-3 h-14 bg-slate-200 dark:bg-slate-800 rounded-full my-2.5 flex items-end overflow-hidden">
+                        <div 
+                          className="w-full bg-blue-500 dark:bg-blue-450 transition-all duration-1000 ease-out" 
+                          style={{ height: `${hour.probability}%` }}
+                          title={`Precipitation Probability: ${hour.probability}%`}
+                        />
+                      </div>
+
+                      <div className="mt-2">
+                        <div className={`text-base font-extrabold ${getIntensityColor(hour.intensity, isDarkMode)}`}>
+                          {convertPrecipitation(hour.intensity)}
+                        </div>
+                        <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none mt-0.5">
+                          {getUnitSymbol()}/hr
+                        </div>
+                      </div>
+
+                      <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/50 text-[10px] font-extrabold">
+                        <span className={getProbabilityColor(hour.probability, isDarkMode)}>
+                          {hour.probability}% Ch.
+                        </span>
+                      </div>
                     </div>
-                    <div className={`mb-1 ${
-                      isDarkMode ? 'text-white/60' : 'text-gray-600'
-                    }`}>{getUnitSymbol()}/hr</div>
-                    <div className={`text-sm ${getProbabilityColor(hour.probability, isDarkMode)}`}>
-                      {hour.probability}%
-                    </div>
-                    <Badge className={`text-xs mt-1 text-current border ${getIntensityBg(hour.intensity, isDarkMode)}`}>
-                      {hour.type}
-                    </Badge>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Daily Precipitation */}
+        {/* 7-Day & Monthly summary */}
         {precipitationData && viewMode === "daily" && (
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                7-Day Precipitation Forecast
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {precipitationData.daily.map((day, index) => (
-                  <div key={`daily-precip-${index}`} className={`grid grid-cols-5 gap-4 items-center p-3 rounded-lg ${
-                    isDarkMode ? 'bg-white/10' : 'bg-gray-50'
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+            {/* Weekly Outlook */}
+            <Card className={`xl:col-span-2 border ${
+              isDarkMode 
+                ? 'bg-slate-900/60 border-slate-800 text-white' 
+                : 'bg-white border-slate-200 text-slate-900'
+            } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                  <Calendar className="h-5 w-5 text-blue-500" />
+                  <span>7-Day Rain Volume Forecast</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 pt-2">
+                <div className="space-y-3">
+                  {precipitationData.daily.map((day, index) => {
+                    const ratio = Math.min((day.totalRainfall / maxWeeklyRainfall) * 100, 100)
+                    return (
+                      <div 
+                        key={`daily-precip-${index}`} 
+                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${
+                          isDarkMode 
+                            ? 'bg-slate-900/20 border-slate-800/80 hover:bg-slate-900/40 hover:border-slate-700' 
+                            : 'bg-slate-50/60 border-slate-200/80 hover:bg-slate-50 hover:border-slate-350'
+                        } gap-4`}
+                      >
+                        {/* Day & Icon */}
+                        <div className="flex items-center gap-3 w-full sm:w-36">
+                          <div className="w-12 text-sm font-bold text-slate-705 dark:text-slate-300">
+                            {day.day}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {getPrecipIcon(day.type, "h-4 w-4 text-blue-500 dark:text-blue-400")}
+                            <span className={`text-[10px] font-bold ${getProbabilityColor(day.probability, isDarkMode)}`}>
+                              {day.probability}%
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Rain volume variance track */}
+                        <div className="flex-grow flex flex-col justify-center">
+                          <div className="relative w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full">
+                            <div 
+                              className="absolute h-full bg-blue-500 dark:bg-blue-400 rounded-full transition-all duration-1000 ease-out" 
+                              style={{ width: `${ratio}%` }}
+                            />
+                          </div>
+                          <div className="flex justify-between text-[9px] text-slate-400 dark:text-slate-500 font-bold mt-1.5">
+                            <span>Duration: {day.rainyHours} hrs</span>
+                            <span>Max Peak: {convertPrecipitation(day.maxIntensity)} {getUnitSymbol()}/hr</span>
+                          </div>
+                        </div>
+
+                        {/* Rain Badge */}
+                        <div className="w-full sm:w-44 text-right flex items-center justify-between sm:justify-end gap-2">
+                          <span className="sm:hidden text-xs text-slate-400 font-semibold">Rainfall:</span>
+                          <Badge className={`${getIntensityBg(day.totalRainfall, isDarkMode)} border text-xs font-bold px-2 py-0.5`}>
+                            {convertPrecipitation(day.totalRainfall)} {getUnitSymbol()}
+                          </Badge>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Monthly statistics summary */}
+            <Card className={`border ${
+              isDarkMode 
+                ? 'bg-slate-900/60 border-slate-800 text-white' 
+                : 'bg-white border-slate-200 text-slate-900'
+            } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                  <BarChart3 className="h-5 w-5 text-blue-500" />
+                  <span>Monthly Stats</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 pt-2">
+                <div className="space-y-4">
+                  
+                  {/* Stat 1: Total Rainfall */}
+                  <div className={`p-4 rounded-2xl border ${
+                    isDarkMode ? 'border-slate-800 bg-slate-500/5' : 'border-slate-200 bg-slate-50/50'
                   }`}>
-                    <div className="font-medium">{day.day}</div>
-                    
-                    <div className="text-center">
-                      <div className={`text-xl font-bold ${getIntensityColor(day.totalRainfall, isDarkMode)}`}>
-                        {convertPrecipitation(day.totalRainfall)} {getUnitSymbol()}
-                      </div>
-                      <div className={`text-xs ${
-                        isDarkMode ? 'text-white/70' : 'text-gray-600'
-                      }`}>Total</div>
+                    <div className="text-2xl font-black text-blue-600 dark:text-blue-400 mb-1">
+                      {convertPrecipitation(precipitationData.monthly.totalRainfall)} {getUnitSymbol()}
                     </div>
-                    
-                    <div className="text-center">
-                      <div className={`text-lg font-bold ${getProbabilityColor(day.probability, isDarkMode)}`}>
-                        {day.probability}%
-                      </div>
-                      <div className={`text-xs ${
-                        isDarkMode ? 'text-white/70' : 'text-gray-600'
-                      }`}>Chance</div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className={`text-lg font-bold ${
-                        isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                      }`}>{day.rainyHours}h</div>
-                      <div className={`text-xs ${
-                        isDarkMode ? 'text-white/70' : 'text-gray-600'
-                      }`}>Duration</div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <Badge className={`border text-current ${getIntensityBg(day.totalRainfall, isDarkMode)}`}>
-                        {getRainfallCategory(day.totalRainfall)}
-                      </Badge>
+                    <div className="text-xs font-bold text-slate-800 dark:text-slate-100 mb-0.5">Total Estimated</div>
+                    <div className={`text-[10px] font-semibold ${precipitationData.monthly.comparison > 0 ? "text-rose-500" : "text-emerald-500"}`}>
+                      {precipitationData.monthly.comparison > 0 ? "▲ +" : "▼ "}{precipitationData.monthly.comparison}% vs historical average
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+
+                  {/* Stat 2: Rainy Days count */}
+                  <div className={`p-4 rounded-2xl border ${
+                    isDarkMode ? 'border-slate-800 bg-slate-500/5' : 'border-slate-200 bg-slate-50/50'
+                  }`}>
+                    <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mb-1">
+                      {precipitationData.monthly.rainyDays}
+                    </div>
+                    <div className="text-xs font-bold text-slate-800 dark:text-slate-100 mb-0.5">Rainy Days</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                      Estimated days with precipitation
+                    </div>
+                  </div>
+
+                  {/* Stat 3: Average Intensity */}
+                  <div className={`p-4 rounded-2xl border ${
+                    isDarkMode ? 'border-slate-800 bg-slate-500/5' : 'border-slate-200 bg-slate-50/50'
+                  }`}>
+                    <div className="text-2xl font-black text-purple-600 dark:text-purple-400 mb-1">
+                      {convertPrecipitation(precipitationData.monthly.averageIntensity)} {getUnitSymbol()}/hr
+                    </div>
+                    <div className="text-xs font-bold text-slate-800 dark:text-slate-100 mb-0.5">Avg Intensity</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                      Average speed during rain hours
+                    </div>
+                  </div>
+
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
         )}
 
-        {/* Monthly Statistics */}
+        {/* Precipitation Tips grid */}
         {precipitationData && (
-          <Card className={`${
+          <Card className={`border ${
             isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
+              ? 'bg-slate-900/60 border-slate-800 text-white' 
+              : 'bg-white border-slate-200 text-slate-900'
+          } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Monthly Precipitation Summary
+              <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                <Umbrella className="h-5 w-5 text-blue-500" />
+                <span>Precipitation Outlook & Tips</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className={`text-center p-4 rounded-lg border ${
-                  isDarkMode ? 'bg-white/10 border-white/20' : 'bg-gray-50 border-gray-200'
-                }`}>
-                  <div className={`text-3xl font-bold mb-2 ${
-                    isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                  }`}>
-                    {convertPrecipitation(precipitationData.monthly.totalRainfall)} {getUnitSymbol()}
-                  </div>
-                  <div className={`text-sm mb-1 ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-700'
-                  }`}>Total Estimated</div>
-                  <div className={`text-xs ${
-                    isDarkMode ? 'text-white/60' : 'text-gray-500'
-                  }`}>
-                    {precipitationData.monthly.comparison > 0 ? "+" : ""}{precipitationData.monthly.comparison}% vs avg
-                  </div>
-                </div>
-                
-                <div className={`text-center p-4 rounded-lg border ${
-                  isDarkMode ? 'bg-white/10 border-white/20' : 'bg-gray-50 border-gray-200'
-                }`}>
-                  <div className={`text-3xl font-bold mb-2 ${
-                    isDarkMode ? 'text-green-300' : 'text-green-600'
-                  }`}>
-                    {precipitationData.monthly.rainyDays}
-                  </div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-700'
-                  }`}>Rainy Days</div>
-                  <div className={`text-xs ${
-                    isDarkMode ? 'text-white/60' : 'text-gray-500'
-                  }`}>Estimated monthly</div>
-                </div>
-                
-                <div className={`text-center p-4 rounded-lg border ${
-                  isDarkMode ? 'bg-white/10 border-white/20' : 'bg-gray-50 border-gray-200'
-                }`}>
-                  <div className={`text-3xl font-bold mb-2 ${
-                    isDarkMode ? 'text-yellow-300' : 'text-yellow-600'
-                  }`}>
-                    {convertPrecipitation(precipitationData.monthly.averageIntensity)} {getUnitSymbol()}/hr
-                  </div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-700'
-                  }`}>Avg Intensity</div>
-                  <div className={`text-xs ${
-                    isDarkMode ? 'text-white/60' : 'text-gray-500'
-                  }`}>When raining</div>
-                </div>
-                
-                <div className={`text-center p-4 rounded-lg border ${
-                  isDarkMode ? 'bg-white/10 border-white/20' : 'bg-gray-50 border-gray-200'
-                }`}>
-                  <div className={`text-3xl font-bold mb-2 ${
-                    isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                  }`}>
-                    {Math.round((precipitationData.monthly.rainyDays / 30) * 100)}%
-                  </div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-700'
-                  }`}>Rainy Days</div>
-                  <div className={`text-xs ${
-                    isDarkMode ? 'text-white/60' : 'text-gray-500'
-                  }`}>Percentage</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Precipitation Tips */}
-        {precipitationData && (
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Umbrella className="h-5 w-5" />
-                Precipitation Tips
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="p-6 pt-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-semibold mb-3 text-lg">Current Conditions</h3>
-                  <div className="space-y-2">
+                
+                {/* Panel 1: Tips */}
+                <div className={`p-5 rounded-2xl border ${
+                  isDarkMode ? 'border-slate-800 bg-slate-500/5' : 'border-slate-200 bg-slate-50/50'
+                }`}>
+                  <h3 className="font-extrabold mb-3 text-sm text-slate-800 dark:text-slate-100 uppercase tracking-wider">Advisory Tips</h3>
+                  <div className="space-y-3">
                     {precipitationData.current.intensity > 0 ? (
                       <>
-                        <div className="flex items-start gap-2">
-                          <Droplets className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
-                            isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                          }`} />
-                          <span className="text-sm">Carry an umbrella or raincoat</span>
+                        <div className="flex items-start gap-2.5">
+                          <Umbrella className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                          <span className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                            Carry an umbrella or water-resistant coat when heading outdoors.
+                          </span>
                         </div>
-                        <div className="flex items-start gap-2">
-                          <Umbrella className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
-                            isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                          }`} />
-                          <span className="text-sm">Allow extra travel time</span>
+                        <div className="flex items-start gap-2.5">
+                          <AlertTriangle className="h-5 w-5 text-rose-500 flex-shrink-0 mt-0.5" />
+                          <span className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                            Road surfaces may be slippery. Reduce vehicle speeds and allow extra time for travel.
+                          </span>
                         </div>
                       </>
                     ) : (
-                      <div className="flex items-start gap-2">
-                        <span className="text-sm">No precipitation expected - enjoy the dry weather!</span>
+                      <div className="flex items-start gap-2.5">
+                        <Info className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-xs text-slate-605 dark:text-slate-400 leading-relaxed">
+                          No precipitation expected in your immediate area. Enjoy the clear and dry conditions!
+                        </span>
                       </div>
                     )}
                   </div>
                 </div>
-                
-                <div>
-                  <h3 className="font-semibold mb-3 text-lg">Today&apos;s Outlook</h3>
-                  <div className="space-y-2">
-                    <div className="text-sm">
-                      Peak intensity: {convertPrecipitation(Math.max(...precipitationData.hourly.map(h => h.intensity)))} {getUnitSymbol()}/hr
+
+                {/* Panel 2: Stats summary outlook */}
+                <div className={`p-5 rounded-2xl border ${
+                  isDarkMode ? 'border-slate-800 bg-slate-500/5' : 'border-slate-200 bg-slate-50/50'
+                }`}>
+                  <h3 className="font-extrabold mb-3 text-sm text-slate-800 dark:text-slate-100 uppercase tracking-wider">Today&apos;s Statistics</h3>
+                  <div className="space-y-3 text-xs text-slate-600 dark:text-slate-450 font-semibold">
+                    <div className="flex justify-between pb-1.5 border-b border-slate-200/50 dark:border-slate-800/50">
+                      <span>Peak Intensity:</span>
+                      <span className="text-slate-800 dark:text-slate-200">
+                        {convertPrecipitation(Math.max(...precipitationData.hourly.map(h => h.intensity)))} {getUnitSymbol()}/hr
+                      </span>
                     </div>
-                    <div className="text-sm">
-                      Highest chance: {Math.max(...precipitationData.hourly.map(h => h.probability))}%
+                    <div className="flex justify-between pb-1.5 border-b border-slate-200/50 dark:border-slate-800/50">
+                      <span>Max Chance:</span>
+                      <span className="text-slate-800 dark:text-slate-200">
+                        {Math.max(...precipitationData.hourly.map(h => h.probability))}%
+                      </span>
                     </div>
-                    <div className="text-sm">
-                      Total expected: {convertPrecipitation(precipitationData.hourly.reduce((sum, h) => sum + h.accumulation, 0))} {getUnitSymbol()}
+                    <div className="flex justify-between">
+                      <span>Total Expected Accumulation:</span>
+                      <span className="text-slate-800 dark:text-slate-200 animate-none">
+                        {convertPrecipitation(precipitationData.hourly.reduce((sum, h) => sum + h.accumulation, 0))} {getUnitSymbol()}
+                      </span>
                     </div>
                   </div>
                 </div>
+
               </div>
             </CardContent>
           </Card>
         )}
+
       </div>
     </div>
   )
