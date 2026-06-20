@@ -1,7 +1,6 @@
 "use client"
 
 import { useTheme } from "@/lib/ThemeContext"
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -21,7 +20,12 @@ import {
   RefreshCw,
   Droplets,
   Eye,
-  Gauge
+  Gauge,
+  Signal,
+  Cpu,
+  AlertCircle,
+  Activity,
+  Info
 } from "lucide-react"
 
 interface TemperatureData {
@@ -155,7 +159,7 @@ export default function TemperaturePage() {
             date: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
           },
           recordLow: { 
-            temp: avgLow - 15, 
+            temp: avgLow - 12, 
             date: new Date(Date.now() - 200 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
           },
           avgHigh,
@@ -219,17 +223,8 @@ export default function TemperaturePage() {
   }
 
   useEffect(() => {
-    // Load dark mode preference
-    const savedDarkMode = localStorage.getItem("temperatureDarkMode")
-    if (savedDarkMode !== null) {
-      
-    }
-
-    // Get user location
     getUserLocation()
   }, [])
-
-  
 
   const convertTemp = (temp: number): number => {
     if (unit === "fahrenheit") {
@@ -239,76 +234,79 @@ export default function TemperaturePage() {
   }
 
   const getTemperatureColor = (temp: number, dark: boolean): string => {
-    if (temp <= 0) return dark ? "text-blue-300" : "text-blue-600"
-    if (temp <= 10) return dark ? "text-blue-200" : "text-blue-500"
-    if (temp <= 20) return dark ? "text-green-300" : "text-green-600"
-    if (temp <= 30) return dark ? "text-yellow-300" : "text-yellow-600"
-    return dark ? "text-red-300" : "text-red-600"
+    if (temp <= 0) return dark ? "text-blue-400" : "text-blue-600"
+    if (temp <= 10) return dark ? "text-sky-400" : "text-sky-600"
+    if (temp <= 22) return dark ? "text-emerald-400" : "text-emerald-600"
+    if (temp <= 30) return dark ? "text-amber-400" : "text-amber-605"
+    return dark ? "text-rose-400" : "text-rose-600"
   }
 
   const getTemperatureBg = (temp: number, dark: boolean): string => {
-    if (temp <= 0) return dark ? "bg-blue-500/20 border-blue-400/30" : "bg-blue-100 border-blue-300"
-    if (temp <= 10) return dark ? "bg-blue-400/20 border-blue-300/30" : "bg-blue-50 border-blue-200"
-    if (temp <= 20) return dark ? "bg-green-400/20 border-green-400/30" : "bg-green-100 border-green-300"
-    if (temp <= 30) return dark ? "bg-yellow-400/20 border-yellow-400/30" : "bg-yellow-100 border-yellow-300"
-    return dark ? "bg-red-400/20 border-red-400/30" : "bg-red-100 border-red-300"
+    if (temp <= 0) return dark ? "bg-blue-500/10 border-blue-500/20 text-blue-400" : "bg-blue-50 border-blue-200 text-blue-700"
+    if (temp <= 10) return dark ? "bg-sky-500/10 border-sky-500/20 text-sky-400" : "bg-sky-50 border-sky-200 text-sky-700"
+    if (temp <= 22) return dark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-700"
+    if (temp <= 30) return dark ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-amber-50 border-amber-250 text-amber-700"
+    return dark ? "bg-rose-500/10 border-rose-500/20 text-rose-400" : "bg-rose-50 border-rose-250 text-rose-700"
   }
 
   const getTrendIcon = (trend: "up" | "down" | "stable", dark: boolean) => {
     switch(trend) {
-      case "up": return <TrendingUp className={`h-4 w-4 ${dark ? 'text-red-400' : 'text-red-600'}`} />
-      case "down": return <TrendingDown className={`h-4 w-4 ${dark ? 'text-blue-400' : 'text-blue-600'}`} />
-      default: return <Minus className={`h-4 w-4 ${dark ? 'text-gray-400' : 'text-gray-600'}`} />
+      case "up": return <TrendingUp className={`h-4 w-4 ${dark ? 'text-rose-400' : 'text-rose-600'}`} />
+      case "down": return <TrendingDown className={`h-4 w-4 ${dark ? 'text-sky-400' : 'text-sky-600'}`} />
+      default: return <Minus className={`h-4 w-4 ${dark ? 'text-slate-400' : 'text-slate-500'}`} />
     }
   }
 
   if (loading && !temperatureData) {
     return (
-      <div className={`min-h-screen ${
+      <div className={`w-full min-h-[calc(100vh-3.5rem)] ${
         isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
-      } p-6 flex items-center justify-center transition-colors duration-500`}>
+      } p-4 md:p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
-          <Loader2 className={`h-16 w-16 ${
-            isDarkMode ? 'text-white' : 'text-blue-600'
-          } animate-spin mx-auto mb-4`} />
-          <p className={`text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Loading temperature data...
-          </p>
+          <Loader2 className="h-16 w-16 text-indigo-650 animate-spin mx-auto mb-4" />
+          <p className="text-xl font-bold tracking-tight">Syncing thermal telemetry...</p>
+          <p className="text-xs text-slate-400 mt-1">Connecting to temperature sensors...</p>
         </div>
       </div>
     )
   }
 
+  const latCoord = temperatureData?.coord.lat ?? 51.5074
+  const lonCoord = temperatureData?.coord.lon ?? -0.1278
+  const currentTemp = temperatureData ? temperatureData.current.temperature : 15
+  
+  // Calculate limits for range slider
+  const maxWeeklyTemp = temperatureData ? Math.max(...temperatureData.daily.map(d => d.high), 35) : 35
+  const minWeeklyTemp = temperatureData ? Math.min(...temperatureData.daily.map(d => d.low), -5) : -5
+  const tempSpanRange = maxWeeklyTemp - minWeeklyTemp
+
   return (
-    <div className={`min-h-screen ${
-      isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
-    } p-6 transition-colors duration-500`}>
+    <div className={`w-full max-w-full overflow-x-hidden min-h-[calc(100vh-3.5rem)] ${
+      isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    } p-4 md:p-6 transition-colors duration-500`}>
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
+        
+        {/* Header Console */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-500">
-              <Thermometer className="h-8 w-8 text-white" />
+            <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/10">
+              <Thermometer className="h-7 w-7" />
             </div>
             <div>
-              <h1 className={`text-4xl font-bold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
+              <h1 className="text-3xl font-black tracking-tight">
                 Temperature Analysis
               </h1>
               {temperatureData && (
-                <div className={`flex items-center gap-2 mt-1 text-sm ${
-                  isDarkMode ? 'text-white/70' : 'text-gray-600'
-                }`}>
-                  <MapPin className="h-4 w-4 text-red-500" />
+                <div className="flex flex-wrap items-center gap-2 mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+                  <MapPin className="h-4 w-4 text-rose-500 animate-pulse" />
                   <span>{temperatureData.current.location}, {temperatureData.current.country}</span>
+                  <span className="text-slate-350 dark:text-slate-700">|</span>
+                  <span className="font-mono text-xs bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-650 dark:text-slate-450 border border-slate-200 dark:border-slate-800">
+                    LAT: {latCoord.toFixed(4)}° LON: {lonCoord.toFixed(4)}°
+                  </span>
                   {locationStatus === 'success' && (
-                    <Badge className={`${
-                      isDarkMode 
-                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' 
-                        : 'bg-blue-100 text-blue-700 border-blue-300'
-                    }`}>
-                      📍 Your Location
+                    <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 border bg-indigo-500/10 text-indigo-650 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-500/20">
+                      📍 System Calibrated Location
                     </Badge>
                   )}
                 </div>
@@ -316,423 +314,524 @@ export default function TemperaturePage() {
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex flex-wrap gap-2">
-            <form onSubmit={handleSearchCity} className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Search city..."
-                value={searchCity}
-                onChange={(e) => setSearchCity(e.target.value)}
-                className={`${
-                  isDarkMode 
-                    ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
-                }`}
-              />
-              <Button type="submit" size="icon" className="bg-blue-600 hover:bg-blue-700">
-                <Search className="h-4 w-4" />
+          {/* Controller Actions */}
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <form onSubmit={handleSearchCity} className="flex gap-2 w-full sm:w-auto">
+              <div className="relative flex items-center w-full sm:w-60">
+                <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
+                <Input
+                  type="text"
+                  placeholder="Search weather sector..."
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                  className={`pl-9 pr-3 py-2 w-full rounded-xl transition-all duration-300 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' 
+                      : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600'
+                  }`}
+                />
+              </div>
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide shadow-md shadow-indigo-600/15">
+                Scan Sector
               </Button>
             </form>
             
-            <Button
-              onClick={getUserLocation}
-              size="icon"
-              className="bg-purple-600 hover:bg-purple-700"
-              title="Use My Location"
-            >
-              <Target className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+              <Button
+                type="button"
+                onClick={getUserLocation}
+                variant="outline"
+                size="icon"
+                className={`rounded-xl border h-10 w-10 ${
+                  isDarkMode 
+                    ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                    : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+                title="Locate station"
+              >
+                <Target className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
+              </Button>
 
-            <Button
-              onClick={() => currentLocation && fetchTemperatureData(currentLocation.lat, currentLocation.lon)}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title="Refresh Data"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+              <Button
+                type="button"
+                onClick={() => currentLocation && fetchTemperatureData(currentLocation.lat, currentLocation.lon)}
+                variant="outline"
+                size="icon"
+                className={`rounded-xl border h-10 w-10 ${
+                  isDarkMode 
+                    ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                    : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+                title="Sync telemetry"
+              >
+                <RefreshCw className="h-4.5 w-4.5" />
+              </Button>
 
-            <Button
-              onClick={toggleDarkMode}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title={isDarkMode ? "Light Mode" : "Dark Mode"}
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
+              <Button
+                type="button"
+                onClick={toggleDarkMode}
+                variant="outline"
+                size="icon"
+                className={`rounded-xl border h-10 w-10 ${
+                  isDarkMode 
+                    ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                    : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+                title={isDarkMode ? "Light Display" : "Dark Display"}
+              >
+                {isDarkMode ? <Sun className="h-4.5 w-4.5 text-amber-500" /> : <Moon className="h-4.5 w-4.5 text-indigo-600" />}
+              </Button>
+            </div>
 
-            <Button
-              onClick={() => setUnit("celsius")}
-              variant="outline"
-              className={`${
-                unit === "celsius"
-                  ? isDarkMode
-                    ? "bg-white text-blue-900 border-white"
-                    : "bg-blue-600 text-white border-blue-600"
-                  : isDarkMode
-                    ? "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                    : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-              }`}
-            >
-              °C
-            </Button>
-            <Button
-              onClick={() => setUnit("fahrenheit")}
-              variant="outline"
-              className={`${
-                unit === "fahrenheit"
-                  ? isDarkMode
-                    ? "bg-white text-blue-900 border-white"
-                    : "bg-blue-600 text-white border-blue-600"
-                  : isDarkMode
-                    ? "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                    : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-              }`}
-            >
-              °F
-            </Button>
+            {/* Units Segment */}
+            <div className="flex bg-slate-200/60 dark:bg-slate-900 border border-slate-300/30 dark:border-slate-800 rounded-xl p-1 gap-1">
+              <button
+                onClick={() => setUnit("celsius")}
+                className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all duration-300 ${
+                  unit === "celsius"
+                    ? isDarkMode ? "bg-slate-800 text-white shadow-sm" : "bg-white text-slate-900 shadow-sm"
+                    : isDarkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                °C
+              </button>
+              <button
+                onClick={() => setUnit("fahrenheit")}
+                className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all duration-300 ${
+                  unit === "fahrenheit"
+                    ? isDarkMode ? "bg-slate-800 text-white shadow-sm" : "bg-white text-slate-900 shadow-sm"
+                    : isDarkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                °F
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Current Temperature */}
+        {/* Main Dashboard Layout */}
         {temperatureData && (
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardContent className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-                <div className="text-center lg:text-left">
-                  <h2 className="text-2xl font-bold mb-2">{temperatureData.current.location}</h2>
-                  <div className="flex items-center justify-center lg:justify-start gap-4 mb-4">
-                    <div className={`text-6xl font-bold ${getTemperatureColor(temperatureData.current.temperature, isDarkMode)}`}>
-                      {convertTemp(temperatureData.current.temperature)}°
-                    </div>
-                    <div>
-                      <div className={`text-xl ${
-                        isDarkMode ? 'text-white/80' : 'text-gray-600'
-                      }`}>{unit === "celsius" ? "Celsius" : "Fahrenheit"}</div>
-                      <div className={`text-sm ${
-                        isDarkMode ? 'text-white/70' : 'text-gray-500'
-                      }`}>
-                        Feels like {convertTemp(temperatureData.current.feelsLike)}°
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* Left Console Column: Temperature Gauge (4 columns) */}
+            <div className="lg:col-span-4">
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                    <Thermometer className="h-4.5 w-4.5 text-indigo-500" />
+                    <span>SVG Thermal Gauge</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center p-6">
+                  
+                  {/* High Tech SVG Thermosphere Dial */}
+                  <div className="relative w-full max-w-[240px] aspect-square mx-auto mb-6 bg-[#0a0f1d] rounded-full border border-slate-350 dark:border-slate-800 shadow-inner flex items-center justify-center">
+                    
+                    {/* Concentric Coordinate rings */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-500/10 dark:text-indigo-400/15" viewBox="0 0 200 200">
+                      <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                      <circle cx="100" cy="100" r="76" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                      <circle cx="100" cy="100" r="56" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                      
+                      {/* Scale Marks (-20 to 50 deg limit) */}
+                      {Array.from({ length: 15 }).map((_, i) => {
+                        const angle = i * 24 - 168
+                        const rad = (angle * Math.PI) / 180
+                        const outerR = 92
+                        const innerR = i % 2 === 0 ? 82 : 86
+                        const x1 = 100 + outerR * Math.cos(rad)
+                        const y1 = 100 + outerR * Math.sin(rad)
+                        const x2 = 100 + innerR * Math.cos(rad)
+                        const y2 = 100 + innerR * Math.sin(rad)
+                        return (
+                          <line 
+                            key={i} 
+                            x1={x1} y1={y1} x2={x2} y2={y2} 
+                            stroke="currentColor" 
+                            strokeWidth={i % 2 === 0 ? "1.5" : "0.75"} 
+                          />
+                        )
+                      })}
 
-                <div className="text-center">
-                  <div className="relative w-40 h-40 mx-auto mb-4">
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        fill="none"
-                        stroke={isDarkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)"}
-                        strokeWidth="8"
-                      />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        fill="none"
-                        stroke={isDarkMode ? "rgba(255,255,255,0.8)" : "rgba(59,130,246,0.8)"}
-                        strokeWidth="8"
-                        strokeDasharray={`${((temperatureData.current.temperature + 20) / 80) * 251.2} 251.2`}
-                        strokeLinecap="round"
-                      />
+                      {/* Scale numbers */}
+                      <text x="32" y="150" textAnchor="middle" className="fill-indigo-400/40 font-mono text-[8px] font-bold">-20°</text>
+                      <text x="25" y="90" textAnchor="middle" className="fill-indigo-400/40 font-mono text-[8px] font-bold">0°</text>
+                      <text x="56" y="32" textAnchor="middle" className="fill-indigo-400/40 font-mono text-[8px] font-bold">20°</text>
+                      <text x="144" y="32" textAnchor="middle" className="fill-indigo-400/40 font-mono text-[8px] font-bold">40°</text>
+                      <text x="175" y="90" textAnchor="middle" className="fill-indigo-400/40 font-mono text-[8px] font-bold">50°</text>
                     </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Thermometer className={`h-12 w-12 ${
-                        isDarkMode ? 'text-white' : 'text-blue-600'
-                      }`} />
-                    </div>
-                  </div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-600'
-                  }`}>Temperature Gauge</div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className={`rounded-lg p-4 text-center border ${
-                    isDarkMode 
-                      ? 'bg-red-500/20 border-red-400/30' 
-                      : 'bg-red-100 border-red-300'
-                  }`}>
-                    <TrendingUp className={`h-6 w-6 mx-auto mb-2 ${
-                      isDarkMode ? 'text-red-300' : 'text-red-600'
-                    }`} />
-                    <div className={`text-2xl font-bold ${
-                      isDarkMode ? 'text-red-300' : 'text-red-600'
-                    }`}>{convertTemp(temperatureData.current.high)}°</div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Today's High</div>
-                  </div>
-                  <div className={`rounded-lg p-4 text-center border ${
-                    isDarkMode 
-                      ? 'bg-blue-500/20 border-blue-400/30' 
-                      : 'bg-blue-100 border-blue-300'
-                  }`}>
-                    <TrendingDown className={`h-6 w-6 mx-auto mb-2 ${
-                      isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                    }`} />
-                    <div className={`text-2xl font-bold ${
-                      isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                    }`}>{convertTemp(temperatureData.current.low)}°</div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Today's Low</div>
-                  </div>
-                  <div className={`rounded-lg p-4 text-center border ${
-                    isDarkMode 
-                      ? 'bg-cyan-500/20 border-cyan-400/30' 
-                      : 'bg-cyan-100 border-cyan-300'
-                  }`}>
-                    <Droplets className={`h-6 w-6 mx-auto mb-2 ${
-                      isDarkMode ? 'text-cyan-300' : 'text-cyan-600'
-                    }`} />
-                    <div className={`text-2xl font-bold ${
-                      isDarkMode ? 'text-cyan-300' : 'text-cyan-600'
-                    }`}>{temperatureData.current.humidity}%</div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Humidity</div>
-                  </div>
-                  <div className={`rounded-lg p-4 text-center border ${
-                    isDarkMode 
-                      ? 'bg-purple-500/20 border-purple-400/30' 
-                      : 'bg-purple-100 border-purple-300'
-                  }`}>
-                    <Eye className={`h-6 w-6 mx-auto mb-2 ${
-                      isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                    }`} />
-                    <div className={`text-2xl font-bold ${
-                      isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                    }`}>{temperatureData.current.visibility} km</div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Visibility</div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                    {/* Colored Active Temperature Progress Ring */}
+                    <div className="absolute inset-0 pointer-events-none">
+                      <svg className="w-full h-full" viewBox="0 0 200 200">
+                        {/* Ring tracking current temperature */}
+                        {/* Map temperature range -20 to 50 (70 degree span) to arc angle (from -168 to 168 degrees) */}
+                        {(() => {
+                          const minT = -20
+                          const maxT = 50
+                          const tVal = Math.min(Math.max(currentTemp, minT), maxT)
+                          const ratio = (tVal - minT) / (maxT - minT)
+                          const arcDash = 245 * 0.72 // span length
+                          
+                          // Determine stroke color
+                          let strokeColor = '#3b82f6' // cold
+                          if (currentTemp > 25) strokeColor = '#ef4444' // hot
+                          else if (currentTemp > 18) strokeColor = '#f59e0b' // warm
+                          else if (currentTemp > 10) strokeColor = '#10b981' // mild
 
-        {/* Hourly Temperature Chart */}
-        {temperatureData && (
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                24-Hour Temperature Trend
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`h-40 rounded-lg mb-4 flex items-end justify-around p-4 ${
-                isDarkMode ? 'bg-white/10' : 'bg-gray-50'
-              }`}>
-                {temperatureData.hourly.slice(0, 12).map((hour, index) => {
-                  const height = ((hour.temperature + 20) / 70) * 100
-                  return (
-                    <div key={`temp-chart-${index}`} className="flex flex-col items-center">
-                      <div className={`text-xs mb-1 font-medium ${
-                        isDarkMode ? 'text-white' : 'text-gray-900'
-                      }`}>{convertTemp(hour.temperature)}°</div>
-                      <div 
-                        className={`w-4 rounded-t border ${getTemperatureBg(hour.temperature, isDarkMode)}`}
-                        style={{ height: `${Math.max(height, 10)}%` }}
-                      ></div>
-                      <div className={`text-xs mt-1 ${
-                        isDarkMode ? 'text-white/70' : 'text-gray-600'
-                      }`}>{hour.time}</div>
+                          return (
+                            <circle 
+                              cx="100" cy="100" r="76"
+                              fill="none" 
+                              stroke={strokeColor}
+                              strokeWidth="4"
+                              strokeLinecap="round"
+                              strokeDasharray={477.5}
+                              strokeDashoffset={477.5 - (arcDash * ratio)}
+                              transform="rotate(130 100 100)"
+                              className="transition-all duration-[1200ms] ease-out opacity-80"
+                            />
+                          )
+                        })()}
+                      </svg>
                     </div>
-                  )
-                })}
-              </div>
+
+                    {/* Central HUD Digital Readout */}
+                    <div className="absolute w-[80px] h-[80px] bg-slate-950 rounded-full border border-slate-800 flex flex-col items-center justify-center shadow-md">
+                      <span className={`text-3xl font-black tracking-tight leading-none ${getTemperatureColor(currentTemp, true)}`}>
+                        {convertTemp(currentTemp)}°
+                      </span>
+                      <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider mt-1">
+                        {unit === "celsius" ? "celsius" : "fahrenheit"}
+                      </span>
+                      <span className="text-[10px] font-extrabold text-slate-400 mt-1 leading-none">
+                        FEELS {convertTemp(temperatureData.current.feelsLike)}°
+                      </span>
+                    </div>
+
+                    {/* corner hardware indicators */}
+                    <div className="absolute top-3 left-6 font-mono text-[8px] font-black text-indigo-400/40">SYS: SCANNER</div>
+                    <div className="absolute bottom-3 right-6 font-mono text-[8px] font-black text-indigo-400/40">THERMO_CORE v4.0</div>
+
+                  </div>
+
+                  {/* Secondary descriptor */}
+                  <div className="w-full text-center space-y-1 mt-2">
+                    <p className="text-sm font-black text-slate-800 dark:text-slate-200 tracking-tight">
+                      Sector: {temperatureData.current.location}
+                    </p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
+                      Barometric Temp range calibrated to weather coordinates
+                    </p>
+                  </div>
+
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Metrics Dashboard Column (8 columns) */}
+            <div className="lg:col-span-8 space-y-6">
               
-              <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
-                {temperatureData.hourly.slice(0, 12).map((hour, index) => (
-                  <div key={`temp-hourly-${index}`} className={`rounded-lg p-2 text-center text-xs ${
-                    isDarkMode ? 'bg-white/10' : 'bg-gray-50'
-                  }`}>
-                    <div className="font-medium">{hour.time}</div>
-                    <div className={`text-lg font-bold ${getTemperatureColor(hour.temperature, isDarkMode)}`}>
-                      {convertTemp(hour.temperature)}°
-                    </div>
-                    <div className={isDarkMode ? 'text-white/60' : 'text-gray-600'}>
-                      Feels {convertTemp(hour.feelsLike)}°
-                    </div>
+              {/* Analytics widgets grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                
+                {/* Metric 1: Today's High */}
+                <div className={`p-4 rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-28 hover:border-indigo-500/20 transition-all duration-300`}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[8px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black">
+                      [ High_Track ]
+                    </span>
+                    <TrendingUp className="h-4 w-4 text-rose-500" />
                   </div>
-                ))}
+                  <div className="text-lg font-black text-rose-500 tracking-tight">
+                    {convertTemp(temperatureData.current.high)}°
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500">
+                    Maximum Peak Today
+                  </span>
+                </div>
+
+                {/* Metric 2: Today's Low */}
+                <div className={`p-4 rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-28 hover:border-indigo-500/20 transition-all duration-300`}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[8px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black">
+                      [ Low_Track ]
+                    </span>
+                    <TrendingDown className="h-4 w-4 text-sky-500" />
+                  </div>
+                  <div className="text-lg font-black text-sky-500 tracking-tight">
+                    {convertTemp(temperatureData.current.low)}°
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500">
+                    Minimum Floor Today
+                  </span>
+                </div>
+
+                {/* Metric 3: Humidity */}
+                <div className={`p-4 rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-28 hover:border-indigo-500/20 transition-all duration-300`}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[8px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black">
+                      [ Moisture ]
+                    </span>
+                    <Droplets className="h-4 w-4 text-indigo-500" />
+                  </div>
+                  <div className="text-lg font-black text-indigo-650 dark:text-indigo-400 tracking-tight">
+                    {temperatureData.current.humidity}%
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500">
+                    Relative Humidity
+                  </span>
+                </div>
+
+                {/* Metric 4: Visibility */}
+                <div className={`p-4 rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-28 hover:border-indigo-500/20 transition-all duration-300`}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[8px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black">
+                      [ Visibility ]
+                    </span>
+                    <Eye className="h-4 w-4 text-purple-500" />
+                  </div>
+                  <div className="text-lg font-black text-purple-500 tracking-tight">
+                    {temperatureData.current.visibility} <span className="text-xs">km</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500">
+                    Horizontal Visibility
+                  </span>
+                </div>
+
               </div>
-            </CardContent>
-          </Card>
+
+              {/* 24-Hour Temperature Chart */}
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+                  <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                    <Activity className="h-4.5 w-4.5 text-indigo-500" />
+                    <span>24-Hour Temperature Trend</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 md:p-6 space-y-6">
+                  
+                  {/* Micro Bar graph */}
+                  <div className={`h-36 rounded-xl flex items-end justify-around p-3.5 border ${
+                    isDarkMode ? 'bg-slate-950 border-slate-850' : 'bg-slate-50 border-slate-200'
+                  }`}>
+                    {temperatureData.hourly.slice(0, 12).map((hour, idx) => {
+                      // Normalize temperature range between -15°C and 45°C (60 deg range) for visual height representation
+                      const minVal = -15
+                      const maxVal = 45
+                      const val = Math.min(Math.max(hour.temperature, minVal), maxVal)
+                      const height = ((val - minVal) / (maxVal - minVal)) * 100
+                      
+                      return (
+                        <div key={`temp-chart-${idx}`} className="flex flex-col items-center flex-1 max-w-[28px]">
+                          <span className={`text-[10px] font-black font-mono mb-1 ${getTemperatureColor(hour.temperature, isDarkMode)}`}>
+                            {convertTemp(hour.temperature)}°
+                          </span>
+                          <div 
+                            className={`w-3.5 rounded-t transition-all duration-500 border ${getTemperatureBg(hour.temperature, isDarkMode)}`}
+                            style={{ height: `${Math.max(height, 8)}px` }}
+                          />
+                          <span className="text-[9px] font-black text-slate-450 dark:text-slate-550 uppercase mt-1.5 font-mono">
+                            {hour.time.replace(" AM", "").replace(" PM", "")}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Horizontal Scroll Ribbon */}
+                  <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-indigo-500/20 dark:scrollbar-thumb-slate-850">
+                    {temperatureData.hourly.map((hour, idx) => (
+                      <div 
+                        key={`temp-hourly-${idx}`} 
+                        className={`flex-shrink-0 w-[84px] p-2.5 rounded-xl border text-center transition-all duration-300 hover:scale-[1.03] ${
+                          isDarkMode ? 'bg-slate-950 border-slate-850' : 'bg-slate-50 border-slate-200'
+                        }`}
+                      >
+                        <div className="font-mono text-[9px] font-bold text-slate-450 dark:text-slate-550 uppercase">
+                          {hour.time}
+                        </div>
+                        <div className={`text-base font-black mt-1 ${getTemperatureColor(hour.temperature, isDarkMode)}`}>
+                          {convertTemp(hour.temperature)}°
+                        </div>
+                        <div className="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-none mt-0.5">
+                          Feels {convertTemp(hour.feelsLike)}°
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                </CardContent>
+              </Card>
+              
+            </div>
+
+          </div>
         )}
 
-        {/* 7-Day Temperature Forecast */}
+        {/* 7-Day Forecast & Records section */}
         {temperatureData && (
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Thermometer className="h-5 w-5" />
-                7-Day Temperature Forecast
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {temperatureData.daily.map((day, index) => (
-                  <div key={`temp-daily-${index}`} className={`grid grid-cols-4 gap-4 items-center p-3 rounded-lg ${
-                    isDarkMode ? 'bg-white/10' : 'bg-gray-50'
-                  }`}>
-                    <div className="font-medium">{day.day}</div>
-                    
-                    <div className="flex items-center gap-2">
-                      {getTrendIcon(day.trend, isDarkMode)}
-                      <span className="text-sm capitalize">{day.trend}</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-center gap-4">
-                      <div className="text-center">
-                        <div className={`text-xl font-bold ${getTemperatureColor(day.high, isDarkMode)}`}>
-                          {convertTemp(day.high)}°
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+            
+            {/* 7-Day Forecast (7 Columns) */}
+            <div className="lg:col-span-8">
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <Thermometer className="h-5 w-5 text-indigo-500" />
+                    <span>7-Day Temperature Range Forecast</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 md:p-6">
+                  <div className="space-y-3">
+                    {temperatureData.daily.map((day, idx) => {
+                      const lowPercent = ((day.low - minWeeklyTemp) / tempSpanRange) * 100
+                      const rangePercent = ((day.high - day.low) / tempSpanRange) * 100
+                      
+                      return (
+                        <div 
+                          key={`temp-daily-${idx}`} 
+                          className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
+                            isDarkMode 
+                              ? 'bg-slate-950/40 border-slate-850 hover:bg-slate-950/80 hover:border-slate-700' 
+                              : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-350'
+                          } gap-4`}
+                        >
+                          {/* Day details */}
+                          <div className="flex items-center gap-3 w-full sm:w-36 flex-shrink-0">
+                            <span className="w-12 text-sm font-black text-slate-705 dark:text-slate-300">
+                              {day.day}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              {getTrendIcon(day.trend, isDarkMode)}
+                              <Badge variant="outline" className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 border-slate-300/40 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/50">
+                                {day.trend}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          {/* Range slider tracks */}
+                          <div className="flex-grow flex flex-col justify-center">
+                            <div className="relative w-full h-1.5 bg-slate-200 dark:bg-slate-850 rounded-full">
+                              <div 
+                                className="absolute h-full bg-indigo-500 dark:bg-indigo-400 rounded-full" 
+                                style={{ left: `${lowPercent}%`, width: `${Math.max(4, rangePercent)}%` }}
+                              />
+                              <div 
+                                className="absolute w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-300 border border-white dark:border-slate-950 -translate-y-1/4"
+                                style={{ left: `${lowPercent + rangePercent / 2}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-1.5">
+                              <span>Low: {convertTemp(day.low)}°</span>
+                              <span>High: {convertTemp(day.high)}°</span>
+                            </div>
+                          </div>
+
+                          {/* Range gap badge */}
+                          <div className="w-full sm:w-36 text-right flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
+                            <span className="sm:hidden text-xs text-slate-400 font-semibold">Variance:</span>
+                            <Badge className={`${getTemperatureBg(day.high, isDarkMode)} border text-[10px] font-black py-0.5 px-2`}>
+                              RANGE: {convertTemp(day.high - day.low)}°
+                            </Badge>
+                          </div>
+
                         </div>
-                        <div className={`text-xs ${
-                          isDarkMode ? 'text-white/70' : 'text-gray-600'
-                        }`}>High</div>
-                      </div>
-                      <div className={isDarkMode ? 'text-white/50' : 'text-gray-400'}>|</div>
-                      <div className="text-center">
-                        <div className={`text-xl font-bold ${getTemperatureColor(day.low, isDarkMode)}`}>
-                          {convertTemp(day.low)}°
-                        </div>
-                        <div className={`text-xs ${
-                          isDarkMode ? 'text-white/70' : 'text-gray-600'
-                        }`}>Low</div>
-                      </div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <Badge className={`border text-current ${getTemperatureBg(day.high, isDarkMode)}`}>
-                        Range: {convertTemp(day.high - day.low)}°
-                      </Badge>
-                    </div>
+                      )
+                    })}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Averages & Extremes Panel (4 Columns) */}
+            <div className="lg:col-span-4">
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <Info className="h-5 w-5 text-indigo-500" />
+                    <span>Records & Averages</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 md:p-6">
+                  <div className="space-y-4">
+                    
+                    {/* Record High */}
+                    <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-28 hover:border-indigo-500/20 transition-all duration-300">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="font-mono text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black">
+                            [ Record_High ]
+                          </div>
+                          <div className="text-lg font-black text-rose-500 mt-2">
+                            {convertTemp(temperatureData.extremes.recordHigh.temp)}°
+                          </div>
+                        </div>
+                        <div className="h-2 w-2 rounded-full bg-rose-500 animate-pulse mt-1" />
+                      </div>
+                      <div className="font-mono text-[9px] text-slate-450 dark:text-slate-500 font-bold">
+                        DATE: {temperatureData.extremes.recordHigh.date.toUpperCase()}
+                      </div>
+                    </div>
+
+                    {/* Record Low */}
+                    <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-28 hover:border-indigo-500/20 transition-all duration-300">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="font-mono text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black">
+                            [ Record_Low ]
+                          </div>
+                          <div className="text-lg font-black text-sky-500 mt-2">
+                            {convertTemp(temperatureData.extremes.recordLow.temp)}°
+                          </div>
+                        </div>
+                        <div className="h-2 w-2 rounded-full bg-sky-500 animate-pulse mt-1" />
+                      </div>
+                      <div className="font-mono text-[9px] text-slate-450 dark:text-slate-500 font-bold">
+                        DATE: {temperatureData.extremes.recordLow.date.toUpperCase()}
+                      </div>
+                    </div>
+
+                    {/* Average High */}
+                    <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300">
+                      <div>
+                        <div className="font-mono text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black">
+                          [ Avg_High_Expected ]
+                        </div>
+                        <div className="text-lg font-black text-amber-500 mt-2">
+                          {convertTemp(temperatureData.extremes.avgHigh)}°
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Average Low */}
+                    <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300">
+                      <div>
+                        <div className="font-mono text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black">
+                          [ Avg_Low_Expected ]
+                        </div>
+                        <div className="text-lg font-black text-emerald-500 mt-2">
+                          {convertTemp(temperatureData.extremes.avgLow)}°
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+          </div>
         )}
 
-        {/* Temperature Records */}
-        {temperatureData && (
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardHeader>
-              <CardTitle>Temperature Records & Averages</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className={`text-center p-4 rounded-lg border ${
-                  isDarkMode 
-                    ? 'bg-red-500/20 border-red-400/30' 
-                    : 'bg-red-100 border-red-300'
-                }`}>
-                  <div className={`text-3xl font-bold mb-2 ${
-                    isDarkMode ? 'text-red-300' : 'text-red-600'
-                  }`}>
-                    {convertTemp(temperatureData.extremes.recordHigh.temp)}°
-                  </div>
-                  <div className={`text-sm mb-1 ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-700'
-                  }`}>Record High</div>
-                  <div className={`text-xs ${
-                    isDarkMode ? 'text-white/60' : 'text-gray-500'
-                  }`}>{temperatureData.extremes.recordHigh.date}</div>
-                </div>
-                
-                <div className={`text-center p-4 rounded-lg border ${
-                  isDarkMode 
-                    ? 'bg-blue-500/20 border-blue-400/30' 
-                    : 'bg-blue-100 border-blue-300'
-                }`}>
-                  <div className={`text-3xl font-bold mb-2 ${
-                    isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                  }`}>
-                    {convertTemp(temperatureData.extremes.recordLow.temp)}°
-                  </div>
-                  <div className={`text-sm mb-1 ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-700'
-                  }`}>Record Low</div>
-                  <div className={`text-xs ${
-                    isDarkMode ? 'text-white/60' : 'text-gray-500'
-                  }`}>{temperatureData.extremes.recordLow.date}</div>
-                </div>
-                
-                <div className={`text-center p-4 rounded-lg border ${
-                  isDarkMode 
-                    ? 'bg-orange-500/20 border-orange-400/30' 
-                    : 'bg-orange-100 border-orange-300'
-                }`}>
-                  <div className={`text-3xl font-bold mb-2 ${
-                    isDarkMode ? 'text-orange-300' : 'text-orange-600'
-                  }`}>
-                    {convertTemp(temperatureData.extremes.avgHigh)}°
-                  </div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-700'
-                  }`}>Average High</div>
-                  <div className={`text-xs ${
-                    isDarkMode ? 'text-white/60' : 'text-gray-500'
-                  }`}>5-day forecast</div>
-                </div>
-                
-                <div className={`text-center p-4 rounded-lg border ${
-                  isDarkMode 
-                    ? 'bg-cyan-500/20 border-cyan-400/30' 
-                    : 'bg-cyan-100 border-cyan-300'
-                }`}>
-                  <div className={`text-3xl font-bold mb-2 ${
-                    isDarkMode ? 'text-cyan-300' : 'text-cyan-600'
-                  }`}>
-                    {convertTemp(temperatureData.extremes.avgLow)}°
-                  </div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-700'
-                  }`}>Average Low</div>
-                  <div className={`text-xs ${
-                    isDarkMode ? 'text-white/60' : 'text-gray-500'
-                  }`}>5-day forecast</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   )
