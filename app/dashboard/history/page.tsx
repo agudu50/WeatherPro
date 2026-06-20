@@ -664,114 +664,71 @@ export default function HistoryPage() {
           </div>
         </div>
 
-        {/* Data Range / Period Selector console */}
-        <Card className={`border ${
-          isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
-        } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
-          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400">Analysis Frame Range</p>
-              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Toggle active tracking history bounds</p>
-            </div>
-            <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-950 p-1 border border-slate-200 dark:border-slate-850 self-start sm:self-auto">
-              {periods.map((period) => (
-                <button
-                  key={period.id}
-                  onClick={() => handlePeriodChange(period.id)}
-                  className={`rounded-lg px-4 py-1.5 text-xs font-bold transition-all ${
-                    selectedPeriod === period.id
-                      ? "bg-indigo-600 text-white shadow-sm"
-                      : "text-slate-500 dark:text-slate-450 hover:text-slate-950 dark:hover:text-white"
-                  }`}
-                >
-                  {period.name}
-                </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Data Summary Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          
-          <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-blue-500">
-            <div className="font-mono text-[9px] text-slate-450 uppercase tracking-widest font-black">[ Total_Days ]</div>
-            <div className="text-2xl font-black text-blue-500 dark:text-blue-450 mt-2">{historyData.summary.totalDays}</div>
-          </div>
-
-          <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-emerald-500">
-            <div className="font-mono text-[9px] text-slate-450 uppercase tracking-widest font-black">[ Data_Points ]</div>
-            <div className="text-2xl font-black text-emerald-500 dark:text-emerald-450 mt-2">{historyData.summary.dataPoints}</div>
-          </div>
-
-          <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-indigo-600">
-            <div className="font-mono text-[9px] text-slate-450 uppercase tracking-widest font-black">[ Monitoring ]</div>
-            <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-2">ACTIVE 24/7</div>
-          </div>
-
-          <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-amber-500">
-            <div className="font-mono text-[9px] text-slate-450 uppercase tracking-widest font-black">[ Last_BroadCast_Sync ]</div>
-            <div className="text-sm font-black text-slate-800 dark:text-slate-200 mt-2">
-              {new Date(historyData.summary.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </div>
-          </div>
-
-        </div>
-
-        {/* Metric Selection console */}
-        <Card className={`border ${
-          isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
-        } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
-          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400">Atmospheric Variable</p>
-              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Select weather metric telemetry stream</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {metrics.map((metric) => {
-                const MIcon = metric.icon
-                return (
-                  <button
-                    key={metric.id}
-                    onClick={() => setSelectedMetric(metric.id)}
-                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold border transition-all ${
-                      selectedMetric === metric.id
-                        ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
-                        : isDarkMode
-                          ? "bg-slate-950 border-slate-850 text-slate-400 hover:text-white"
-                          : "bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    <MIcon className="h-4 w-4" />
-                    <span>{metric.name}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Main Grid Section */}
+        {/* Main Grid Section: Contains all data display */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* Chart Display: Left column (8 columns) */}
+          {/* Main Visualizer and Extremes: Left column (8 columns) */}
           <div className="lg:col-span-8 space-y-6">
             
+            {/* Chart Card with Integrated Period and Metric Controls */}
             <Card className={`border ${
               isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
             } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-                  <Activity className="h-4.5 w-4.5 text-indigo-500" />
-                  <span>Historical Trend: {selectedMetricInfo.name}</span>
-                </CardTitle>
-                <CardDescription className="text-[10px] font-semibold text-slate-400">
-                  Visual telemetry chart tracking variations over the frame bounds
-                </CardDescription>
+              <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+                <div className="flex flex-col gap-4">
+                  {/* Title & Period Selector */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                      <Activity className="h-4.5 w-4.5 text-indigo-500" />
+                      <span>Historical Telemetry: {selectedMetricInfo.name}</span>
+                    </CardTitle>
+                    
+                    {/* Period selector segment control */}
+                    <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-950 p-1 border border-slate-200 dark:border-slate-850 self-start sm:self-auto">
+                      {periods.map((period) => (
+                        <button
+                          key={period.id}
+                          onClick={() => handlePeriodChange(period.id)}
+                          className={`rounded-lg px-3 py-1 text-[10px] font-black uppercase transition-all ${
+                            selectedPeriod === period.id
+                              ? "bg-indigo-600 text-white shadow-sm"
+                              : "text-slate-500 dark:text-slate-450 hover:text-slate-950 dark:hover:text-white"
+                          }`}
+                        >
+                          {period.id}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Metric selector buttons bar */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {metrics.map((metric) => {
+                      const MIcon = metric.icon
+                      const isSelected = selectedMetric === metric.id
+                      return (
+                        <button
+                          key={metric.id}
+                          onClick={() => setSelectedMetric(metric.id)}
+                          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-bold border transition-all ${
+                            isSelected
+                              ? "bg-indigo-650/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400"
+                              : isDarkMode
+                                ? "bg-slate-950 border-slate-850 text-slate-450 hover:text-white"
+                                : "bg-slate-50 border-slate-250 text-slate-600 hover:text-slate-950"
+                          }`}
+                        >
+                          <MIcon className="h-3.5 w-3.5" />
+                          <span>{metric.name}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="p-4 md:p-6">
                 
-                <div className="h-[300px] w-full">
+                <div className="h-[320px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     {/* Render BarChart or AreaChart based on selectedMetric */}
                     {(selectedMetric === "precipitation" || selectedMetric === "windSpeed") ? (
@@ -835,156 +792,178 @@ export default function HistoryPage() {
               </CardContent>
             </Card>
 
-          </div>
-
-          {/* Metric Summary statistics: Right column (4 columns) */}
-          <div className="lg:col-span-4 space-y-6">
-            
+            {/* Weather Extremes Reference Panel */}
             <Card className={`border ${
               isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
             } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+                <CardTitle className="text-xs font-bold flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-indigo-500" />
+                  <span>Meteorological Extreme Records - {historyData.summary.period}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  {historyData.extremes.map((extreme, index) => (
+                    <div key={index} className={`p-4 rounded-xl border flex flex-col justify-between min-h-[145px] h-auto hover:scale-[1.02] transition-all duration-300 ${
+                      isDarkMode ? 'bg-slate-950/40 border-slate-850' : 'bg-slate-50 border-slate-200'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[8px] uppercase tracking-wider text-slate-450 font-black">Record</span>
+                        <Badge variant="outline" className="text-[8px] font-black font-mono border bg-amber-500/10 text-amber-500 border-amber-500/20 px-1.5 py-0.5">EX_LMT</Badge>
+                      </div>
+                      <div className="mt-1">
+                        <div className="text-base font-black text-rose-500 dark:text-rose-400">{extreme.value}</div>
+                        <div className="text-[10px] font-black text-slate-800 dark:text-slate-200 truncate mt-0.5">{extreme.type}</div>
+                      </div>
+                      <div className="border-t border-slate-100 dark:border-slate-850/50 mt-1 pt-1.5">
+                        <div className="text-[9px] font-bold text-slate-400">Date: {extreme.date}</div>
+                        <div className="text-[8px] text-slate-450 font-semibold truncate mt-0.5">{extreme.description}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+
+          {/* Telemetry sidebar & Exports: Right column (4 columns) */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            {/* Console Telemetry Summary Card */}
+            <Card className={`border ${
+              isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+            } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+              <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
                 <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center justify-between gap-1.5">
-                  <span>Metrics Summary</span>
+                  <span>Console Telemetry</span>
                   <Badge variant="outline" className={`text-[9px] font-black uppercase px-2 py-0.5 border ${getTrendColor(currentMetricData.trend)}`}>
                     {getTrendIcon(currentMetricData.trend)}
                     <span className="ml-1 capitalize">{currentMetricData.trend}</span>
                   </Badge>
                 </CardTitle>
-                <CardDescription className="text-[10px] font-semibold text-slate-400">
-                  Calculated records over active timeline frames
-                </CardDescription>
               </CardHeader>
-              <CardContent className="p-4 md:p-6 space-y-4">
+              <CardContent className="p-4 md:p-6 space-y-6">
                 
-                {/* Stat block 1 */}
-                {selectedMetric === "precipitation" ? (
-                  <>
-                    <div className={`p-4 rounded-xl border ${theme.border} bg-slate-50 dark:bg-slate-950 border-slate-250 dark:border-slate-850 flex flex-col justify-between h-20`}>
-                      <div className="font-mono text-[8px] text-slate-450 uppercase tracking-wider font-black">Total Precipitation</div>
-                      <div className="text-lg font-black text-slate-850 dark:text-slate-100">{currentMetricData.total} {selectedMetricInfo.unit}</div>
+                {/* Period overview subgrid */}
+                <div className="space-y-3">
+                  <h4 className="font-mono text-[9px] uppercase tracking-wider text-slate-450 font-black">[ Frame_Summary ]</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/45">
+                      <p className="text-[8px] font-black text-slate-400 uppercase">Total Days</p>
+                      <p className="text-base font-black text-indigo-650 dark:text-indigo-400 mt-1">{historyData.summary.totalDays}</p>
                     </div>
-
-                    <div className={`p-4 rounded-xl border border-l-4 border-l-cyan-500 bg-slate-50 dark:bg-slate-950 border-slate-250 dark:border-slate-850 flex flex-col justify-between h-20`}>
-                      <div className="font-mono text-[8px] text-slate-450 uppercase tracking-wider font-black">Rainy Days count</div>
-                      <div className="text-lg font-black text-slate-850 dark:text-slate-100">{currentMetricData.rainyDays} days</div>
+                    <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/45">
+                      <p className="text-[8px] font-black text-slate-400 uppercase">Data Points</p>
+                      <p className="text-base font-black text-emerald-500 mt-1">{historyData.summary.dataPoints}</p>
                     </div>
-                  </>
-                ) : (
-                  <div className={`p-4 rounded-xl border ${theme.border} bg-slate-50 dark:bg-slate-950 border-slate-250 dark:border-slate-850 flex flex-col justify-between h-20`}>
-                    <div className="font-mono text-[8px] text-slate-450 uppercase tracking-wider font-black">Average value</div>
-                    <div className="text-lg font-black text-slate-850 dark:text-slate-100">{currentMetricData.average} {selectedMetricInfo.unit}</div>
-                  </div>
-                )}
-
-                {/* Stat block 2 */}
-                <div className="p-4 rounded-xl border border-l-4 border-l-rose-500 bg-slate-50 dark:bg-slate-950 border-slate-250 dark:border-slate-850 flex flex-col justify-between h-20">
-                  <div className="font-mono text-[8px] text-slate-450 uppercase tracking-wider font-black">Peak Maximum</div>
-                  <div>
-                    <span className="text-lg font-black text-rose-500">{currentMetricData.max?.value || currentMetricData.total} {selectedMetricInfo.unit}</span>
-                    {currentMetricData.max?.date && <span className="text-[9px] font-bold text-slate-450 ml-1.5">on {currentMetricData.max.date}</span>}
                   </div>
                 </div>
 
-                {/* Stat block 3 */}
-                {currentMetricData.min && (
-                  <div className="p-4 rounded-xl border border-l-4 border-l-blue-500 bg-slate-50 dark:bg-slate-950 border-slate-250 dark:border-slate-850 flex flex-col justify-between h-20">
-                    <div className="font-mono text-[8px] text-slate-450 uppercase tracking-wider font-black">Valley Minimum</div>
-                    <div>
-                      <span className="text-lg font-black text-blue-500">{currentMetricData.min.value} {selectedMetricInfo.unit}</span>
-                      <span className="text-[9px] font-bold text-slate-450 ml-1.5">on {currentMetricData.min.date}</span>
-                    </div>
-                  </div>
-                )}
+                {/* Metric specific stats */}
+                <div className="space-y-3">
+                  <h4 className="font-mono text-[9px] uppercase tracking-wider text-slate-450 font-black">[ Active_Metric_Stats ]</h4>
+                  <div className="space-y-3">
+                    
+                    {/* Stat line: average / total */}
+                    {selectedMetric === "precipitation" ? (
+                      <>
+                        <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-850/40 text-xs">
+                          <span className="font-semibold text-slate-500">Total Accumulation</span>
+                          <span className="font-mono font-black text-slate-850 dark:text-slate-100">{currentMetricData.total} {selectedMetricInfo.unit}</span>
+                        </div>
+                        <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-850/40 text-xs">
+                          <span className="font-semibold text-slate-500">Rainy Days Count</span>
+                          <span className="font-mono font-black text-slate-850 dark:text-slate-100">{currentMetricData.rainyDays} days</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-850/40 text-xs">
+                        <span className="font-semibold text-slate-500">Mean Average</span>
+                        <span className="font-mono font-black text-slate-800 dark:text-slate-100">{currentMetricData.average} {selectedMetricInfo.unit}</span>
+                      </div>
+                    )}
 
+                    {/* Peak High */}
+                    <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-850/40 text-xs">
+                      <div>
+                        <span className="font-semibold text-slate-500">Peak Maximum</span>
+                        {currentMetricData.max?.date && <span className="text-[8px] font-bold text-slate-400 block mt-0.5">on {currentMetricData.max.date}</span>}
+                      </div>
+                      <span className="font-mono font-black text-rose-500">{currentMetricData.max?.value || currentMetricData.total} {selectedMetricInfo.unit}</span>
+                    </div>
+
+                    {/* Valley Low */}
+                    {currentMetricData.min && (
+                      <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-850/40 text-xs">
+                        <div>
+                          <span className="font-semibold text-slate-500">Valley Minimum</span>
+                          <span className="text-[8px] font-bold text-slate-400 block mt-0.5">on {currentMetricData.min.date}</span>
+                        </div>
+                        <span className="font-mono font-black text-blue-500">{currentMetricData.min.value} {selectedMetricInfo.unit}</span>
+                      </div>
+                    )}
+
+                  </div>
+                </div>
+
+                {/* Status line */}
+                <div className="pt-2 flex items-center justify-between text-[9px] font-mono text-slate-450 border-t border-slate-100 dark:border-slate-850/50">
+                  <span>SYNC: STABLE</span>
+                  <span>SYNC DATE: {new Date(historyData.summary.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                </div>
+
+              </CardContent>
+            </Card>
+
+            {/* Data Export Console */}
+            <Card className={`border ${
+              isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+            } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+              <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+                <CardTitle className="text-xs font-bold flex items-center gap-2">
+                  <Download className="h-5 w-5 text-indigo-500" />
+                  <span>Export Report</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 space-y-4">
+                <div className="grid grid-cols-1 gap-2">
+                  <Button 
+                    onClick={exportAsCSV}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 px-4 font-bold text-xs tracking-wide shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>CSV Format</span>
+                  </Button>
+                  
+                  <Button 
+                    onClick={exportAsJSON}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 px-4 font-bold text-xs tracking-wide shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>JSON Format</span>
+                  </Button>
+
+                  <Button 
+                    onClick={() => window.print()}
+                    variant="outline"
+                    className={`rounded-xl py-2 px-4 font-bold text-xs tracking-wide border flex items-center justify-center gap-2 ${
+                      isDarkMode 
+                        ? 'bg-slate-950 border-slate-850 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                        : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                    }`}
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span>Print Log</span>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
           </div>
 
         </div>
-
-        {/* Weather Extremes Reference Panel */}
-        <Card className={`border ${
-          isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
-        } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
-          <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
-            <CardTitle className="text-base font-bold flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-indigo-500" />
-              <span>Meteorological Extreme Records - {historyData.summary.period}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 md:p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {historyData.extremes.map((extreme, index) => (
-                <div key={index} className={`p-4 rounded-xl border flex flex-col justify-between h-28 hover:scale-[1.02] transition-all duration-300 ${
-                  isDarkMode ? 'bg-slate-950/40 border-slate-850' : 'bg-slate-50 border-slate-200'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-[8px] uppercase tracking-wider text-slate-450 font-black">Record</span>
-                    <Badge variant="outline" className="text-[8px] font-black font-mono border bg-amber-500/10 text-amber-500 border-amber-500/20 px-1.5 py-0.5">EX_LMT</Badge>
-                  </div>
-                  <div className="mt-1">
-                    <div className="text-base font-black text-rose-500 dark:text-rose-400">{extreme.value}</div>
-                    <div className="text-[10px] font-black text-slate-800 dark:text-slate-200 truncate mt-0.5">{extreme.type}</div>
-                  </div>
-                  <div className="border-t border-slate-100 dark:border-slate-850/50 mt-1 pt-1.5">
-                    <div className="text-[9px] font-bold text-slate-400">Date: {extreme.date}</div>
-                    <div className="text-[8px] text-slate-450 font-semibold truncate mt-0.5">{extreme.description}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Data Export Console */}
-        <Card className={`border ${
-          isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
-        } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
-          <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
-            <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Download className="h-5 w-5 text-indigo-500" />
-              <span>Export Diagnostic Telemetry Report</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 md:p-6 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Button 
-                onClick={exportAsCSV}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 px-4 font-bold text-xs tracking-wide shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                <span>Export as CSV</span>
-              </Button>
-              
-              <Button 
-                onClick={exportAsJSON}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 px-4 font-bold text-xs tracking-wide shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                <span>Export as JSON</span>
-              </Button>
-
-              <Button 
-                onClick={() => window.print()}
-                variant="outline"
-                className={`rounded-xl py-2 px-4 font-bold text-xs tracking-wide border flex items-center justify-center gap-2 ${
-                  isDarkMode 
-                    ? 'bg-slate-950 border-slate-850 text-slate-350 hover:bg-slate-850 hover:text-white' 
-                    : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-              >
-                <FileText className="h-4 w-4" />
-                <span>Print Telemetry Log</span>
-              </Button>
-            </div>
-            <p className="text-xs text-slate-450 font-semibold leading-relaxed">
-              Generate structured historical meteorological reports for downstream climate analysis, backup redundancy, or scientific study. 
-              The package includes calibrated measurements for temperature variations, precipitation intensity logs, atmospheric relative humidity, barometric pressure fluctuations, and wind velocity metrics.
-            </p>
-          </CardContent>
-        </Card>
 
       </div>
     </div>
