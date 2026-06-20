@@ -288,24 +288,27 @@ export default function TemperaturePage() {
         
         {/* Header Console */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/10">
+          <div className="flex items-start sm:items-center gap-3 w-full lg:w-auto">
+            <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/10 flex-shrink-0">
               <Thermometer className="h-7 w-7" />
             </div>
-            <div>
-              <h1 className="text-3xl font-black tracking-tight">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight truncate">
                 Temperature Analysis
               </h1>
               {temperatureData && (
-                <div className="flex flex-wrap items-center gap-2 mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-                  <MapPin className="h-4 w-4 text-rose-500 animate-pulse" />
-                  <span>{temperatureData.current.location}, {temperatureData.current.country}</span>
-                  <span className="text-slate-350 dark:text-slate-700">|</span>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4 text-rose-500 animate-pulse flex-shrink-0" />
+                    <span className="truncate">{temperatureData.current.location}, {temperatureData.current.country}</span>
+                  </div>
+                  <span className="hidden sm:inline text-slate-350 dark:text-slate-700">|</span>
                   <span className="font-mono text-xs bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-650 dark:text-slate-450 border border-slate-200 dark:border-slate-800">
                     LAT: {latCoord.toFixed(4)}° LON: {lonCoord.toFixed(4)}°
                   </span>
+                  <span className="hidden sm:inline text-slate-350 dark:text-slate-700">|</span>
                   {locationStatus === 'success' && (
-                    <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 border bg-indigo-500/10 text-indigo-650 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-500/20">
+                    <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 border bg-indigo-500/10 text-indigo-650 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-500/20 flex-shrink-0">
                       📍 System Calibrated Location
                     </Badge>
                   )}
@@ -315,9 +318,9 @@ export default function TemperaturePage() {
           </div>
 
           {/* Controller Actions */}
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
             <form onSubmit={handleSearchCity} className="flex gap-2 w-full sm:w-auto">
-              <div className="relative flex items-center w-full sm:w-60">
+              <div className="relative flex items-center flex-1 sm:flex-initial sm:w-60">
                 <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
                 <Input
                   type="text"
@@ -331,80 +334,82 @@ export default function TemperaturePage() {
                   }`}
                 />
               </div>
-              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide shadow-md shadow-indigo-600/15">
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide shadow-md shadow-indigo-600/15 flex-shrink-0">
                 Scan Sector
               </Button>
             </form>
             
-            <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
-              <Button
-                type="button"
-                onClick={getUserLocation}
-                variant="outline"
-                size="icon"
-                className={`rounded-xl border h-10 w-10 ${
-                  isDarkMode 
-                    ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
-                    : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-                title="Locate station"
-              >
-                <Target className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
-              </Button>
+            <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  onClick={getUserLocation}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title="Locate station"
+                >
+                  <Target className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
+                </Button>
 
-              <Button
-                type="button"
-                onClick={() => currentLocation && fetchTemperatureData(currentLocation.lat, currentLocation.lon)}
-                variant="outline"
-                size="icon"
-                className={`rounded-xl border h-10 w-10 ${
-                  isDarkMode 
-                    ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
-                    : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-                title="Sync telemetry"
-              >
-                <RefreshCw className="h-4.5 w-4.5" />
-              </Button>
+                <Button
+                  type="button"
+                  onClick={() => currentLocation && fetchTemperatureData(currentLocation.lat, currentLocation.lon)}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title="Sync telemetry"
+                >
+                  <RefreshCw className="h-4.5 w-4.5" />
+                </Button>
 
-              <Button
-                type="button"
-                onClick={toggleDarkMode}
-                variant="outline"
-                size="icon"
-                className={`rounded-xl border h-10 w-10 ${
-                  isDarkMode 
-                    ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
-                    : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-                title={isDarkMode ? "Light Display" : "Dark Display"}
-              >
-                {isDarkMode ? <Sun className="h-4.5 w-4.5 text-amber-500" /> : <Moon className="h-4.5 w-4.5 text-indigo-600" />}
-              </Button>
-            </div>
+                <Button
+                  type="button"
+                  onClick={toggleDarkMode}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title={isDarkMode ? "Light Display" : "Dark Display"}
+                >
+                  {isDarkMode ? <Sun className="h-4.5 w-4.5 text-amber-500" /> : <Moon className="h-4.5 w-4.5 text-indigo-600" />}
+                </Button>
+              </div>
 
-            {/* Units Segment */}
-            <div className="flex bg-slate-200/60 dark:bg-slate-900 border border-slate-300/30 dark:border-slate-800 rounded-xl p-1 gap-1">
-              <button
-                onClick={() => setUnit("celsius")}
-                className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all duration-300 ${
-                  unit === "celsius"
-                    ? isDarkMode ? "bg-slate-800 text-white shadow-sm" : "bg-white text-slate-900 shadow-sm"
-                    : isDarkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-900"
-                }`}
-              >
-                °C
-              </button>
-              <button
-                onClick={() => setUnit("fahrenheit")}
-                className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all duration-300 ${
-                  unit === "fahrenheit"
-                    ? isDarkMode ? "bg-slate-800 text-white shadow-sm" : "bg-white text-slate-900 shadow-sm"
-                    : isDarkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-900"
-                }`}
-              >
-                °F
-              </button>
+              {/* Units Segment */}
+              <div className="flex bg-slate-200/60 dark:bg-slate-900 border border-slate-300/30 dark:border-slate-800 rounded-xl p-1 gap-1 flex-shrink-0">
+                <button
+                  onClick={() => setUnit("celsius")}
+                  className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all duration-300 ${
+                    unit === "celsius"
+                      ? isDarkMode ? "bg-slate-800 text-white shadow-sm" : "bg-white text-slate-900 shadow-sm"
+                      : isDarkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  °C
+                </button>
+                <button
+                  onClick={() => setUnit("fahrenheit")}
+                  className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all duration-300 ${
+                    unit === "fahrenheit"
+                      ? isDarkMode ? "bg-slate-800 text-white shadow-sm" : "bg-white text-slate-900 shadow-sm"
+                      : isDarkMode ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  °F
+                </button>
+              </div>
             </div>
           </div>
         </div>
