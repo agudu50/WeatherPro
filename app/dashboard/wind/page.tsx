@@ -21,8 +21,10 @@ import {
   RefreshCw,
   Gauge,
   Compass,
-  ArrowRight,
-  Info
+  Info,
+  Signal,
+  Cpu,
+  AlertCircle
 } from "lucide-react"
 
 interface WindData {
@@ -143,7 +145,7 @@ export default function WindPage() {
       if (windSpeed > 40 || gustSpeed > 60) {
         alerts.push({
           type: "Wind Advisory",
-          message: `Strong winds with gusts up to ${gustSpeed} km/h expected`,
+          message: `Strong winds with gusts up to ${gustSpeed} km/h expected in this sector`,
           severity: windSpeed > 60 ? "high" : "moderate"
         })
       }
@@ -256,10 +258,10 @@ export default function WindPage() {
   }
 
   const getWindBg = (speed: number, dark: boolean) => {
-    if (speed < 10) return dark ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400" : "bg-emerald-100 border-emerald-250 text-emerald-700"
-    if (speed < 20) return dark ? "bg-amber-500/20 border-amber-500/30 text-amber-400" : "bg-amber-100 border-amber-250 text-amber-700"
-    if (speed < 40) return dark ? "bg-orange-500/20 border-orange-500/30 text-orange-400" : "bg-orange-100 border-orange-250 text-orange-700"
-    return dark ? "bg-rose-500/20 border-rose-500/30 text-rose-400" : "bg-rose-100 border-rose-250 text-rose-700"
+    if (speed < 10) return dark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-700"
+    if (speed < 20) return dark ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-amber-50 border-amber-250 text-amber-700"
+    if (speed < 40) return dark ? "bg-orange-500/10 border-orange-500/20 text-orange-400" : "bg-orange-55 border-orange-250 text-orange-700"
+    return dark ? "bg-rose-500/10 border-rose-500/20 text-rose-400" : "bg-rose-50 border-rose-250 text-rose-700"
   }
 
   if (loading && !windData) {
@@ -268,17 +270,22 @@ export default function WindPage() {
         isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
       } p-4 md:p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
-          <Loader2 className={`h-16 w-16 ${
-            isDarkMode ? 'text-white' : 'text-indigo-600'
-          } animate-spin mx-auto mb-4`} />
-          <p className="text-xl font-bold tracking-tight">Loading wind data...</p>
+          <Loader2 className="h-16 w-16 text-indigo-600 animate-spin mx-auto mb-4" />
+          <p className="text-xl font-bold tracking-tight">Syncing anemometer data...</p>
+          <p className="text-xs text-slate-400 mt-1">Connecting to weather stations...</p>
         </div>
       </div>
     )
   }
 
-  // Calculate dynamic weekly scale maximum for the bar displays
   const maxWeeklySpeed = windData ? Math.max(...windData.daily.map(d => d.maxSpeed), 35) : 35
+  const activeSpeedVal = windData ? windData.current.speed : 15
+  
+  // Math duration for dynamic wind compass particles: duration in seconds
+  // Higher speed = shorter duration (faster spin/flow)
+  const flowDuration = activeSpeedVal > 0 
+    ? `${Math.max(0.6, Math.min(6, 40 / activeSpeedVal))}s`
+    : '0s'
 
   return (
     <div className={`w-full max-w-full overflow-x-hidden min-h-[calc(100vh-3.5rem)] ${
@@ -289,7 +296,7 @@ export default function WindPage() {
         {/* Header Console */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md">
+            <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/10">
               <Wind className="h-7 w-7" />
             </div>
             <div>
@@ -297,16 +304,16 @@ export default function WindPage() {
                 Wind Conditions
               </h1>
               {windData && (
-                <div className="flex items-center gap-2 mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-                  <MapPin className="h-4 w-4 text-rose-500" />
+                <div className="flex flex-wrap items-center gap-2 mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+                  <MapPin className="h-4 w-4 text-rose-500 animate-pulse" />
                   <span>{windData.current.location}, {windData.current.country}</span>
+                  <span className="text-slate-350 dark:text-slate-700">|</span>
+                  <span className="font-mono text-xs bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-650 dark:text-slate-450 border border-slate-200 dark:border-slate-800">
+                    BEARING: {windData.current.direction}° ({getDirectionName(windData.current.direction)})
+                  </span>
                   {locationStatus === 'success' && (
-                    <Badge variant="outline" className={`text-xs font-bold px-2 py-0.5 border ${
-                      isDarkMode 
-                        ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' 
-                        : 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                    }`}>
-                      📍 Detected Location
+                    <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 border bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-500/20">
+                      📍 Detected Station
                     </Badge>
                   )}
                 </div>
@@ -317,11 +324,11 @@ export default function WindPage() {
           {/* Controller Actions */}
           <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
             <form onSubmit={handleSearchCity} className="flex gap-2 w-full sm:w-auto">
-              <div className="relative flex items-center w-full sm:w-64">
+              <div className="relative flex items-center w-full sm:w-60">
                 <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
                 <Input
                   type="text"
-                  placeholder="Search city..."
+                  placeholder="Search weather station..."
                   value={searchCity}
                   onChange={(e) => setSearchCity(e.target.value)}
                   className={`pl-9 pr-3 py-2 w-full rounded-xl transition-all duration-300 ${
@@ -331,8 +338,8 @@ export default function WindPage() {
                   }`}
                 />
               </div>
-              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide">
-                Search
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide shadow-md shadow-indigo-600/15">
+                Scan Station
               </Button>
             </form>
             
@@ -347,9 +354,9 @@ export default function WindPage() {
                     ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
                     : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
                 }`}
-                title="Use My Location"
+                title="Locate station"
               >
-                <Target className="h-4 w-4" />
+                <Target className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
               </Button>
 
               <Button
@@ -362,9 +369,9 @@ export default function WindPage() {
                     ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
                     : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
                 }`}
-                title="Refresh Data"
+                title="Sync scanner"
               >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw className="h-4.5 w-4.5" />
               </Button>
 
               <Button
@@ -377,26 +384,26 @@ export default function WindPage() {
                     ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
                     : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
                 }`}
-                title={isDarkMode ? "Light Mode" : "Dark Mode"}
+                title={isDarkMode ? "Light Display" : "Dark Display"}
               >
-                {isDarkMode ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-600" />}
+                {isDarkMode ? <Sun className="h-4.5 w-4.5 text-amber-500" /> : <Moon className="h-4.5 w-4.5 text-indigo-600" />}
               </Button>
             </div>
 
-            {/* Unit Segment */}
+            {/* Speed Unit Segment */}
             <div className="flex bg-slate-200/60 dark:bg-slate-900 border border-slate-300/30 dark:border-slate-800 rounded-xl p-1 gap-1">
               {(["kmh", "mph", "ms"] as const).map((u) => (
                 <button
                   key={u}
                   onClick={() => setUnit(u)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-300 ${
+                  className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all duration-300 ${
                     unit === u
                       ? isDarkMode
-                        ? "bg-slate-850 text-white shadow-sm"
+                        ? "bg-slate-800 text-white shadow-sm"
                         : "bg-white text-slate-900 shadow-sm"
                       : isDarkMode
                         ? "text-slate-400 hover:text-slate-200"
-                        : "text-slate-600 hover:text-slate-900"
+                        : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
                   {u === "kmh" ? "km/h" : u === "mph" ? "mph" : "m/s"}
@@ -425,366 +432,407 @@ export default function WindPage() {
           </div>
         )}
 
-        {/* Main Dashboard Panel */}
+        {/* Main Grid Layout */}
         {windData && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
-            {/* COMPASS COMPONENT */}
-            <Card className={`border ${
-              isDarkMode 
-                ? 'bg-slate-900/60 border-slate-800 text-white' 
-                : 'bg-white border-slate-200 text-slate-900'
-            } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-                  <Compass className="h-4 w-4 text-indigo-500" />
-                  <span>Compass Dial</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center justify-center p-6 pb-8">
-                
-                {/* Advanced Avionics Rotating Vane */}
-                <div className="relative w-full max-w-[240px] aspect-square mx-auto mb-6">
-                  <svg className="w-full h-full select-none" viewBox="0 0 200 200">
-                    
-                    {/* Ring Outlines */}
-                    <circle cx="100" cy="100" r="95" className="stroke-slate-200 dark:stroke-slate-800" fill="none" strokeWidth="1.5" />
-                    <circle cx="100" cy="100" r="85" className="stroke-slate-200/50 dark:stroke-slate-800/50" fill="none" strokeWidth="1" />
-                    <circle cx="100" cy="100" r="77" className="stroke-slate-100 dark:stroke-slate-900/60" fill="none" strokeWidth="1" />
-                    
-                    {/* Concentric Ticks every 15 degrees */}
-                    {Array.from({ length: 24 }).map((_, i) => {
-                      const degree = i * 15
-                      const rad = (degree * Math.PI) / 180
-                      const rOuter = 85
-                      const rInner = i % 2 === 0 ? 77 : 81
-                      const x1 = 100 + rOuter * Math.sin(rad)
-                      const y1 = 100 - rOuter * Math.cos(rad)
-                      const x2 = 100 + rInner * Math.sin(rad)
-                      const y2 = 100 - rInner * Math.cos(rad)
-                      return (
-                        <line
-                          key={i}
-                          x1={x1}
-                          y1={y1}
-                          x2={x2}
-                          y2={y2}
-                          className={
-                            i % 6 === 0
-                              ? "stroke-slate-400 dark:stroke-slate-500"
-                              : "stroke-slate-200 dark:stroke-slate-800"
-                          }
-                          strokeWidth={i % 6 === 0 ? "2" : "1"}
-                        />
-                      )
-                    })}
-
-                    {/* Cardinal Labels */}
-                    <text x="100" y="24" textAnchor="middle" dominantBaseline="central" className="text-[14px] font-black fill-slate-800 dark:fill-slate-100">N</text>
-                    <text x="176" y="100" textAnchor="middle" dominantBaseline="central" className="text-[14px] font-black fill-slate-800 dark:fill-slate-100">E</text>
-                    <text x="100" y="176" textAnchor="middle" dominantBaseline="central" className="text-[14px] font-black fill-slate-800 dark:fill-slate-100">S</text>
-                    <text x="24" y="100" textAnchor="middle" dominantBaseline="central" className="text-[14px] font-black fill-slate-800 dark:fill-slate-100">W</text>
-
-                    {/* Ordinal Labels */}
-                    <text x="151" y="49" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-extrabold fill-slate-400 dark:fill-slate-600">NE</text>
-                    <text x="151" y="151" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-extrabold fill-slate-400 dark:fill-slate-600">SE</text>
-                    <text x="49" y="151" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-extrabold fill-slate-400 dark:fill-slate-600">SW</text>
-                    <text x="49" y="49" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-extrabold fill-slate-400 dark:fill-slate-600">NW</text>
-
-                    {/* Active Rotation Indicator Arrow */}
-                    <g 
-                      style={{ 
-                        transform: `rotate(${windData.current.direction}deg)`, 
-                        transformOrigin: '100px 100px', 
-                        transition: 'transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' 
-                      }}
-                    >
-                      {/* Arrow Pointer Vane */}
-                      <path 
-                        d="M100,28 L106,50 L102,48 L100,26 L98,48 L94,50 Z" 
-                        className="fill-indigo-500 dark:fill-indigo-400" 
-                      />
-                      {/* Grey Counter-weight Tail */}
-                      <path 
-                        d="M100,172 L105,152 L100,154 L95,152 Z" 
-                        className="fill-slate-400 dark:fill-slate-600" 
-                      />
-                      {/* Vane Stem */}
-                      <line 
-                        x1="100" 
-                        y1="50" 
-                        x2="100" 
-                        y2="152" 
-                        className="stroke-slate-300 dark:stroke-slate-700" 
-                        strokeWidth="1.5" 
-                        strokeDasharray="3,3" 
-                      />
-                    </g>
-
-                    {/* Central Status Overlay */}
-                    <circle 
-                      cx="100" 
-                      cy="100" 
-                      r="36" 
-                      className="fill-white dark:fill-slate-950 stroke-slate-200 dark:stroke-slate-800" 
-                      strokeWidth="1.5" 
-                    />
-                    <text x="100" y="92" textAnchor="middle" dominantBaseline="central" className="text-2xl font-black fill-slate-900 dark:fill-white">
-                      {convertSpeed(windData.current.speed)}
-                    </text>
-                    <text x="100" y="109" textAnchor="middle" dominantBaseline="central" className="text-[11px] font-bold uppercase tracking-wider fill-slate-400 dark:fill-slate-500">
-                      {getSpeedUnit()}
-                    </text>
-                    <text x="100" y="121" textAnchor="middle" dominantBaseline="central" className="text-xs font-extrabold fill-indigo-500 dark:fill-indigo-400">
-                      {getDirectionName(windData.current.direction)}
-                    </text>
-                  </svg>
-                </div>
-                
-                {/* Secondary metadata summary */}
-                <div className="text-center">
-                  <div className="text-lg font-bold text-slate-800 dark:text-slate-200">
-                    Direction {windData.current.direction}°
-                  </div>
-                  <div className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
-                    Angle measured clockwise from North
-                  </div>
-                </div>
-
-              </CardContent>
-            </Card>
-
-            {/* ANALYTICS CONTAINER */}
-            <Card className={`md:col-span-1 xl:col-span-2 border ${
-              isDarkMode 
-                ? 'bg-slate-900/60 border-slate-800 text-white' 
-                : 'bg-white border-slate-200 text-slate-900'
-            } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-                  <Activity className="h-4 w-4 text-indigo-500" />
-                  <span>Real-time Wind Metrics</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 pt-2">
-                
-                {/* Visual statistics grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Compass Console Column (4 columns) */}
+            <div className="lg:col-span-4">
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                    <Compass className="h-4.5 w-4.5 text-indigo-500" />
+                    <span>Wind Flow Compass</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center p-6">
                   
-                  {/* Gauge 1: Beaufort Force Circular Indicator */}
-                  <div className={`p-5 rounded-2xl border ${
-                    isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
-                  } flex flex-col items-center text-center justify-between min-h-[190px] hover:border-indigo-500/30 transition-all duration-300`}>
-                    <div className="flex items-center gap-1.5 self-start text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                      <Compass className="h-4 w-4 text-indigo-500" />
-                      <span>Beaufort Scale</span>
-                    </div>
+                  {/* High Tech SVG Compass Face */}
+                  <div className="relative w-full max-w-[240px] aspect-square mx-auto mb-6 bg-[#0a0f1d] rounded-full border border-slate-350 dark:border-slate-800 shadow-inner flex items-center justify-center">
                     
-                    <div className="relative w-24 h-24 my-2">
-                      <svg className="w-full h-full" viewBox="0 0 100 100">
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="40"
-                          className="stroke-slate-200 dark:stroke-slate-850"
-                          strokeWidth="6.5"
-                          fill="transparent"
-                        />
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="40"
-                          className="stroke-indigo-500 transition-all duration-1000 ease-out"
-                          strokeWidth="6.5"
-                          fill="transparent"
-                          strokeDasharray={251.2}
-                          strokeDashoffset={251.2 * (1 - Math.min(windData.current.beaufortScale, 12) / 12)}
+                    {/* Concentric rings */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-500/10 dark:text-indigo-400/15" viewBox="0 0 200 200">
+                      <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                      <circle cx="100" cy="100" r="76" fill="none" stroke="currentColor" strokeWidth="1" />
+                      <circle cx="100" cy="100" r="56" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                      
+                      {/* Compass Ticks */}
+                      {Array.from({ length: 24 }).map((_, i) => {
+                        const deg = i * 15
+                        const rad = (deg * Math.PI) / 180
+                        const outerR = 92
+                        const innerR = i % 6 === 0 ? 84 : 88
+                        const x1 = 100 + outerR * Math.sin(rad)
+                        const y1 = 100 - outerR * Math.cos(rad)
+                        const x2 = 100 + innerR * Math.sin(rad)
+                        const y2 = 100 - innerR * Math.cos(rad)
+                        return (
+                          <line 
+                            key={i} 
+                            x1={x1} y1={y1} x2={x2} y2={y2} 
+                            stroke="currentColor" 
+                            strokeWidth={i % 6 === 0 ? "1.5" : "0.75"} 
+                          />
+                        )
+                      })}
+
+                      {/* Direction labels */}
+                      <text x="100" y="24" textAnchor="middle" dominantBaseline="central" className="text-[12px] font-black fill-indigo-400/80">N</text>
+                      <text x="176" y="100" textAnchor="middle" dominantBaseline="central" className="text-[12px] font-black fill-indigo-400/80">E</text>
+                      <text x="100" y="176" textAnchor="middle" dominantBaseline="central" className="text-[12px] font-black fill-indigo-400/80">S</text>
+                      <text x="24" y="100" textAnchor="middle" dominantBaseline="central" className="text-[12px] font-black fill-indigo-400/80">W</text>
+                    </svg>
+
+                    {/* Wind Vector Flow Line Animations */}
+                    <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+                      <svg 
+                        className="w-full h-full transition-transform duration-1000 ease-out" 
+                        viewBox="0 0 200 200"
+                        style={{ transform: `rotate(${windData.current.direction}deg)` }}
+                      >
+                        {/* Flow streaks drifting from top to bottom (along rotation vector) */}
+                        <path 
+                          d="M 50,-10 C 60,30 40,70 50,110 M 150,30 C 160,70 140,110 150,150 M 90,10 C 100,50 80,90 90,130" 
+                          fill="none" 
+                          stroke="#6366f1" 
+                          strokeWidth="1.5" 
                           strokeLinecap="round"
-                          transform="rotate(-90 50 50)"
+                          className="wind-flow-streaks"
+                          style={{ animationDuration: flowDuration }}
                         />
-                        <text x="50" y="52" textAnchor="middle" dominantBaseline="central" className="text-3xl font-black fill-slate-900 dark:fill-white">
-                          {windData.current.beaufortScale}
+                      </svg>
+                    </div>
+
+                    {/* Navigation Pointer Needle */}
+                    <div 
+                      className="absolute inset-0 pointer-events-none transition-transform duration-[1200ms] ease-out"
+                      style={{ transform: `rotate(${windData.current.direction}deg)` }}
+                    >
+                      <svg className="w-full h-full" viewBox="0 0 200 200">
+                        {/* Arrow Pointer */}
+                        <path d="M100,16 L105,38 L101.5,36 L100,15 L98.5,36 L95,38 Z" fill="#f43f5e" />
+                        {/* Counter balance */}
+                        <path d="M100,184 L104,166 L100,168 L96,166 Z" fill="#64748b" />
+                        {/* Stem grid */}
+                        <line x1="100" y1="38" x2="100" y2="166" stroke="#475569" strokeWidth="1" strokeDasharray="3 3" />
+                      </svg>
+                    </div>
+
+                    {/* Core HUD readout circle */}
+                    <div className="absolute w-[80px] h-[80px] bg-slate-950 rounded-full border border-slate-800 flex flex-col items-center justify-center shadow-md">
+                      <span className="text-2xl font-black text-white tracking-tight leading-none">
+                        {convertSpeed(windData.current.speed)}
+                      </span>
+                      <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider mt-0.5">
+                        {getSpeedUnit()}
+                      </span>
+                      <span className="text-[10px] font-extrabold text-indigo-400 mt-1 leading-none">
+                        {getDirectionName(windData.current.direction)}
+                      </span>
+                    </div>
+
+                    {/* Telemetry labels */}
+                    <div className="absolute top-3 left-6 font-mono text-[8px] font-black text-indigo-400/40">SYS: SCAN</div>
+                    <div className="absolute bottom-3 right-6 font-mono text-[8px] font-black text-indigo-400/40">{windData.current.direction}° DEG</div>
+
+                  </div>
+
+                  {/* Compass metrics readout */}
+                  <div className="w-full text-center space-y-1 mt-2">
+                    <p className="text-sm font-black text-slate-800 dark:text-slate-200 tracking-tight">
+                      Bearing Angle: {windData.current.direction}°
+                    </p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold">
+                      Wind blowing directly from the {getDirectionName(windData.current.direction)}
+                    </p>
+                  </div>
+
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Metrics Dashboard Column (8 columns) */}
+            <div className="lg:col-span-8 space-y-6">
+              
+              {/* Telemetry widgets grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* Visual Wind Turbine simulator */}
+                <Card className={`border ${
+                  isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+                } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                      <Signal className="h-4.5 w-4.5 text-indigo-500" />
+                      <span>Turbine Simulator</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 flex flex-col items-center justify-between min-h-[220px]">
+                    
+                    {/* SVG Wind Turbine */}
+                    <div className="relative w-full h-[100px] flex items-center justify-center overflow-hidden">
+                      <svg viewBox="0 0 200 130" className="w-full h-full text-slate-350 dark:text-slate-700">
+                        {/* Tower base structure */}
+                        <path d="M97,130 L103,130 L101,65 L99,65 Z" fill="currentColor" opacity="0.6" />
+                        <line x1="94" y1="130" x2="106" y2="130" stroke="currentColor" strokeWidth="2" />
+                        
+                        {/* Core Hub */}
+                        <circle cx="100" cy="65" r="4" fill="currentColor" />
+
+                        {/* Rotor Blades Group with rotation animation */}
+                        <g 
+                          className="turbine-rotor"
+                          style={{ 
+                            animationDuration: activeSpeedVal > 1 
+                              ? `${Math.max(0.4, 40 / activeSpeedVal)}s`
+                              : '0s'
+                          }}
+                        >
+                          {/* Blade 1 (facing top) */}
+                          <path d="M100,65 Q102,40 100,10 Q98,40 100,65" fill="currentColor" opacity="0.9" />
+                          {/* Blade 2 (facing bottom-right) */}
+                          <g transform="rotate(120 100 65)">
+                            <path d="M100,65 Q102,40 100,10 Q98,40 100,65" fill="currentColor" opacity="0.9" />
+                          </g>
+                          {/* Blade 3 (facing bottom-left) */}
+                          <g transform="rotate(240 100 65)">
+                            <path d="M100,65 Q102,40 100,10 Q98,40 100,65" fill="currentColor" opacity="0.9" />
+                          </g>
+                        </g>
+                      </svg>
+                    </div>
+
+                    {/* Speeds summary */}
+                    <div className="w-full text-center space-y-1 mt-3">
+                      <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Rotor Activity Status
+                      </div>
+                      <div className="text-sm font-black text-slate-800 dark:text-slate-100">
+                        {activeSpeedVal > 30 ? "⚠️ Heavy Spin / Warning" : activeSpeedVal > 12 ? "⚡ Steady Rotation" : activeSpeedVal > 2 ? "✓ Light Rotation" : "Static State"}
+                      </div>
+                    </div>
+
+                  </CardContent>
+                </Card>
+
+                {/* Beaufort scale radial progress */}
+                <Card className={`border ${
+                  isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+                } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                      <Cpu className="h-4.5 w-4.5 text-indigo-500" />
+                      <span>Beaufort Force Tracker</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 flex flex-col items-center justify-between min-h-[220px]">
+                    
+                    {/* SVG Radial Progress */}
+                    <div className="relative w-[100px] h-[100px]">
+                      <svg className="w-full h-full" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="41" fill="none" stroke="currentColor" className="text-slate-100 dark:text-slate-950" strokeWidth="6.5" />
+                        <circle 
+                          cx="50" cy="50" r="41" 
+                          fill="none" stroke="#6366f1" 
+                          strokeWidth="6.5" 
+                          strokeLinecap="round" 
+                          strokeDasharray={257.6}
+                          strokeDashoffset={257.6 * (1 - Math.min(windData.current.beaufortScale, 12) / 12)}
+                          transform="rotate(-90 50 50)"
+                          className="transition-all duration-1000 ease-out"
+                        />
+                        <text x="50" y="48" textAnchor="middle" dominantBaseline="central" className="text-2xl font-black fill-slate-950 dark:fill-white">
+                          F{windData.current.beaufortScale}
                         </text>
-                        <text x="50" y="70" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-bold uppercase tracking-wider fill-slate-400 dark:fill-slate-500">
-                          Force
+                        <text x="50" y="66" textAnchor="middle" dominantBaseline="central" className="text-[9px] font-black uppercase text-slate-450 tracking-wider">
+                          scale
                         </text>
                       </svg>
                     </div>
-                    
-                    <div>
-                      <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
+
+                    {/* Force labels */}
+                    <div className="w-full text-center space-y-1 mt-3">
+                      <div className="text-sm font-black text-slate-800 dark:text-slate-100">
                         {getBeaufortDescription(windData.current.beaufortScale)}
                       </div>
-                      <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-                        Range F0 to F12
+                      <div className="text-[10px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider">
+                        Beaufort Range Scale: F0 - F12
                       </div>
                     </div>
-                  </div>
 
-                  {/* Gauge 2: Wind Gust Progress Widget */}
-                  {(() => {
-                    const gustVal = windData.current.gust
-                    const maxGustLimit = 120
-                    const gustPercentage = Math.min((gustVal / maxGustLimit) * 100, 100)
-                    return (
-                      <div className={`p-5 rounded-2xl border ${
-                        isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
-                      } flex flex-col justify-between min-h-[190px] hover:border-rose-500/30 transition-all duration-300`}>
-                        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                          <Activity className="h-4 w-4 text-rose-500" />
-                          <span>Wind Gusts</span>
-                        </div>
+                  </CardContent>
+                </Card>
+
+                {/* Wind Gusts progress card */}
+                {(() => {
+                  const gustSpeed = windData.current.gust
+                  const maxLimit = 120
+                  const percentage = Math.min((gustSpeed / maxLimit) * 100, 100)
+                  return (
+                    <Card className={`border ${
+                      isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+                    } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                          <Activity className="h-4.5 w-4.5 text-rose-500" />
+                          <span>Wind Gust Monitor</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6 flex flex-col justify-between min-h-[220px]">
                         
-                        <div className="my-2 text-left">
-                          <div className="flex items-baseline justify-between mb-1">
-                            <span className="text-4xl font-black text-rose-500 tracking-tight">
-                              {convertSpeed(gustVal)}
+                        <div className="space-y-1">
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-3xl font-black text-rose-500 tracking-tight">
+                              {convertSpeed(gustSpeed)}
                             </span>
-                            <span className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase">
+                            <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase">
                               {getSpeedUnit()}
                             </span>
                           </div>
                           
-                          <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden mb-1.5">
+                          {/* Linear progress tracking */}
+                          <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden mt-2">
                             <div 
                               className="h-full bg-rose-500 rounded-full transition-all duration-1000 ease-out"
-                              style={{ width: `${gustPercentage}%` }}
+                              style={{ width: `${percentage}%` }}
                             />
                           </div>
-                          
-                          <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold">
-                            <span>0</span>
-                            <span>60 Gale</span>
-                            <span>120 Max</span>
+                          <div className="flex justify-between text-[8px] text-slate-400 dark:text-slate-500 font-black tracking-widest mt-1">
+                            <span>0 MIN</span>
+                            <span>60 GALE</span>
+                            <span>120 MAX</span>
                           </div>
                         </div>
-                        
-                        <div>
-                          <span className={`inline-block text-xs font-bold px-2.5 py-1 rounded-md border ${
-                            gustVal > 60 
-                              ? isDarkMode ? 'bg-rose-500/10 text-rose-450 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200'
-                              : gustVal > 30
-                                ? isDarkMode ? 'bg-amber-500/10 text-amber-405 border-amber-500/20' : 'bg-amber-50 text-amber-700 border-amber-200'
-                                : isDarkMode ? 'bg-slate-800 text-slate-350 border-slate-700/50' : 'bg-slate-100 text-slate-600 border-slate-200'
+
+                        <div className="pt-3 border-t border-slate-150 dark:border-slate-850">
+                          <span className={`inline-block text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${
+                            gustSpeed > 60
+                              ? 'bg-rose-500/10 text-rose-450 border-rose-500/20'
+                              : gustSpeed > 30
+                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                : 'bg-slate-100 dark:bg-slate-950 text-slate-500 border-slate-200 dark:border-slate-850'
                           }`}>
-                            {gustVal > 60 ? "⚠️ High Vane Gust" : gustVal > 30 ? "⚡ Moderate Gusts" : "✓ Light Vane Activity"}
+                            {gustSpeed > 60 ? "🚨 HIGH GUST HAZARD" : gustSpeed > 30 ? "⚡ MODERATE GUSTS" : "✓ CALM ATMOSPHERE"}
                           </span>
                         </div>
-                      </div>
-                    )
-                  })()}
 
-                  {/* Gauge 3: Barometric Pressure Needle Widget */}
-                  {(() => {
-                    const pressure = windData.current.pressure
-                    const minP = 960
-                    const maxP = 1060
-                    const pressurePercentage = Math.min(Math.max(((pressure - minP) / (maxP - minP)) * 100, 0), 100)
-                    return (
-                      <div className={`p-5 rounded-2xl border ${
-                        isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-200'
-                      } flex flex-col justify-between min-h-[190px] hover:border-purple-500/30 transition-all duration-300`}>
-                        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                          <Gauge className="h-4 w-4 text-purple-500" />
-                          <span>Atm. Pressure</span>
-                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })()}
+
+                {/* Barometric Pressure Gauge */}
+                {(() => {
+                  const pressure = windData.current.pressure
+                  const minP = 960
+                  const maxP = 1060
+                  const percentage = Math.min(Math.max(((pressure - minP) / (maxP - minP)) * 100, 0), 100)
+                  return (
+                    <Card className={`border ${
+                      isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+                    } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                          <Gauge className="h-4.5 w-4.5 text-purple-500" />
+                          <span>Atmospheric Pressure</span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6 flex flex-col justify-between min-h-[220px]">
                         
-                        <div className="my-2 text-left">
-                          <div className="flex items-baseline justify-between mb-1">
-                            <span className="text-4xl font-black text-purple-505 tracking-tight">
+                        <div className="space-y-1">
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-3xl font-black text-purple-500 tracking-tight">
                               {pressure}
                             </span>
-                            <span className="text-sm font-bold text-slate-400 dark:text-slate-500">
+                            <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase">
                               hPa
                             </span>
                           </div>
                           
-                          <div className="relative w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mb-1.5">
-                            {/* Marker Needle */}
+                          {/* Linear progress track with needle indicator */}
+                          <div className="relative w-full h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full mt-2">
                             <div 
-                              className="absolute top-0 bottom-0 w-1.5 bg-purple-500 border border-white dark:border-slate-950 rounded-full transition-all duration-1000 ease-out transform -translate-x-1/2"
-                              style={{ left: `${pressurePercentage}%` }}
+                              className="absolute top-0 bottom-0 w-1.5 bg-purple-500 border border-white dark:border-slate-900 rounded-full transition-all duration-1000 transform -translate-x-1/2"
+                              style={{ left: `${percentage}%` }}
                             />
-                            {/* Standard pressure marker */}
+                            {/* Normal standard pressure tick */}
                             <div 
-                              className="absolute top-0 bottom-0 w-[1.5px] bg-slate-400 dark:bg-slate-600"
+                              className="absolute top-0 bottom-0 w-[1.5px] bg-slate-350 dark:bg-slate-700"
                               style={{ left: `${((1013.25 - minP) / (maxP - minP)) * 100}%` }}
-                              title="Standard pressure: 1013.25 hPa"
                             />
                           </div>
-                          
-                          <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold">
-                            <span>960 Low</span>
-                            <span>1013 Standard</span>
-                            <span>1060 High</span>
+                          <div className="flex justify-between text-[8px] text-slate-400 dark:text-slate-550 font-black tracking-widest mt-1">
+                            <span>960 LOW</span>
+                            <span>1013 STD</span>
+                            <span>1060 HIGH</span>
                           </div>
                         </div>
-                        
-                        <div className="text-xs font-semibold text-slate-500 dark:text-slate-450 leading-relaxed">
-                          {pressure < 1009 ? "Cyclonic System (Stormy)" : pressure > 1018 ? "Anticyclonic System (Dry)" : "Barometric Normal State"}
+
+                        <div className="pt-3 border-t border-slate-150 dark:border-slate-850 text-xs font-semibold text-slate-500 dark:text-slate-400 leading-relaxed">
+                          {pressure < 1009 ? "Cyclonic System (Storm / Rain)" : pressure > 1018 ? "Anticyclonic System (Sunny / Dry)" : "Barometric Standard State"}
                         </div>
-                      </div>
-                    )
-                  })()}
 
-                </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })()}
 
-              </CardContent>
-            </Card>
+              </div>
 
+            </div>
           </div>
         )}
 
-        {/* 24-Hour Stream Scroll Container */}
+        {/* 24-Hour Stream Scroll Ribbon */}
         {windData && (
           <Card className={`border ${
-            isDarkMode 
-              ? 'bg-slate-900/60 border-slate-800 text-white' 
-              : 'bg-white border-slate-200 text-slate-900'
-          } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                <TrendingUp className="h-5 w-5 text-indigo-500" />
-                <span>24-Hour Hourly Wind Stream</span>
+            isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+          } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+            <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-indigo-500 animate-pulse" />
+                <span>24-Hour Wind Velocity Stream</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-6 pb-6 pt-2">
-              <div className="flex gap-3 overflow-x-auto pb-4 pt-1 scrollbar-thin scrollbar-thumb-slate-350 dark:scrollbar-thumb-slate-750 hover:scrollbar-thumb-slate-450">
-                {windData.hourly.map((hour, index) => {
+            <CardContent className="p-4 md:p-6">
+              <div className="flex gap-3 overflow-x-auto pb-4 pt-1 scrollbar-thin scrollbar-thumb-indigo-500/20 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent">
+                {windData.hourly.map((hour, idx) => {
                   return (
                     <div 
-                      key={`hourly-wind-${index}`} 
-                      className={`flex-shrink-0 w-24 p-3.5 rounded-2xl border text-center transition-all duration-300 hover:scale-[1.04] hover:shadow-sm ${
+                      key={`hourly-wind-${idx}`} 
+                      className={`flex-shrink-0 w-24 p-3.5 rounded-xl border text-center transition-all duration-300 hover:scale-[1.03] ${
                         isDarkMode 
-                          ? 'bg-slate-900/40 border-slate-800/80 hover:border-slate-700' 
+                          ? 'bg-slate-950 border-slate-850 hover:border-slate-700' 
                           : 'bg-slate-50 border-slate-200 hover:border-slate-350'
                       }`}
                     >
-                      <div className="text-[11px] font-extrabold tracking-wider text-slate-450 dark:text-slate-500 uppercase mb-2">
+                      <div className="text-[10px] font-black tracking-widest text-slate-400 dark:text-slate-500 uppercase mb-2">
                         {hour.time}
                       </div>
                       
-                      <div className="relative w-8 h-8 mx-auto my-2.5 flex items-center justify-center">
+                      <div className="relative w-8 h-8 mx-auto my-3 flex items-center justify-center">
                         <Navigation 
-                          className="h-5 w-5 text-indigo-500 dark:text-indigo-400"
+                          className="h-5.5 w-5.5 text-indigo-500 dark:text-indigo-400 transition-transform duration-700"
                           style={{ transform: `rotate(${hour.direction}deg)` }}
                         />
-                        <span className="absolute text-[10px] font-black text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 px-0.5 animate-none" style={{ transform: 'translate(0px, 12px)' }}>
+                        <span className="absolute text-[8px] font-black text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 px-1 rounded transform translate-y-3">
                           {getDirectionName(hour.direction)}
                         </span>
                       </div>
 
-                      <div className="mt-4">
-                        <div className={`text-lg font-extrabold ${getWindColor(hour.speed, isDarkMode)}`}>
+                      <div className="mt-4 space-y-0.5">
+                        <div className={`text-lg font-black tracking-tight ${getWindColor(hour.speed, isDarkMode)}`}>
                           {convertSpeed(hour.speed)}
                         </div>
-                        <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none mt-0.5">
+                        <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase">
                           {getSpeedUnit()}
                         </div>
                       </div>
 
-                      <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/50 text-xs text-slate-450 dark:text-slate-500">
-                        <span className="font-semibold text-rose-500/90 dark:text-rose-450">Gust: {convertSpeed(hour.gust)}</span>
+                      <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-850/50 text-[10px] font-bold text-slate-450 dark:text-slate-500 leading-none">
+                        Gust: <span className="font-extrabold text-rose-500/90 dark:text-rose-400">{convertSpeed(hour.gust)}</span>
                       </div>
                     </div>
                   )
@@ -794,139 +842,159 @@ export default function WindPage() {
           </Card>
         )}
 
-        {/* 7-Day Forecast Grid & Beaufort reference */}
+        {/* 7-Day Forecast & Beaufort References */}
         {windData && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
             
-            {/* 7-Day Wind Forecast */}
-            <Card className={`md:col-span-1 xl:col-span-2 border ${
-              isDarkMode 
-                ? 'bg-slate-900/60 border-slate-800 text-white' 
-                : 'bg-white border-slate-200 text-slate-900'
-            } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                  <Wind className="h-5 w-5 text-indigo-500" />
-                  <span>7-Day Wind Range Forecast</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 pt-2">
-                <div className="space-y-3">
-                  {windData.daily.map((day, index) => {
-                    const avgPercent = (day.avgSpeed / maxWeeklySpeed) * 100
-                    const maxPercent = (day.maxSpeed / maxWeeklySpeed) * 100
-                    return (
-                      <div 
-                        key={`daily-wind-${index}`} 
-                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${
-                          isDarkMode 
-                            ? 'bg-slate-900/20 border-slate-800/80 hover:bg-slate-900/40 hover:border-slate-700' 
-                            : 'bg-slate-50/60 border-slate-200/80 hover:bg-slate-50 hover:border-slate-350'
-                        } gap-4`}
-                      >
-                        {/* Day & Direction Badge */}
-                        <div className="flex items-center gap-3 w-full sm:w-36">
-                          <div className="w-12 text-sm font-bold text-slate-705 dark:text-slate-300">
-                            {day.day}
+            {/* 7-Day Forecast (8 Columns) */}
+            <div className="lg:col-span-8">
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <Wind className="h-5 w-5 text-indigo-500" />
+                    <span>7-Day Wind Range Forecast</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 md:p-6">
+                  <div className="space-y-3.5">
+                    {windData.daily.map((day, idx) => {
+                      const avgPercent = (day.avgSpeed / maxWeeklySpeed) * 100
+                      const maxPercent = (day.maxSpeed / maxWeeklySpeed) * 100
+                      return (
+                        <div 
+                          key={`daily-wind-${idx}`} 
+                          className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
+                            isDarkMode 
+                              ? 'bg-slate-950/40 border-slate-850 hover:bg-slate-950/80 hover:border-slate-700' 
+                              : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                          } gap-4`}
+                        >
+                          {/* Day details */}
+                          <div className="flex items-center gap-3 w-full sm:w-36 flex-shrink-0">
+                            <span className="w-12 text-sm font-black text-slate-700 dark:text-slate-300">
+                              {day.day}
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <Navigation 
+                                className="h-4 w-4 text-indigo-500 dark:text-indigo-400"
+                                style={{ transform: `rotate(${day.direction === "N" ? 0 : day.direction === "NE" ? 45 : day.direction === "E" ? 90 : day.direction === "SE" ? 135 : day.direction === "S" ? 180 : day.direction === "SW" ? 225 : day.direction === "W" ? 270 : 315}deg)` }}
+                              />
+                              <Badge variant="outline" className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 border-slate-300/40 dark:border-slate-800">
+                                {day.direction}
+                              </Badge>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <Navigation 
-                              className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400"
-                              style={{ transform: `rotate(${day.direction === "N" ? 0 : day.direction === "NE" ? 45 : day.direction === "E" ? 90 : day.direction === "SE" ? 135 : day.direction === "S" ? 180 : day.direction === "SW" ? 225 : day.direction === "W" ? 270 : 315}deg)` }}
-                            />
-                            <Badge variant="outline" className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 border-slate-300/30">
-                              {day.direction}
+
+                          {/* Range slider tracks */}
+                          <div className="flex-grow flex flex-col justify-center">
+                            <div className="relative w-full h-1.5 bg-slate-200 dark:bg-slate-850 rounded-full">
+                              <div 
+                                className="absolute h-full bg-indigo-500 dark:bg-indigo-400 rounded-full" 
+                                style={{ left: `${avgPercent}%`, width: `${Math.max(4, maxPercent - avgPercent)}%` }}
+                              />
+                              <div 
+                                className="absolute w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-300 border border-white dark:border-slate-950 -translate-y-1/4"
+                                style={{ left: `${avgPercent}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-1.5">
+                              <span>Avg: {convertSpeed(day.avgSpeed)} {getSpeedUnit()}</span>
+                              <span>Max: {convertSpeed(day.maxSpeed)} {getSpeedUnit()}</span>
+                            </div>
+                          </div>
+
+                          {/* Peak gust values */}
+                          <div className="w-full sm:w-40 text-right flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
+                            <span className="sm:hidden text-xs text-slate-400 font-semibold">Peak Gust:</span>
+                            <Badge className={`${getWindBg(day.gustMax, isDarkMode)} border text-[10px] font-black py-0.5 px-2`}>
+                              GUST: {convertSpeed(day.gustMax)} {getSpeedUnit()}
                             </Badge>
                           </div>
-                        </div>
-                        
-                        {/* Interactive Range Slider bar */}
-                        <div className="flex-grow flex flex-col justify-center">
-                          <div className="relative w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full">
-                            {/* Track bar representing wind range */}
-                            <div 
-                              className="absolute h-full bg-indigo-500 dark:bg-indigo-400 rounded-full" 
-                              style={{ left: `${avgPercent}%`, width: `${maxPercent - avgPercent}%` }}
-                            />
-                            {/* Current Point Dot */}
-                            <div 
-                              className="absolute w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-300 border border-white dark:border-slate-950 -translate-y-1/4"
-                              style={{ left: `${avgPercent}%` }}
-                            />
-                          </div>
-                          <div className="flex justify-between text-xs text-slate-400 dark:text-slate-500 font-bold mt-1.5">
-                            <span>Avg: {convertSpeed(day.avgSpeed)} {getSpeedUnit()}</span>
-                            <span>Max: {convertSpeed(day.maxSpeed)} {getSpeedUnit()}</span>
-                          </div>
-                        </div>
-                        
-                        {/* Peak Gust Badge */}
-                        <div className="w-full sm:w-44 text-right flex items-center justify-between sm:justify-end gap-2">
-                          <span className="sm:hidden text-xs text-slate-400 font-semibold">Peak Gust:</span>
-                          <Badge className={`${getWindBg(day.gustMax, isDarkMode)} border text-xs font-bold px-2 py-0.5`}>
-                            Gust: {convertSpeed(day.gustMax)} {getSpeedUnit()}
-                          </Badge>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Beaufort Wind Reference Panel */}
-            <Card className={`border ${
-              isDarkMode 
-                ? 'bg-slate-900/60 border-slate-800 text-white' 
-                : 'bg-white border-slate-200 text-slate-900'
-            } shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300`}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                  <Info className="h-5 w-5 text-indigo-500" />
-                  <span>Beaufort Reference</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 pt-2">
-                <div className="space-y-4">
-                  {[
-                    { scale: "F0 - F3", name: "Calm to Gentle", speed: "0-19 km/h", desc: "Leaves rustle, flags wave.", color: "emerald", label: "Light" },
-                    { scale: "F4 - F5", name: "Moderate to Fresh", speed: "20-38 km/h", desc: "Small branches move, trees sway.", color: "amber", label: "Active" },
-                    { scale: "F6 - F8", name: "Strong to Gale", speed: "39-74 km/h", desc: "Umbrellas difficult, walking resistance.", color: "orange", label: "Gale Alert" },
-                    { scale: "F9 - F12", name: "Storm to Hurricane", speed: "75-118+ km/h", desc: "Uprooted trees, structural damage.", color: "rose", label: "Danger" }
-                  ].map((item, index) => {
-                    const isDark = isDarkMode
-                    const colorClasses = item.color === 'emerald' ? (isDark ? 'border-emerald-500/25 bg-emerald-500/5' : 'border-emerald-200 bg-emerald-50/50') :
-                                         item.color === 'amber' ? (isDark ? 'border-amber-500/25 bg-amber-500/5' : 'border-amber-200 bg-amber-50/50') :
-                                         item.color === 'orange' ? (isDark ? 'border-orange-500/25 bg-orange-500/5' : 'border-orange-200 bg-orange-50/50') :
-                                         (isDark ? 'border-rose-500/25 bg-rose-500/5' : 'border-rose-200 bg-rose-50/50')
-                                         
-                    const badgeClasses = item.color === 'emerald' ? (isDark ? 'bg-emerald-500/20 text-emerald-400 border-emerald-550/20' : 'bg-emerald-100 text-emerald-800 border-emerald-250') :
-                                         item.color === 'amber' ? (isDark ? 'bg-amber-500/20 text-amber-400 border-amber-550/20' : 'bg-amber-100 text-amber-800 border-amber-250') :
-                                         item.color === 'orange' ? (isDark ? 'bg-orange-500/20 text-orange-400 border-orange-550/20' : 'bg-orange-100 text-orange-800 border-orange-250') :
-                                         (isDark ? 'bg-rose-500/20 text-rose-400 border-rose-550/20' : 'bg-rose-100 text-rose-805 border-rose-250')
-                    
-                    return (
-                      <div key={`beaufort-${index}`} className={`p-4.5 rounded-2xl border transition-all duration-300 ${colorClasses}`}>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-black tracking-tight">{item.scale}</span>
-                          <Badge variant="outline" className={`text-[10px] font-bold uppercase tracking-wider ${badgeClasses}`}>
-                            {item.label}
-                          </Badge>
                         </div>
-                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-0.5">{item.name}</h4>
-                        <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">{item.speed}</div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Beaufort Wind Reference (4 Columns) */}
+            <div className="lg:col-span-4">
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <Info className="h-5 w-5 text-indigo-500" />
+                    <span>Beaufort Reference</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 md:p-6">
+                  <div className="space-y-4">
+                    {[
+                      { scale: "F0 - F3", name: "Calm to Gentle", speed: "0-19 km/h", desc: "Leaves rustle, flags wave.", color: "emerald", label: "Light" },
+                      { scale: "F4 - F5", name: "Moderate to Fresh", speed: "20-38 km/h", desc: "Small branches move, trees sway.", color: "amber", label: "Active" },
+                      { scale: "F6 - F8", name: "Strong to Gale", speed: "39-74 km/h", desc: "Umbrellas difficult, walking resistance.", color: "orange", label: "Gale Alert" },
+                      { scale: "F9 - F12", name: "Storm to Hurricane", speed: "75-118+ km/h", desc: "Uprooted trees, structural damage.", color: "rose", label: "Danger" }
+                    ].map((item, idx) => {
+                      const isDark = isDarkMode
+                      const colorClasses = item.color === 'emerald' ? (isDark ? 'border-emerald-500/25 bg-emerald-500/5' : 'border-emerald-200 bg-emerald-50/50') :
+                                           item.color === 'amber' ? (isDark ? 'border-amber-500/25 bg-amber-500/5' : 'border-amber-200 bg-amber-50/50') :
+                                           item.color === 'orange' ? (isDark ? 'border-orange-500/25 bg-orange-500/5' : 'border-orange-200 bg-orange-50/50') :
+                                           (isDark ? 'border-rose-500/25 bg-rose-500/5' : 'border-rose-200 bg-rose-50/50')
+                                           
+                      const badgeClasses = item.color === 'emerald' ? (isDark ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border-emerald-200') :
+                                           item.color === 'amber' ? (isDark ? 'bg-amber-500/15 text-amber-400 border-amber-500/20' : 'bg-amber-50 text-amber-700 border-amber-200') :
+                                           item.color === 'orange' ? (isDark ? 'bg-orange-500/15 text-orange-400 border-orange-500/20' : 'bg-orange-50 text-orange-700 border-orange-200') :
+                                           (isDark ? 'bg-rose-500/15 text-rose-450 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200')
+                      
+                      return (
+                        <div key={`beaufort-${idx}`} className={`p-4 rounded-xl border transition-all duration-300 ${colorClasses}`}>
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-xs font-black tracking-tight">{item.scale}</span>
+                            <Badge variant="outline" className={`text-[9px] font-black uppercase tracking-wider py-0.5 px-2 ${badgeClasses}`}>
+                              {item.label}
+                            </Badge>
+                          </div>
+                          <h4 className="text-xs font-black text-slate-800 dark:text-slate-100 mb-0.5">{item.name}</h4>
+                          <div className="text-[10px] font-black text-slate-450 dark:text-slate-500 mb-2">{item.speed}</div>
+                          <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
           </div>
         )}
 
       </div>
+
+      {/* Embedded CSS animations for Wind Flow Streaks and Turbine Rotation */}
+      <style jsx>{`
+        .wind-flow-streaks {
+          stroke-dasharray: 20, 80;
+          animation: flowAnim 3s linear infinite;
+        }
+        @keyframes flowAnim {
+          from { stroke-dashoffset: 150; }
+          to { stroke-dashoffset: -150; }
+        }
+        
+        .turbine-rotor {
+          transform-origin: 100px 65px;
+          animation: spinAnim linear infinite;
+        }
+        @keyframes spinAnim {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   )
 }
