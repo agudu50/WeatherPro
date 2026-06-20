@@ -215,14 +215,32 @@ export default function App() {
         ? 'dark bg-slate-950 text-white' 
         : 'bg-slate-50 text-slate-900'
     } relative overflow-hidden transition-colors duration-500`}>
-      {/* Animated Background Elements - Client Side Only */}
+      {/* Premium Modern Animated Background Design */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Grid pattern overlay */}
+        <div className={`absolute inset-0 opacity-[0.4] dark:opacity-[0.15] bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)]`} />
+
+        {/* Floating animated ambient gradient color blobs */}
+        <div className={`absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full blur-[100px] animate-drift-one transition-colors duration-1000 ${
+          isDarkMode ? 'bg-indigo-600/15' : 'bg-indigo-300/25'
+        }`} />
+        <div className={`absolute top-[20%] -right-20 w-[450px] h-[450px] rounded-full blur-[100px] animate-drift-two transition-colors duration-1000 ${
+          isDarkMode ? 'bg-violet-600/15' : 'bg-violet-300/20'
+        }`} style={{ animationDelay: '-4s' }} />
+        <div className={`absolute bottom-[10%] left-[10%] w-[550px] h-[550px] rounded-full blur-[120px] animate-drift-three transition-colors duration-1000 ${
+          isDarkMode ? 'bg-fuchsia-600/10' : 'bg-fuchsia-300/15'
+        }`} style={{ animationDelay: '-2s' }} />
+        <div className={`absolute -bottom-20 -right-20 w-[400px] h-[400px] rounded-full blur-[90px] animate-drift-one transition-colors duration-1000 ${
+          isDarkMode ? 'bg-cyan-600/10' : 'bg-cyan-300/20'
+        }`} style={{ animationDelay: '-7s' }} />
+
+        {/* Small floating particles */}
         {backgroundParticles.map((particle) => (
           <div
             key={`bg-element-${particle.id}`}
-            className={`absolute w-2 h-2 ${
-              isDarkMode ? 'bg-indigo-400/15' : 'bg-indigo-500/10'
-            } rounded-full animate-float blur-sm`}
+            className={`absolute w-1.5 h-1.5 ${
+              isDarkMode ? 'bg-indigo-400/20' : 'bg-indigo-500/15'
+            } rounded-full animate-float blur-[1px]`}
             style={{
               left: `${particle.left}%`,
               top: `${particle.top}%`,
@@ -231,9 +249,6 @@ export default function App() {
             }}
           />
         ))}
-        {/* Additional decorative elements */}
-        <div className={`absolute top-20 right-20 w-72 h-72 rounded-full blur-3xl animate-pulse ${isDarkMode ? 'bg-indigo-500/10' : 'bg-indigo-500/5'}`} />
-        <div className={`absolute bottom-20 left-20 w-96 h-96 rounded-full blur-3xl animate-pulse ${isDarkMode ? 'bg-blue-500/10' : 'bg-blue-500/5'}`} style={{ animationDelay: '2s' }} />
       </div>
 
       {/* Navigation */}

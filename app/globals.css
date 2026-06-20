@@ -237,3 +237,59 @@ body {
   animation: float 4s ease-in-out infinite;
 }
 
+/* Modern landing page animated background color drifting blobs */
+@keyframes drift-one {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(40px, -60px) scale(1.15) rotate(120deg);
+  }
+  66% {
+    transform: translate(-30px, 30px) scale(0.9) rotate(240deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(360deg);
+  }
+}
+
+@keyframes drift-two {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(360deg);
+  }
+  33% {
+    transform: translate(-50px, 40px) scale(0.85) rotate(240deg);
+  }
+  66% {
+    transform: translate(40px, -30px) scale(1.2) rotate(120deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes drift-three {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(30px, 50px) scale(1.1) rotate(180deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(360deg);
+  }
+}
+
+.animate-drift-one {
+  animation: drift-one 22s infinite ease-in-out;
+}
+
+.animate-drift-two {
+  animation: drift-two 28s infinite ease-in-out;
+}
+
+.animate-drift-three {
+  animation: drift-three 25s infinite ease-in-out;
+}
+
+
