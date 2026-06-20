@@ -124,11 +124,11 @@ function DashboardLayoutContent({ children }) {
 
   return (
     <TooltipProvider>
-      <div className={`grid min-h-screen w-full transition-all duration-300 ${
+      <div className={`grid h-screen w-screen overflow-hidden transition-all duration-300 ${
         isCollapsed ? 'md:grid-cols-[70px_1fr]' : 'md:grid-cols-[260px_1fr] lg:grid-cols-[280px_1fr]'
       }`}>
         {/* Enhanced Desktop Sidebar */}
-        <div className={`hidden border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 md:block transition-all duration-300 overflow-y-auto ${
+        <div className={`hidden border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 md:block transition-all duration-300 overflow-y-auto h-full ${
           isCollapsed ? 'w-[70px]' : ''
         }`}>
           <div className="flex h-full max-h-screen flex-col">
@@ -310,8 +310,8 @@ function DashboardLayoutContent({ children }) {
           </div>
         </div>
 
-        {/* Enhanced Mobile Menu */}
-        <div className="flex flex-col min-w-0 overflow-hidden">
+        {/* Enhanced Mobile Menu and Main Column */}
+        <div className="flex flex-col h-full min-w-0 overflow-hidden">
           <header className="flex h-14 items-center gap-4 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6 sticky top-0 z-50 text-slate-800 dark:text-slate-200">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -492,7 +492,7 @@ function DashboardLayoutContent({ children }) {
           </header>
 
           {/* Main Content */}
-          <main className="flex flex-1 flex-col bg-slate-50/50 dark:bg-slate-950/50">
+          <main className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-slate-950/50">
             {children}
           </main>
         </div>
