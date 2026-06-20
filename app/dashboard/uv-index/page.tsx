@@ -1,11 +1,10 @@
 "use client"
 
 import { useTheme } from "@/lib/ThemeContext"
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { 
   Sun, 
@@ -22,7 +21,13 @@ import {
   Eye,
   Clock,
   TrendingUp,
-  Calendar
+  Calendar,
+  Compass,
+  Cpu,
+  Signal,
+  Info,
+  AlertCircle,
+  Activity
 } from "lucide-react"
 
 interface UVData {
@@ -110,18 +115,16 @@ export default function UVIndexPage() {
         return "< 10 min"
       }
 
-      // Simulate hourly UV data (OpenWeatherMap free tier doesn't provide hourly UV)
+      // Simulate hourly UV data
       const currentHour = new Date().getHours()
       const hourlyData = Array.from({ length: 24 }, (_, i) => {
         const hour = (currentHour + i) % 24
-        // UV peaks around noon (12-14)
         let uvIndex: number
         if (hour >= 6 && hour <= 18) {
-          // Daytime: calculate UV based on time from sunrise/noon/sunset
           const hoursFromNoon = Math.abs(hour - 13)
           uvIndex = Math.max(0, uvCurrentData.value * (1 - hoursFromNoon / 7))
         } else {
-          uvIndex = 0 // No UV at night
+          uvIndex = 0
         }
         
         return {
@@ -146,13 +149,12 @@ export default function UVIndexPage() {
 
       const dailyData = Object.keys(dailyMap).slice(0, 7).map((dateKey) => {
         const dayData = dailyMap[dateKey]
-        // Estimate UV based on cloud cover and time
         const avgCloudCover = dayData.reduce((sum, d) => sum + d.clouds.all, 0) / dayData.length
-        const estimatedMaxUV = uvCurrentData.value * (1 - avgCloudCover / 200) // Clouds reduce UV
+        const estimatedMaxUV = uvCurrentData.value * (1 - avgCloudCover / 200)
         const estimatedAvgUV = estimatedMaxUV * 0.7
         
         return {
-          day: new Date(dateKey).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+          day: new Date(dateKey).toLocaleDateString('en-US', { weekday: 'short' }),
           maxUV: Math.max(0, Math.round(estimatedMaxUV * 10) / 10),
           avgUV: Math.max(0, Math.round(estimatedAvgUV * 10) / 10),
           risk: getUVRisk(estimatedMaxUV),
@@ -165,23 +167,23 @@ export default function UVIndexPage() {
       const recommendations: string[] = []
       
       if (currentUV <= 2) {
-        recommendations.push("Minimal protection required")
-        recommendations.push("Sunglasses recommended on bright days")
+        recommendations.push("Minimal protection required under standard conditions.")
+        recommendations.push("Sunglasses recommended on bright days to block direct glare.")
       } else if (currentUV <= 5) {
-        recommendations.push("Wear sunscreen SPF 30+")
-        recommendations.push("Wear a hat and sunglasses")
-        recommendations.push("Seek shade during midday hours")
+        recommendations.push("Wear sunscreen SPF 30+ to guard skin barriers.")
+        recommendations.push("Wear a wide-brimmed hat and UV-blocking sunglasses.")
+        recommendations.push("Seek shade during peak midday ultraviolet window (11 AM - 3 PM).")
       } else if (currentUV <= 7) {
-        recommendations.push("Wear sunscreen SPF 30+ and reapply every 2 hours")
-        recommendations.push("Wear protective clothing and wide-brimmed hat")
-        recommendations.push("Reduce sun exposure 10 AM - 4 PM")
-        recommendations.push("Wear UV-blocking sunglasses")
+        recommendations.push("Wear sunscreen SPF 30+ and reapply strictly every 2 hours.")
+        recommendations.push("Wear light protective clothing and wide-brimmed hat.")
+        recommendations.push("Limit direct sun exposure between 10 AM - 4 PM.")
+        recommendations.push("Ensure sunglasses block 99% of UVA and UVB radiation.")
       } else {
-        recommendations.push("Wear sunscreen SPF 50+ and reapply frequently")
-        recommendations.push("Wear protective clothing covering arms/legs")
-        recommendations.push("Avoid sun exposure 10 AM - 4 PM")
-        recommendations.push("Seek shade whenever possible")
-        recommendations.push("Wear UV-blocking sunglasses and hat")
+        recommendations.push("Wear broad-spectrum sunscreen SPF 50+ and reapply frequently.")
+        recommendations.push("Wear tightly woven clothing covering arms and legs completely.")
+        recommendations.push("Minimize outdoor activity during high-intensity solar hours.")
+        recommendations.push("Find solid overhead shade cover whenever practical.")
+        recommendations.push("Ensure full wrap-around UV sunglasses are active.")
       }
 
       setUvData({
@@ -226,7 +228,7 @@ export default function UVIndexPage() {
   const getUserLocation = () => {
     if (!navigator.geolocation) {
       setLocationStatus('error')
-      fetchUVData(51.5074, -0.1278) // Default to London
+      fetchUVData(5.6037, -0.1870) // Default to Accra/region coordinate fallback
       return
     }
 
@@ -240,7 +242,7 @@ export default function UVIndexPage() {
       (error) => {
         console.error('Location error:', error)
         setLocationStatus(error.code === 1 ? 'denied' : 'error')
-        fetchUVData(51.5074, -0.1278) // Fallback to London
+        fetchUVData(5.6037, -0.1870)
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     )
@@ -269,92 +271,87 @@ export default function UVIndexPage() {
   }
 
   useEffect(() => {
-    // Load dark mode preference
-    const savedDarkMode = localStorage.getItem("uvIndexDarkMode")
-    if (savedDarkMode !== null) {
-      
-    }
-
-    // Get user location
     getUserLocation()
   }, [])
 
-  
-
   const getUVColor = (uv: number, dark: boolean): string => {
-    if (uv <= 2) return dark ? "text-green-300" : "text-green-600"
-    if (uv <= 5) return dark ? "text-yellow-300" : "text-yellow-600"
-    if (uv <= 7) return dark ? "text-orange-300" : "text-orange-600"
-    if (uv <= 10) return dark ? "text-red-300" : "text-red-600"
-    return dark ? "text-purple-300" : "text-purple-600"
+    if (uv <= 2) return dark ? "text-emerald-400" : "text-emerald-600"
+    if (uv <= 5) return dark ? "text-amber-400" : "text-amber-600"
+    if (uv <= 7) return dark ? "text-orange-400" : "text-orange-600"
+    if (uv <= 10) return dark ? "text-rose-500" : "text-rose-600"
+    return dark ? "text-purple-400" : "text-purple-650"
   }
 
   const getUVBg = (uv: number, dark: boolean): string => {
-    if (uv <= 2) return dark ? "bg-green-500/20 border-green-400/30" : "bg-green-100 border-green-300"
-    if (uv <= 5) return dark ? "bg-yellow-500/20 border-yellow-400/30" : "bg-yellow-100 border-yellow-300"
-    if (uv <= 7) return dark ? "bg-orange-500/20 border-orange-400/30" : "bg-orange-100 border-orange-300"
-    if (uv <= 10) return dark ? "bg-red-500/20 border-red-400/30" : "bg-red-100 border-red-300"
-    return dark ? "bg-purple-500/20 border-purple-400/30" : "bg-purple-100 border-purple-300"
-  }
-
-  const getRiskIcon = (risk: string) => {
-    switch(risk.toLowerCase()) {
-      case "low": return <Shield className="h-5 w-5" />
-      case "moderate": return <Eye className="h-5 w-5" />
-      case "high": 
-      case "very high": return <AlertTriangle className="h-5 w-5" />
-      case "extreme": return <AlertTriangle className="h-5 w-5 animate-pulse" />
-      default: return <Sun className="h-5 w-5" />
-    }
+    if (uv <= 2) return dark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-800"
+    if (uv <= 5) return dark ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-amber-50 border-amber-200 text-amber-800"
+    if (uv <= 7) return dark ? "bg-orange-500/10 border-orange-500/20 text-orange-400" : "bg-orange-50 border-orange-200 text-orange-850"
+    if (uv <= 10) return dark ? "bg-rose-500/10 border-rose-500/20 text-rose-400" : "bg-rose-50 border-rose-200 text-rose-800"
+    return dark ? "bg-purple-500/10 border-purple-500/20 text-purple-400" : "bg-purple-50 border-purple-200 text-purple-800"
   }
 
   if (loading && !uvData) {
     return (
-      <div className={`min-h-screen ${
+      <div className={`w-full min-h-[calc(100vh-3.5rem)] ${
         isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
-      } p-6 flex items-center justify-center transition-colors duration-500`}>
+      } p-4 md:p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
-          <Loader2 className={`h-16 w-16 ${
-            isDarkMode ? 'text-white' : 'text-orange-600'
-          } animate-spin mx-auto mb-4`} />
-          <p className={`text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Loading UV Index data...
-          </p>
+          <Loader2 className="h-16 w-16 text-indigo-650 animate-spin mx-auto mb-4" />
+          <p className="text-xl font-bold tracking-tight">Syncing solar radiation sensors...</p>
+          <p className="text-xs text-slate-400 mt-1">Connecting to UV monitoring network...</p>
         </div>
       </div>
     )
   }
 
+  const latCoord = uvData?.coord.lat ?? 5.6037
+  const lonCoord = uvData?.coord.lon ?? -0.1870
+  const currentUV = uvData ? uvData.current.uvIndex : 0
+
+  // Calculate sun position on arc for Sunrise/Sunset widget
+  const currentHour = new Date().getHours()
+  const isSunUp = currentHour >= 6 && currentHour <= 18
+  const sunRatio = isSunUp ? (currentHour - 6) / 12 : 0
+  const sunAngle = Math.PI - sunRatio * Math.PI // Map 0-1 to 180 to 0 degrees in rads
+  const sunX = 100 + 70 * Math.cos(sunAngle)
+  const sunY = 90 - 70 * Math.sin(sunAngle)
+
+  // Solar flare rotation duration linked to UV Index
+  // Higher UV = faster rotation
+  const solarAnimDuration = currentUV > 0
+    ? `${Math.max(1.2, Math.min(10, 15 / currentUV))}s`
+    : '0s'
+
   return (
-    <div className={`min-h-screen ${
-      isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
-    } p-6 transition-colors duration-500`}>
+    <div className={`w-full max-w-full overflow-x-hidden min-h-[calc(100vh-3.5rem)] ${
+      isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    } p-4 md:p-6 transition-colors duration-500`}>
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-orange-500">
-              <Sun className="h-8 w-8 text-white" />
+
+        {/* Header Console */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-start sm:items-center gap-3 w-full lg:w-auto">
+            <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/10 flex-shrink-0">
+              <Sun className="h-7 w-7" />
             </div>
-            <div>
-              <h1 className={`text-4xl font-bold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight truncate">
                 UV Index Monitor
               </h1>
               {uvData && (
-                <div className={`flex items-center gap-2 mt-1 text-sm ${
-                  isDarkMode ? 'text-white/70' : 'text-gray-600'
-                }`}>
-                  <MapPin className="h-4 w-4 text-red-500" />
-                  <span>{uvData.current.location}, {uvData.current.country}</span>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4 text-rose-500 animate-pulse flex-shrink-0" />
+                    <span className="truncate">{uvData.current.location}, {uvData.current.country}</span>
+                  </div>
+                  <span className="hidden sm:inline text-slate-350 dark:text-slate-700">|</span>
+                  <span className="font-mono text-xs bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800">
+                    LAT: {latCoord.toFixed(4)}° LON: {lonCoord.toFixed(4)}°
+                  </span>
+                  <span className="hidden sm:inline text-slate-350 dark:text-slate-700">|</span>
                   {locationStatus === 'success' && (
-                    <Badge className={`${
-                      isDarkMode 
-                        ? 'bg-orange-500/20 text-orange-300 border-orange-500/30' 
-                        : 'bg-orange-100 text-orange-700 border-orange-300'
-                    }`}>
-                      📍 Your Location
+                    <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 border bg-indigo-500/10 text-indigo-650 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-500/20 flex-shrink-0">
+                      📍 System Calibrated
                     </Badge>
                   )}
                 </div>
@@ -362,448 +359,633 @@ export default function UVIndexPage() {
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex flex-wrap gap-2">
-            <form onSubmit={handleSearchCity} className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Search city..."
-                value={searchCity}
-                onChange={(e) => setSearchCity(e.target.value)}
-                className={`${
-                  isDarkMode 
-                    ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
-                }`}
-              />
-              <Button type="submit" size="icon" className="bg-orange-600 hover:bg-orange-700">
-                <Search className="h-4 w-4" />
+          {/* Action Row */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+            <form onSubmit={handleSearchCity} className="flex gap-2 w-full sm:w-auto">
+              <div className="relative flex items-center flex-1 sm:flex-initial sm:w-60">
+                <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
+                <Input
+                  type="text"
+                  placeholder="Search solar sector..."
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                  className={`pl-9 pr-3 py-2 w-full rounded-xl transition-all duration-300 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' 
+                      : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600'
+                  }`}
+                />
+              </div>
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide shadow-md shadow-indigo-600/15 flex-shrink-0">
+                Scan Sector
               </Button>
             </form>
             
-            <Button
-              onClick={getUserLocation}
-              size="icon"
-              className="bg-yellow-600 hover:bg-yellow-700"
-              title="Use My Location"
-            >
-              <Target className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  onClick={getUserLocation}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title="Locate station"
+                >
+                  <Target className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
+                </Button>
 
-            <Button
-              onClick={() => currentLocation && fetchUVData(currentLocation.lat, currentLocation.lon)}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title="Refresh Data"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+                <Button
+                  type="button"
+                  onClick={() => currentLocation && fetchUVData(currentLocation.lat, currentLocation.lon)}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title="Sync telemetry"
+                >
+                  <RefreshCw className="h-4.5 w-4.5" />
+                </Button>
 
-            <Button
-              onClick={toggleDarkMode}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title={isDarkMode ? "Light Mode" : "Dark Mode"}
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
+                <Button
+                  type="button"
+                  onClick={toggleDarkMode}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title={isDarkMode ? "Light Display" : "Dark Display"}
+                >
+                  {isDarkMode ? <Sun className="h-4.5 w-4.5 text-amber-500" /> : <Moon className="h-4.5 w-4.5 text-indigo-600" />}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Current UV Index */}
-        {uvData && (
-          <Card className={`${
+        {/* Warning Alert if UV index is High or above */}
+        {uvData && uvData.current.uvIndex > 5 && (
+          <div className={`p-4 rounded-2xl border ${
             isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardContent className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-                <div className="text-center lg:text-left">
-                  <h2 className="text-2xl font-bold mb-2">{uvData.current.location}</h2>
-                  <div className="flex items-center justify-center lg:justify-start gap-4 mb-4">
-                    <div className={`text-6xl font-bold ${getUVColor(uvData.current.uvIndex, isDarkMode)}`}>
-                      {uvData.current.uvIndex}
-                    </div>
-                    <div>
-                      <div className={`text-xl ${
-                        isDarkMode ? 'text-white/80' : 'text-gray-600'
-                      }`}>UV Index</div>
-                      <Badge className={`border text-current ${getUVBg(uvData.current.uvIndex, isDarkMode)}`}>
-                        {uvData.current.risk} Risk
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className={`flex items-center gap-2 ${
-                    isDarkMode ? 'text-white/70' : 'text-gray-600'
-                  }`}>
-                    <Clock className="h-4 w-4" />
-                    <span>Updated: {uvData.current.time}</span>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <div className="relative w-40 h-40 mx-auto mb-4">
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        fill="none"
-                        stroke={isDarkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)"}
-                        strokeWidth="8"
-                      />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        fill="none"
-                        stroke={isDarkMode ? "rgba(251, 146, 60, 0.8)" : "rgba(251, 146, 60, 1)"}
-                        strokeWidth="8"
-                        strokeDasharray={`${Math.min((uvData.current.uvIndex / 11) * 251.2, 251.2)} 251.2`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {getRiskIcon(uvData.current.risk)}
-                    </div>
-                  </div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-600'
-                  }`}>UV Level Gauge</div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className={`rounded-lg p-4 text-center border ${
-                    isDarkMode 
-                      ? 'bg-orange-500/20 border-orange-400/30' 
-                      : 'bg-orange-100 border-orange-300'
-                  }`}>
-                    <Sunrise className={`h-6 w-6 mx-auto mb-2 ${
-                      isDarkMode ? 'text-orange-300' : 'text-orange-600'
-                    }`} />
-                    <div className={`text-xl font-bold ${
-                      isDarkMode ? 'text-orange-300' : 'text-orange-600'
-                    }`}>{uvData.current.sunriseTime}</div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Sunrise</div>
-                  </div>
-                  <div className={`rounded-lg p-4 text-center border ${
-                    isDarkMode 
-                      ? 'bg-purple-500/20 border-purple-400/30' 
-                      : 'bg-purple-100 border-purple-300'
-                  }`}>
-                    <Sunset className={`h-6 w-6 mx-auto mb-2 ${
-                      isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                    }`} />
-                    <div className={`text-xl font-bold ${
-                      isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                    }`}>{uvData.current.sunsetTime}</div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Sunset</div>
-                  </div>
-                  <div className={`rounded-lg p-4 text-center border ${
-                    isDarkMode 
-                      ? 'bg-blue-500/20 border-blue-400/30' 
-                      : 'bg-blue-100 border-blue-300'
-                  }`}>
-                    <Shield className={`h-6 w-6 mx-auto mb-2 ${
-                      isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                    }`} />
-                    <div className={`text-xl font-bold ${
-                      isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                    }`}>{uvData.protection.safeExposureTime}</div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Safe Time</div>
-                  </div>
-                  <div className={`rounded-lg p-4 text-center border ${
-                    isDarkMode 
-                      ? 'bg-cyan-500/20 border-cyan-400/30' 
-                      : 'bg-cyan-100 border-cyan-300'
-                  }`}>
-                    <Sun className={`h-6 w-6 mx-auto mb-2 ${
-                      isDarkMode ? 'text-cyan-300' : 'text-cyan-600'
-                    }`} />
-                    <div className={`text-xl font-bold ${
-                      isDarkMode ? 'text-cyan-300' : 'text-cyan-600'
-                    }`}>{uvData.current.cloudCover}%</div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Cloud Cover</div>
-                  </div>
-                </div>
+              ? 'bg-rose-500/10 border-rose-500/20 text-rose-200' 
+              : 'bg-rose-50 border-rose-200 text-rose-900'
+          } flex items-start gap-3 shadow-sm`}>
+            <AlertTriangle className="h-5 w-5 text-rose-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <div className="text-sm font-medium">
+                <span className="font-bold uppercase tracking-wider text-xs mr-2">Solar Warning:</span>
+                Elevated UV Index of {uvData.current.uvIndex} ({uvData.current.risk}) detected. Unprotected skin may burn in {uvData.protection.burnTime}. Avoid direct sun exposure and wear SPF 30+.
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
-        {/* Hourly UV Forecast */}
+        {/* Main Grid Layout */}
         {uvData && (
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                24-Hour UV Index Forecast
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            {/* Left Console Column: SVG Solar Radiation Gauge (4 columns) */}
+            <div className="lg:col-span-4">
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                    <Compass className="h-4.5 w-4.5 text-indigo-500" />
+                    <span>Solar Telemetry Gauge</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center p-6">
+                  
+                  {/* Futuristic SVG Dial Face */}
+                  <div className="relative w-full max-w-[240px] aspect-square mx-auto mb-6 bg-[#0a0f1d] rounded-full border border-slate-350 dark:border-slate-800 shadow-inner flex items-center justify-center">
+                    
+                    {/* Concentric Coordinate rings */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-500/10 dark:text-indigo-400/15" viewBox="0 0 200 200">
+                      
+                      <defs>
+                        <clipPath id="solar-clip-bounds">
+                          <circle cx="100" cy="100" r="76" />
+                        </clipPath>
+                      </defs>
+
+                      {/* Concentric rings */}
+                      <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                      <circle cx="100" cy="100" r="76" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                      <circle cx="100" cy="100" r="56" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                      
+                      {/* Dial scale marks for UV index ranges (0 to 12) */}
+                      {Array.from({ length: 24 }).map((_, i) => {
+                        const deg = i * 15
+                        const rad = (deg * Math.PI) / 180
+                        const outerR = 92
+                        const innerR = i % 4 === 0 ? 80 : 86
+                        const x1 = 100 + outerR * Math.sin(rad)
+                        const y1 = 100 - outerR * Math.cos(rad)
+                        const x2 = 100 + innerR * Math.sin(rad)
+                        const y2 = 100 - innerR * Math.cos(rad)
+                        return (
+                          <line 
+                            key={i} 
+                            x1={x1} y1={y1} x2={x2} y2={y2} 
+                            stroke="currentColor" 
+                            strokeWidth={i % 4 === 0 ? "1.5" : "0.75"} 
+                          />
+                        )
+                      })}
+
+                      {/* Scale labels */}
+                      <text x="100" y="24" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-black fill-indigo-400/60">0</text>
+                      <text x="176" y="100" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-black fill-indigo-400/65">3</text>
+                      <text x="100" y="176" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-black fill-indigo-400/60">6</text>
+                      <text x="24" y="100" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-black fill-indigo-400/60">9</text>
+                    </svg>
+
+                    {/* Rotating Solar Flares Particle Effect */}
+                    <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+                      <svg className="w-full h-full" viewBox="0 0 200 200">
+                        <g clipPath="url(#solar-clip-bounds)">
+                          {currentUV > 0 && (
+                            <g className="solar-flares-container" style={{ transformOrigin: '100px 100px', animationDuration: solarAnimDuration }}>
+                              {Array.from({ length: 8 }).map((_, i) => {
+                                const angle = i * 45
+                                return (
+                                  <line
+                                    key={i}
+                                    x1="100"
+                                    y1="40"
+                                    x2="100"
+                                    y2="60"
+                                    stroke="#f97316"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    transform={`rotate(${angle} 100 100)`}
+                                    className="opacity-70 animate-pulse"
+                                  />
+                                )
+                              })}
+                            </g>
+                          )}
+                        </g>
+                      </svg>
+                    </div>
+
+                    {/* Active Gauge Tracking Arc */}
+                    <div className="absolute inset-0 pointer-events-none">
+                      <svg className="w-full h-full" viewBox="0 0 200 200">
+                        {(() => {
+                          const maxRangeVal = 12
+                          const clipUV = Math.min(currentUV, maxRangeVal)
+                          const ratio = clipUV / maxRangeVal
+                          const dashLength = 2 * Math.PI * 76
+                          
+                          // Determine stroke color relative to UV levels
+                          let strokeColor = '#10b981' // Low: emerald
+                          if (currentUV > 10) strokeColor = '#a855f7' // Extreme: purple
+                          else if (currentUV > 7) strokeColor = '#f43f5e' // Very High: rose
+                          else if (currentUV > 5) strokeColor = '#f97316' // High: orange
+                          else if (currentUV > 2) strokeColor = '#fbbf24' // Moderate: amber
+
+                          return (
+                            <circle 
+                              cx="100" cy="100" r="76"
+                              fill="none" 
+                              stroke={strokeColor}
+                              strokeWidth="4.5"
+                              strokeLinecap="round"
+                              strokeDasharray={dashLength}
+                              strokeDashoffset={dashLength * (1 - ratio)}
+                              transform="rotate(-90 100 100)"
+                              className="transition-all duration-1000 ease-out opacity-80"
+                            />
+                          )
+                        })()}
+                      </svg>
+                    </div>
+
+                    {/* Center Core HUD Readout */}
+                    <div className="absolute w-[85px] h-[85px] bg-slate-950 rounded-full border border-slate-800 flex flex-col items-center justify-center shadow-md">
+                      <span className="text-3xl font-black text-white tracking-tight leading-none">
+                        {currentUV}
+                      </span>
+                      <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider mt-0.5">
+                        UV INDEX
+                      </span>
+                      <span className={`text-[10px] font-extrabold mt-1 leading-none ${getUVColor(currentUV, true)}`}>
+                        {uvData.current.risk}
+                      </span>
+                    </div>
+
+                    {/* HUD Metadata Tickers */}
+                    <div className="absolute top-3 left-6 font-mono text-[8px] font-black text-indigo-400/40">SYS: SCANNER</div>
+                    <div className="absolute bottom-3 right-6 font-mono text-[8px] font-black text-indigo-400/40">BAND: SOLAR_UV</div>
+
+                  </div>
+
+                  {/* Summary telemetry labels */}
+                  <div className="w-full text-center space-y-1 mt-2">
+                    <p className="text-sm font-black text-slate-800 dark:text-slate-200 tracking-tight">
+                      UV Radiation Level: {currentUV} Index
+                    </p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
+                      Sensors monitoring atmospheric ozone filtration
+                    </p>
+                  </div>
+
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Metrics Dashboard Column (8 columns) */}
+            <div className="lg:col-span-8 space-y-6">
+              
+              {/* Telemetry widgets grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Gauge 1: Sunrise & Sunset Track Arc */}
+                <Card className={`border ${
+                  isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+                } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                      <Sunrise className="h-4.5 w-4.5 text-amber-500" />
+                      <span>Solar Track Horizon</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 flex flex-col items-center justify-between min-h-[190px]">
+                    
+                    {/* SVG Curve Path representing sunrise to sunset */}
+                    <div className="relative w-full max-w-[160px] aspect-[2/1] mt-2">
+                      <svg className="w-full h-full" viewBox="0 0 200 100">
+                        {/* Horizon path */}
+                        <path 
+                          d="M 20 90 A 80 80 0 0 1 180 90" 
+                          fill="none" 
+                          stroke={isDarkMode ? "#334155" : "#cbd5e1"} 
+                          strokeWidth="2.5" 
+                          strokeDasharray="4 4" 
+                        />
+                        {/* Day trajectory track */}
+                        {isSunUp && (
+                          <path 
+                            d={`M 20 90 A 80 80 0 0 1 ${sunX} ${sunY}`} 
+                            fill="none" 
+                            stroke="#f59e0b" 
+                            strokeWidth="2.5" 
+                            className="transition-all duration-1000"
+                          />
+                        )}
+                        {/* Sun/Moon Dot Node */}
+                        <circle 
+                          cx={isSunUp ? sunX : 100} 
+                          cy={isSunUp ? sunY : 90} 
+                          r="6.5" 
+                          fill={isSunUp ? "#fbbf24" : "#94a3b8"} 
+                          className="transition-all duration-1000 shadow-sm"
+                        />
+                        {/* Horizon line */}
+                        <line x1="10" y1="90" x2="190" y2="90" stroke={isDarkMode ? "#475569" : "#94a3b8"} strokeWidth="1.5" />
+                      </svg>
+                    </div>
+
+                    <div className="w-full flex justify-between text-[10px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider mt-2.5">
+                      <span className="flex items-center gap-1"><Sunrise className="h-3 w-3 text-amber-500" /> {uvData.current.sunriseTime}</span>
+                      <span className="flex items-center gap-1"><Sunset className="h-3 w-3 text-purple-500" /> {uvData.current.sunsetTime}</span>
+                    </div>
+
+                  </CardContent>
+                </Card>
+
+                {/* Gauge 2: Safe Exposure Scale */}
+                <Card className={`border ${
+                  isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+                } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                      <Shield className="h-4.5 w-4.5 text-blue-500" />
+                      <span>Safe Exposure Limit</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 flex flex-col justify-between min-h-[190px]">
+                    
+                    <div className="space-y-1">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-3xl font-black text-indigo-650 dark:text-indigo-400 tracking-tight">
+                          {uvData.protection.safeExposureTime}
+                        </span>
+                        <span className="text-[10px] font-black text-slate-450 uppercase">
+                          No Protection
+                        </span>
+                      </div>
+                      
+                      {/* Bar indicator */}
+                      <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden mt-3">
+                        <div 
+                          className="h-full bg-blue-500 rounded-full transition-all duration-1000 ease-out"
+                          style={{ 
+                            width: `${
+                              currentUV <= 2 ? 100 : currentUV <= 5 ? 65 : currentUV <= 7 ? 40 : currentUV <= 10 ? 20 : 10
+                            }%` 
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-150 dark:border-slate-850 text-xs font-semibold text-slate-500 dark:text-slate-450 leading-relaxed">
+                      Safe sun exposure period for skin before harm
+                    </div>
+
+                  </CardContent>
+                </Card>
+
+                {/* Gauge 3: Cloud Cover and Burn Time */}
+                <Card className={`border ${
+                  isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+                } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                      <Sun className="h-4.5 w-4.5 text-orange-500" />
+                      <span>Time To Skin Burn</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 flex flex-col justify-between min-h-[190px]">
+                    
+                    <div className="space-y-1">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-3xl font-black text-rose-500 dark:text-rose-400 tracking-tight">
+                          {uvData.protection.burnTime}
+                        </span>
+                      </div>
+                      
+                      {/* Bar indicator */}
+                      <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden mt-3">
+                        <div 
+                          className="h-full bg-rose-500 rounded-full transition-all duration-1000 ease-out"
+                          style={{ 
+                            width: `${
+                              currentUV > 10 ? 100 : currentUV > 7 ? 80 : currentUV > 5 ? 50 : currentUV > 2 ? 30 : 15
+                            }%` 
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-150 dark:border-slate-850 text-xs font-semibold text-slate-500 dark:text-slate-450 leading-relaxed">
+                      Estimated duration before onset of sunburn
+                    </div>
+
+                  </CardContent>
+                </Card>
+
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* 24-Hour UV Index Forecast Stream */}
+        {uvData && (
+          <Card className={`border ${
+            isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+          } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+            <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-indigo-500 animate-pulse" />
+                <span>24-Hour UV Index Forecast Stream</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className={`h-40 rounded-lg mb-4 flex items-end justify-around p-4 ${
-                isDarkMode ? 'bg-white/10' : 'bg-gray-50'
-              }`}>
-                {uvData.hourly.slice(0, 12).map((hour, index) => {
-                  const height = (hour.uvIndex / 11) * 100
+            <CardContent className="p-4 md:p-6">
+              <div className="flex gap-3 overflow-x-auto pb-4 pt-1 scrollbar-thin scrollbar-thumb-indigo-500/20 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent">
+                {uvData.hourly.slice(0, 16).map((hour, idx) => {
                   return (
-                    <div key={`uv-chart-${index}`} className="flex flex-col items-center">
-                      <div className={`text-xs mb-1 font-medium ${
-                        isDarkMode ? 'text-white' : 'text-gray-900'
-                      }`}>{hour.uvIndex}</div>
-                      <div 
-                        className={`w-4 rounded-t border ${getUVBg(hour.uvIndex, isDarkMode)}`}
-                        style={{ height: `${Math.max(height, 10)}%` }}
-                      ></div>
-                      <div className={`text-xs mt-1 ${
-                        isDarkMode ? 'text-white/70' : 'text-gray-600'
-                      }`}>{hour.time}</div>
+                    <div 
+                      key={`hourly-uv-${idx}`} 
+                      className={`flex-shrink-0 w-24 p-3.5 rounded-xl border text-center transition-all duration-300 hover:scale-[1.03] flex flex-col justify-between items-center ${
+                        isDarkMode ? 'bg-slate-950 border-slate-850' : 'bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="text-[10px] font-black tracking-widest text-slate-400 dark:text-slate-500 uppercase mb-2">
+                        {hour.time}
+                      </div>
+
+                      {/* Visual probability column indicator */}
+                      <div className="w-2.5 h-12 bg-slate-100 dark:bg-slate-950 rounded-full my-2.5 flex items-end overflow-hidden">
+                        <div 
+                          className="w-full bg-orange-500 transition-all duration-1000 ease-out" 
+                          style={{ height: `${Math.min((hour.uvIndex / 12) * 100, 100)}%` }}
+                        />
+                      </div>
+
+                      <div className="mt-2">
+                        <div className={`text-base font-black tracking-tight ${getUVColor(hour.uvIndex, isDarkMode)}`}>
+                          {hour.uvIndex}
+                        </div>
+                        <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase">
+                          Index
+                        </div>
+                      </div>
+
+                      <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-850/50 text-[10px] font-black">
+                        <span className={getUVColor(hour.uvIndex, isDarkMode)}>
+                          {hour.risk}
+                        </span>
+                      </div>
                     </div>
                   )
                 })}
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 7-Day Outlook & Scale reference */}
+        {uvData && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* 7-Day Forecast */}
+            <div className="lg:col-span-8">
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-indigo-500" />
+                    <span>7-Day UV Forecast Outlook</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 md:p-6">
+                  <div className="space-y-3.5">
+                    {uvData.daily.map((day, idx) => {
+                      const maxWeeklyUV = Math.max(...uvData.daily.map(d => d.maxUV), 10)
+                      const ratio = Math.min((day.maxUV / maxWeeklyUV) * 100, 100)
+                      
+                      return (
+                        <div 
+                          key={`daily-uv-${idx}`} 
+                          className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
+                            isDarkMode 
+                              ? 'bg-slate-950/40 border-slate-850 hover:bg-slate-950/80 hover:border-slate-700' 
+                              : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-350'
+                          } gap-4`}
+                        >
+                          {/* Day & Info */}
+                          <div className="flex items-center gap-3 w-full sm:w-36 flex-shrink-0">
+                            <span className="w-12 text-sm font-black text-slate-705 dark:text-slate-300">
+                              {day.day}
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <Sun className={`h-4 w-4 ${getUVColor(day.maxUV, isDarkMode)}`} />
+                              <span className={`text-[10px] font-black ${getUVColor(day.maxUV, isDarkMode)}`}>
+                                {day.risk}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* UV level range bar */}
+                          <div className="flex-grow flex flex-col justify-center">
+                            <div className="relative w-full h-1.5 bg-slate-200 dark:bg-slate-850 rounded-full">
+                              <div 
+                                className="absolute h-full bg-orange-500 rounded-full transition-all duration-1000 ease-out" 
+                                style={{ width: `${ratio}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-1.5 font-mono">
+                              <span>Solar Peak: {day.peakTime}</span>
+                              <span>Avg UV: {day.avgUV}</span>
+                            </div>
+                          </div>
+
+                          {/* UV Peak Badge */}
+                          <div className="w-full sm:w-40 text-right flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
+                            <span className="sm:hidden text-xs text-slate-400 font-semibold">Peak Index:</span>
+                            <Badge className={`${getUVBg(day.maxUV, isDarkMode)} border text-[10px] font-black px-2 py-0.5`}>
+                              {day.maxUV} Peak
+                            </Badge>
+                          </div>
+
+                        </div>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sun Protection Recommendations (4 columns) */}
+            <div className="lg:col-span-4 space-y-6">
               
-              <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
-                {uvData.hourly.slice(0, 12).map((hour, index) => (
-                  <div key={`uv-hourly-${index}`} className={`rounded-lg p-2 text-center text-xs ${
-                    isDarkMode ? 'bg-white/10' : 'bg-gray-50'
-                  }`}>
-                    <div className="font-medium">{hour.time}</div>
-                    <div className={`text-lg font-bold ${getUVColor(hour.uvIndex, isDarkMode)}`}>
-                      {hour.uvIndex}
+              {/* Recommendations Card */}
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-indigo-500" />
+                    <span>Solar Protection Plan</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 md:p-6">
+                  <div className="p-5 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-orange-500">
+                    <h3 className="font-black mb-3 text-xs text-slate-800 dark:text-slate-100 uppercase tracking-widest">
+                      [ Advisory_Guidance ]
+                    </h3>
+                    <div className="space-y-3.5">
+                      {uvData.protection.recommended.map((rec, index) => (
+                        <div key={`rec-${index}`} className="flex items-start gap-2.5">
+                          <Shield className="h-4.5 w-4.5 text-orange-500 flex-shrink-0 mt-0.5" />
+                          <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold leading-relaxed">
+                            {rec}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                    <Badge className={`text-xs mt-1 text-current border ${getUVBg(hour.uvIndex, isDarkMode)}`}>
-                      {hour.risk}
-                    </Badge>
-                    <div className={`text-xs mt-1 ${
-                      isDarkMode ? 'text-white/60' : 'text-gray-600'
-                    }`}>{hour.safeExposure}</div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+
+            </div>
+
+          </div>
         )}
 
-        {/* Daily UV Forecast */}
-        {uvData && (
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                7-Day UV Index Forecast
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {uvData.daily.map((day, index) => (
-                  <div key={`uv-daily-${index}`} className={`grid grid-cols-5 gap-4 items-center p-3 rounded-lg ${
-                    isDarkMode ? 'bg-white/10' : 'bg-gray-50'
-                  }`}>
-                    <div className="font-medium">{day.day}</div>
-                    
-                    <div className="text-center">
-                      <div className={`text-xl font-bold ${getUVColor(day.maxUV, isDarkMode)}`}>
-                        {day.maxUV}
-                      </div>
-                      <div className={`text-xs ${
-                        isDarkMode ? 'text-white/70' : 'text-gray-600'
-                      }`}>Max UV</div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <div className={`text-lg ${getUVColor(day.avgUV, isDarkMode)}`}>
-                        {day.avgUV}
-                      </div>
-                      <div className={`text-xs ${
-                        isDarkMode ? 'text-white/70' : 'text-gray-600'
-                      }`}>Avg UV</div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <Badge className={`border text-current ${getUVBg(day.maxUV, isDarkMode)}`}>
-                        {day.risk}
-                      </Badge>
-                    </div>
-                    
-                    <div className="text-right">
-                      <div className={`text-sm ${
-                        isDarkMode ? 'text-white/80' : 'text-gray-700'
-                      }`}>Peak: {day.peakTime}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Protection Recommendations */}
-        {uvData && (
-          <Card className={`${
-            isDarkMode 
-              ? 'bg-white/10 border-white/20 text-white' 
-              : 'bg-white border-gray-200 text-gray-900'
-          } backdrop-blur-lg`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Sun Protection Recommendations
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-semibold mb-3 text-lg flex items-center gap-2">
-                    <AlertTriangle className={`h-5 w-5 ${getUVColor(uvData.current.uvIndex, isDarkMode)}`} />
-                    Current Recommendations
-                  </h3>
-                  <div className="space-y-2">
-                    {uvData.protection.recommended.map((rec, index) => (
-                      <div key={`rec-${index}`} className="flex items-start gap-2">
-                        <div className={`h-2 w-2 rounded-full mt-1.5 ${
-                          isDarkMode ? 'bg-orange-400' : 'bg-orange-600'
-                        }`} />
-                        <span className="text-sm">{rec}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold mb-3 text-lg">Exposure Guidelines</h3>
-                  <div className="space-y-3">
-                    <div className={`p-3 rounded-lg border ${
-                      isDarkMode ? 'bg-white/10 border-white/20' : 'bg-gray-50 border-gray-200'
-                    }`}>
-                      <div className="text-sm font-medium mb-1">Safe Exposure Time</div>
-                      <div className={`text-xl font-bold ${getUVColor(uvData.current.uvIndex, isDarkMode)}`}>
-                        {uvData.protection.safeExposureTime}
-                      </div>
-                      <div className={`text-xs ${
-                        isDarkMode ? 'text-white/60' : 'text-gray-500'
-                      }`}>Without protection</div>
-                    </div>
-                    
-                    <div className={`p-3 rounded-lg border ${
-                      isDarkMode ? 'bg-white/10 border-white/20' : 'bg-gray-50 border-gray-200'
-                    }`}>
-                      <div className="text-sm font-medium mb-1">Time to Burn</div>
-                      <div className={`text-xl font-bold ${getUVColor(uvData.current.uvIndex, isDarkMode)}`}>
-                        {uvData.protection.burnTime}
-                      </div>
-                      <div className={`text-xs ${
-                        isDarkMode ? 'text-white/60' : 'text-gray-500'
-                      }`}>For unprotected skin</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* UV Index Scale Reference */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardHeader>
-            <CardTitle>UV Index Scale</CardTitle>
+        {/* UV Index Scale Reference Panel */}
+        <Card className={`border ${
+          isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+        } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+          <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <Info className="h-5 w-5 text-indigo-500" />
+              <span>Standard UV Index Classifications</span>
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div className={`p-4 rounded-lg text-center border ${
-                isDarkMode ? 'bg-green-500/20 border-green-400/30' : 'bg-green-100 border-green-300'
-              }`}>
-                <div className={`text-2xl font-bold mb-1 ${
-                  isDarkMode ? 'text-green-300' : 'text-green-600'
-                }`}>0-2</div>
-                <div className="font-medium">Low</div>
-                <div className={`text-xs ${
-                  isDarkMode ? 'text-white/70' : 'text-gray-600'
-                }`}>Minimal protection</div>
-              </div>
+          <CardContent className="p-4 md:p-6">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               
-              <div className={`p-4 rounded-lg text-center border ${
-                isDarkMode ? 'bg-yellow-500/20 border-yellow-400/30' : 'bg-yellow-100 border-yellow-300'
-              }`}>
-                <div className={`text-2xl font-bold mb-1 ${
-                  isDarkMode ? 'text-yellow-300' : 'text-yellow-600'
-                }`}>3-5</div>
-                <div className="font-medium">Moderate</div>
-                <div className={`text-xs ${
-                  isDarkMode ? 'text-white/70' : 'text-gray-600'
-                }`}>Protection required</div>
+              <div className={`p-4 rounded-xl border flex flex-col justify-between h-28 hover:scale-[1.02] transition-all duration-300 bg-emerald-500/10 border-emerald-500/20 text-emerald-400`}>
+                <div className="font-black text-lg">0 - 2</div>
+                <div>
+                  <div className="font-extrabold text-xs">Low</div>
+                  <div className="text-[9px] font-bold text-slate-400">Minimal Protection</div>
+                </div>
               </div>
-              
-              <div className={`p-4 rounded-lg text-center border ${
-                isDarkMode ? 'bg-orange-500/20 border-orange-400/30' : 'bg-orange-100 border-orange-300'
-              }`}>
-                <div className={`text-2xl font-bold mb-1 ${
-                  isDarkMode ? 'text-orange-300' : 'text-orange-600'
-                }`}>6-7</div>
-                <div className="font-medium">High</div>
-                <div className={`text-xs ${
-                  isDarkMode ? 'text-white/70' : 'text-gray-600'
-                }`}>Extra protection</div>
+
+              <div className={`p-4 rounded-xl border flex flex-col justify-between h-28 hover:scale-[1.02] transition-all duration-300 bg-amber-500/10 border-amber-500/20 text-amber-400`}>
+                <div className="font-black text-lg">3 - 5</div>
+                <div>
+                  <div className="font-extrabold text-xs">Moderate</div>
+                  <div className="text-[9px] font-bold text-slate-400">Sunscreen recommended</div>
+                </div>
               </div>
-              
-              <div className={`p-4 rounded-lg text-center border ${
-                isDarkMode ? 'bg-red-500/20 border-red-400/30' : 'bg-red-100 border-red-300'
-              }`}>
-                <div className={`text-2xl font-bold mb-1 ${
-                  isDarkMode ? 'text-red-300' : 'text-red-600'
-                }`}>8-10</div>
-                <div className="font-medium">Very High</div>
-                <div className={`text-xs ${
-                  isDarkMode ? 'text-white/70' : 'text-gray-600'
-                }`}>Take precautions</div>
+
+              <div className={`p-4 rounded-xl border flex flex-col justify-between h-28 hover:scale-[1.02] transition-all duration-300 bg-orange-500/10 border-orange-500/20 text-orange-400`}>
+                <div className="font-black text-lg">6 - 7</div>
+                <div>
+                  <div className="font-extrabold text-xs">High</div>
+                  <div className="text-[9px] font-bold text-slate-400">Cover up & shade</div>
+                </div>
               </div>
-              
-              <div className={`p-4 rounded-lg text-center border ${
-                isDarkMode ? 'bg-purple-500/20 border-purple-400/30' : 'bg-purple-100 border-purple-300'
-              }`}>
-                <div className={`text-2xl font-bold mb-1 ${
-                  isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                }`}>11+</div>
-                <div className="font-medium">Extreme</div>
-                <div className={`text-xs ${
-                  isDarkMode ? 'text-white/70' : 'text-gray-600'
-                }`}>Avoid sun exposure</div>
+
+              <div className={`p-4 rounded-xl border flex flex-col justify-between h-28 hover:scale-[1.02] transition-all duration-300 bg-rose-500/10 border-rose-500/20 text-rose-400`}>
+                <div className="font-black text-lg">8 - 10</div>
+                <div>
+                  <div className="font-extrabold text-xs">Very High</div>
+                  <div className="text-[9px] font-bold text-slate-400">Avoid midday sun</div>
+                </div>
               </div>
+
+              <div className={`p-4 rounded-xl border flex flex-col justify-between h-28 hover:scale-[1.02] transition-all duration-300 bg-purple-500/10 border-purple-500/20 text-purple-400`}>
+                <div className="font-black text-lg">11+</div>
+                <div>
+                  <div className="font-extrabold text-xs">Extreme</div>
+                  <div className="text-[9px] font-bold text-slate-400">Full safety precautions</div>
+                </div>
+              </div>
+
             </div>
           </CardContent>
         </Card>
+
       </div>
+
+      {/* Embedded CSS animations for Solar telemetry dial */}
+      <style jsx>{`
+        .solar-flares-container {
+          animation: spinSolarFlares linear infinite;
+        }
+        @keyframes spinSolarFlares {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   )
 }
