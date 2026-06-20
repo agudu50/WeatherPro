@@ -1,15 +1,10 @@
 "use client"
 
 import { useTheme } from "@/lib/ThemeContext"
-
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
-  Line,
-  LineChart,
   ResponsiveContainer,
   XAxis,
   YAxis,
@@ -22,14 +17,21 @@ import {
 } from "recharts"
 import {
   Activity,
-  ArrowDownIcon,
   ArrowUpIcon,
-  CreditCard,
-  DollarSign,
-  Users,
-  TrendingUp,
-  Eye,
-  MousePointer,
+  Compass,
+  Radio,
+  Server,
+  CloudRain,
+  Thermometer,
+  Cpu,
+  Signal,
+  MapPin,
+  Search,
+  Target,
+  RefreshCw,
+  Sun,
+  Moon,
+  Loader2
 } from "lucide-react"
 
 import {
@@ -42,346 +44,712 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
 
-// Sample data for charts
-const revenueData = [
-  { month: "Jan", revenue: 4000, expenses: 2400, profit: 1600 },
-  { month: "Feb", revenue: 3000, expenses: 1398, profit: 1602 },
-  { month: "Mar", revenue: 2000, expenses: 9800, profit: -7800 },
-  { month: "Apr", revenue: 2780, expenses: 3908, profit: -1128 },
-  { month: "May", revenue: 1890, expenses: 4800, profit: -2910 },
-  { month: "Jun", revenue: 2390, expenses: 3800, profit: -1410 },
-  { month: "Jul", revenue: 3490, expenses: 4300, profit: -810 },
-]
+interface AnalyticsData {
+  location: string
+  country: string
+  coord: { lat: number; lon: number }
+  currentTemp: number
+  weatherCondition: string
+  lastUpdated: string
+}
 
-const trafficData = [
-  { date: "Jan 1", visitors: 1200, pageviews: 2400, bounceRate: 35 },
-  { date: "Jan 2", visitors: 1100, pageviews: 2200, bounceRate: 42 },
-  { date: "Jan 3", visitors: 1400, pageviews: 2800, bounceRate: 28 },
-  { date: "Jan 4", visitors: 1300, pageviews: 2600, bounceRate: 38 },
-  { date: "Jan 5", visitors: 1600, pageviews: 3200, bounceRate: 25 },
-  { date: "Jan 6", visitors: 1500, pageviews: 3000, bounceRate: 30 },
-  { date: "Jan 7", visitors: 1700, pageviews: 3400, bounceRate: 22 },
-]
-
-const deviceData = [
-  { name: "Desktop", value: 65, color: "#8884d8" },
-  { name: "Mobile", value: 28, color: "#82ca9d" },
-  { name: "Tablet", value: 7, color: "#ffc658" },
-]
-
-const salesData = [
-  { product: "Product A", sales: 4000, growth: 12 },
-  { product: "Product B", sales: 3000, growth: -8 },
-  { product: "Product C", sales: 2000, growth: 25 },
-  { product: "Product D", sales: 2780, growth: 5 },
-  { product: "Product E", sales: 1890, growth: -15 },
-]
+const CustomTooltip = ({ active, payload, label, isDarkMode }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className={`border p-3 rounded-xl shadow-md text-xs font-mono ${
+        isDarkMode ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-slate-200 text-slate-900"
+      }`}>
+        <p className={`font-black mb-1.5 uppercase tracking-wide ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>[{label}]</p>
+        {payload.map((item: any, index: number) => (
+          <div key={index} className="flex items-center gap-2 mt-1">
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color || item.stroke }} />
+            <span className={isDarkMode ? "text-slate-350" : "text-slate-500"}>{item.name}:</span>
+            <span className="font-extrabold">{item.value}{item.name === "Temperature" ? "°C" : item.name === "Rainfall" ? " mm" : "%"}</span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  return null
+}
 
 export default function AnalyticsDashboard() {
   const [timeRange, setTimeRange] = useState("7d")
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [searchCity, setSearchCity] = useState("")
+  const [locationStatus, setLocationStatus] = useState<'loading' | 'success' | 'error' | 'denied'>('loading')
+  const { isDarkMode, toggleDarkMode } = useTheme()
+
+  const fetchAnalytics = async (lat: number, lon: number) => {
+    setLoading(true)
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 'ca695dcbc66c5fa3d0cb955033fd918f'}`
+      )
+      if (!response.ok) throw new Error('Failed to fetch weather data')
+      const data = await response.json()
+
+      const currentTemp = data.main.temp
+      const weatherMain = data.weather[0]?.main || "Clear"
+
+      setAnalyticsData({
+        location: data.name,
+        country: data.sys.country,
+        coord: { lat, lon },
+        currentTemp,
+        weatherCondition: weatherMain,
+        lastUpdated: new Date().toISOString()
+      })
+      setLocationStatus('success')
+    } catch (error) {
+      console.error("Error fetching analytics data:", error)
+      setLocationStatus('error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!searchCity.trim()) return
+
+    setLoading(true)
+    try {
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(searchCity)}&units=metric&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 'ca695dcbc66c5fa3d0cb955033fd918f'}`
+      )
+      
+      if (!response.ok) throw new Error('City not found')
+      
+      const data = await response.json()
+      setAnalyticsData({
+        location: data.name,
+        country: data.sys.country,
+        coord: data.coord,
+        currentTemp: data.main.temp,
+        weatherCondition: data.weather[0]?.main || "Clear",
+        lastUpdated: new Date().toISOString()
+      })
+      setSearchCity("")
+      setLocationStatus('success')
+    } catch (error) {
+      alert("City not found. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUseCurrentLocation = () => {
+    if (navigator.geolocation) {
+      setLocationStatus('loading')
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          fetchAnalytics(latitude, longitude)
+        },
+        (error) => {
+          console.error("Location error:", error)
+          setLocationStatus(error.code === 1 ? 'denied' : 'error')
+          // Fallback to New York City
+          fetchAnalytics(40.7128, -74.0060)
+        }
+      )
+    } else {
+      // Fallback
+      fetchAnalytics(40.7128, -74.0060)
+    }
+  }
+
+  useEffect(() => {
+    handleUseCurrentLocation()
+  }, [])
+
+  // Dynamic simulation data hook
+  const generatedData = useMemo(() => {
+    if (!analyticsData) return null
+
+    const { lat, lon } = analyticsData.coord
+    const baseTemp = analyticsData.currentTemp
+    const condition = analyticsData.weatherCondition.toLowerCase()
+
+    let rainMultiplier = 1.0
+    let tempOffset = 0
+    if (condition.includes("rain") || condition.includes("drizzle")) {
+      rainMultiplier = 2.2
+      tempOffset = -2
+    } else if (condition.includes("clear") || condition.includes("hot")) {
+      rainMultiplier = 0.3
+      tempOffset = 3
+    } else if (condition.includes("snow") || condition.includes("ice")) {
+      rainMultiplier = 1.6
+      tempOffset = -8
+    }
+
+    let kpis = {
+      sensorsActive: "48 / 50",
+      sensorsActivePercent: 96,
+      meanTemp: (baseTemp + tempOffset).toFixed(1) + " °C",
+      accumulatedRain: (145.2 * rainMultiplier).toFixed(1) + " mm",
+      barometricMean: "1,012.4 hPa"
+    }
+
+    let chartData = []
+    if (timeRange === "7d") {
+      const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+      chartData = days.map((day, idx) => {
+        const seed = Math.sin(lat + lon + idx) * 4
+        const temp = parseFloat((baseTemp + tempOffset + seed).toFixed(1))
+        const rain = Math.max(0, parseFloat((12 * rainMultiplier + Math.cos(idx) * 8).toFixed(1)))
+        const humidity = Math.min(100, Math.max(20, Math.round(65 + Math.sin(idx) * 15)))
+        return { label: day, temp, rain, humidity }
+      })
+      kpis.sensorsActive = "48 / 50"
+      kpis.sensorsActivePercent = 96
+      kpis.accumulatedRain = chartData.reduce((acc, curr) => acc + curr.rain, 0).toFixed(1) + " mm"
+      kpis.barometricMean = "1,013.2 hPa"
+    } else if (timeRange === "30d") {
+      const weeks = ["Week 1", "Week 2", "Week 3", "Week 4"]
+      chartData = weeks.map((week, idx) => {
+        const seed = Math.sin(lat - lon + idx) * 3
+        const temp = parseFloat((baseTemp + tempOffset + seed - 1).toFixed(1))
+        const rain = Math.max(0, parseFloat((55 * rainMultiplier + Math.cos(idx * 2) * 20).toFixed(1)))
+        const humidity = Math.min(100, Math.max(20, Math.round(62 + Math.sin(idx * 2) * 10)))
+        return { label: week, temp, rain, humidity }
+      })
+      kpis.sensorsActive = "49 / 50"
+      kpis.sensorsActivePercent = 98
+      kpis.accumulatedRain = chartData.reduce((acc, curr) => acc + curr.rain, 0).toFixed(1) + " mm"
+      kpis.barometricMean = "1,011.8 hPa"
+    } else {
+      const months = ["Month 1", "Month 2", "Month 3"]
+      chartData = months.map((month, idx) => {
+        const seed = Math.sin(lat * 2 + lon * 3 + idx) * 2
+        const temp = parseFloat((baseTemp + tempOffset + seed - 2).toFixed(1))
+        const rain = Math.max(0, parseFloat((180 * rainMultiplier + Math.sin(idx) * 60).toFixed(1)))
+        const humidity = Math.min(100, Math.max(20, Math.round(60 + Math.cos(idx) * 8)))
+        return { label: month, temp, rain, humidity }
+      })
+      kpis.sensorsActive = "50 / 50"
+      kpis.sensorsActivePercent = 100
+      kpis.accumulatedRain = chartData.reduce((acc, curr) => acc + curr.rain, 0).toFixed(1) + " mm"
+      kpis.barometricMean = "1,012.4 hPa"
+    }
+
+    const sensorsBreakdown = [
+      { name: "Thermal Probes", value: 35, color: "#6366f1" },
+      { name: "Hydrometers", value: 25, color: "#06b6d4" },
+      { name: "Anemometers", value: 20, color: "#a855f7" },
+      { name: "Barometric Sensors", value: 15, color: "#10b981" },
+      { name: "Solar Irradiance", value: 5, color: "#f59e0b" },
+    ]
+
+    const sectors = [
+      { name: "Sector North-East", packets: timeRange === "7d" ? 12450 : timeRange === "30d" ? 54800 : 164000, trend: 12.5 },
+      { name: "Sector Central Grid", packets: timeRange === "7d" ? 14100 : timeRange === "30d" ? 61200 : 185000, trend: 8.2 },
+      { name: "Sector Coastal Station", packets: timeRange === "7d" ? 8900 : timeRange === "30d" ? 38400 : 112000, trend: -2.1 },
+      { name: "Sector Western Ranges", packets: timeRange === "7d" ? 11800 : timeRange === "30d" ? 49100 : 148000, trend: 5.7 },
+      { name: "Sector Southern Buffer", packets: timeRange === "7d" ? 9200 : timeRange === "30d" ? 41000 : 123000, trend: -1.5 },
+    ]
+
+    return { kpis, chartData, sensorsBreakdown, sectors }
+  }, [analyticsData, timeRange])
+
+  if (loading && !analyticsData) {
+    return (
+      <div className={`w-full min-h-[calc(100vh-3.5rem)] ${
+        isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
+      } p-4 md:p-6 flex items-center justify-center transition-colors duration-500`}>
+        <div className="text-center">
+          <Loader2 className="h-16 w-16 text-indigo-650 animate-spin mx-auto mb-4" />
+          <p className="text-xl font-bold tracking-tight">Syncing meteorological archive charts...</p>
+          <p className="text-xs text-slate-400 mt-1">Running sector telemetry analysis algorithms...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!analyticsData || !generatedData) return null
+
+  const latCoord = analyticsData.coord.lat
+  const lonCoord = analyticsData.coord.lon
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">
-            Monitor your business performance and key metrics
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant={timeRange === "7d" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTimeRange("7d")}
-          >
-            7 Days
-          </Button>
-          <Button
-            variant={timeRange === "30d" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTimeRange("30d")}
-          >
-            30 Days
-          </Button>
-          <Button
-            variant={timeRange === "90d" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTimeRange("90d")}
-          >
-            90 Days
-          </Button>
-        </div>
-      </div>
+    <div className={`w-full max-w-full overflow-x-hidden min-h-[calc(100vh-3.5rem)] ${
+      isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    } p-4 md:p-6 transition-colors duration-500`}>
+      <div className="max-w-7xl mx-auto space-y-6">
 
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$54,231</div>
-            <div className="flex items-center text-xs text-muted-foreground">
-              <ArrowUpIcon className="mr-1 h-3 w-3 text-green-500" />
-              <span className="text-green-500">+12.5%</span>
-              <span className="ml-1">from last period</span>
+        {/* Header Console */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-start sm:items-center gap-3 w-full lg:w-auto">
+            <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/10 flex-shrink-0">
+              <Activity className="h-7 w-7" />
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Visitors</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12,345</div>
-            <div className="flex items-center text-xs text-muted-foreground">
-              <ArrowUpIcon className="mr-1 h-3 w-3 text-green-500" />
-              <span className="text-green-500">+8.2%</span>
-              <span className="ml-1">from last period</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3.24%</div>
-            <div className="flex items-center text-xs text-muted-foreground">
-              <ArrowDownIcon className="mr-1 h-3 w-3 text-red-500" />
-              <span className="text-red-500">-2.1%</span>
-              <span className="ml-1">from last period</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Order Value</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$127.50</div>
-            <div className="flex items-center text-xs text-muted-foreground">
-              <ArrowUpIcon className="mr-1 h-3 w-3 text-green-500" />
-              <span className="text-green-500">+5.7%</span>
-              <span className="ml-1">from last period</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts Grid */}
-      <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-7">
-        {/* Revenue Chart */}
-        <Card className="col-span-1 lg:col-span-1 xl:col-span-4">
-          <CardHeader>
-            <CardTitle>Revenue Overview</CardTitle>
-            <CardDescription>Monthly revenue, expenses, and profit</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <AreaChart data={revenueData}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  stackId="1"
-                  stroke="#8884d8"
-                  fillOpacity={1}
-                  fill="url(#colorRevenue)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="expenses"
-                  stackId="2"
-                  stroke="#82ca9d"
-                  fillOpacity={1}
-                  fill="url(#colorExpenses)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Device Analytics */}
-        <Card className="col-span-1 lg:col-span-1 xl:col-span-3">
-          <CardHeader>
-            <CardTitle>Device Analytics</CardTitle>
-            <CardDescription>Traffic breakdown by device type</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <PieChart>
-                <Pie
-                  data={deviceData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={120}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {deviceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="mt-4 space-y-2">
-              {deviceData.map((device, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: device.color }}
-                    />
-                    <span className="text-sm">{device.name}</span>
-                  </div>
-                  <span className="text-sm font-medium">{device.value}%</span>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight truncate">
+                Meteorological Analytics
+              </h1>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4 text-rose-500 animate-pulse flex-shrink-0" />
+                  <span className="truncate">{analyticsData.location}, {analyticsData.country}</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Traffic and Performance */}
-      <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
-        {/* Traffic Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Website Traffic</CardTitle>
-            <CardDescription>Daily visitors and page views</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={trafficData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="visitors"
-                  stroke="#8884d8"
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="pageviews"
-                  stroke="#82ca9d"
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Product Performance */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Product Performance</CardTitle>
-            <CardDescription>Sales by product with growth indicators</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {salesData.map((product, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{product.product}</p>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-2xl font-bold">${product.sales.toLocaleString()}</span>
-                      <Badge
-                        variant={product.growth > 0 ? "default" : "destructive"}
-                        className="text-xs"
-                      >
-                        {product.growth > 0 ? "+" : ""}{product.growth}%
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Progress
-                      value={Math.abs(product.growth)}
-                      className="w-[100px]"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Additional Metrics */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Key Performance Indicators</CardTitle>
-          <CardDescription>
-            Track important business metrics and goals
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Customer Retention</span>
-                <span className="text-sm text-muted-foreground">85%</span>
+                <span className="hidden sm:inline text-slate-350 dark:text-slate-700">|</span>
+                <span className="font-mono text-xs bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-650 dark:text-slate-450 border border-slate-200 dark:border-slate-800">
+                  LAT: {latCoord.toFixed(4)}° LON: {lonCoord.toFixed(4)}°
+                </span>
+                <span className="hidden sm:inline text-slate-350 dark:text-slate-700">|</span>
+                {locationStatus === 'success' && (
+                  <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 border bg-indigo-500/10 text-indigo-650 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-500/20 flex-shrink-0">
+                    📍 Calibrated Location
+                  </Badge>
+                )}
               </div>
-              <Progress value={85} />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Customer Satisfaction</span>
-                <span className="text-sm text-muted-foreground">92%</span>
-              </div>
-              <Progress value={92} />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Goal Completion</span>
-                <span className="text-sm text-muted-foreground">78%</span>
-              </div>
-              <Progress value={78} />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Market Share</span>
-                <span className="text-sm text-muted-foreground">34%</span>
-              </div>
-              <Progress value={34} />
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Action Row */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+            <form onSubmit={handleSearch} className="flex gap-2 w-full sm:w-auto">
+              <div className="relative flex items-center flex-1 sm:flex-initial sm:w-60">
+                <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
+                <Input
+                  type="text"
+                  placeholder="Search weather sector..."
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                  className={`pl-9 pr-3 py-2 w-full rounded-xl transition-all duration-300 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-880 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' 
+                      : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600'
+                  }`}
+                />
+              </div>
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide shadow-md shadow-indigo-600/15 flex-shrink-0">
+                Scan Sector
+              </Button>
+            </form>
+            
+            <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
+              {/* Range Filters */}
+              <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-900 p-1 border border-slate-200 dark:border-slate-800">
+                <button
+                  onClick={() => setTimeRange("7d")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+                    timeRange === "7d"
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "text-slate-500 dark:text-slate-450 hover:text-slate-950 dark:hover:text-white"
+                  }`}
+                >
+                  7D
+                </button>
+                <button
+                  onClick={() => setTimeRange("30d")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+                    timeRange === "30d"
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "text-slate-500 dark:text-slate-450 hover:text-slate-950 dark:hover:text-white"
+                  }`}
+                >
+                  30D
+                </button>
+                <button
+                  onClick={() => setTimeRange("90d")}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+                    timeRange === "90d"
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "text-slate-500 dark:text-slate-450 hover:text-slate-950 dark:hover:text-white"
+                  }`}
+                >
+                  90D
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  onClick={handleUseCurrentLocation}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title="Locate station"
+                >
+                  <Target className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={() => fetchAnalytics(latCoord, lonCoord)}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title="Sync telemetry"
+                >
+                  <RefreshCw className="h-4.5 w-4.5" />
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={toggleDarkMode}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title={isDarkMode ? "Light Display" : "Dark Display"}
+                >
+                  {isDarkMode ? <Sun className="h-4.5 w-4.5 text-amber-500" /> : <Moon className="h-4.5 w-4.5 text-indigo-600" />}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Top KPI Telemetry Cards */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          
+          {/* Card 1: Active Sensors */}
+          <Card className={`border border-l-4 border-l-indigo-600 ${
+            isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+          } rounded-2xl shadow-sm hover:border-indigo-500/20 transition-all duration-300`}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Active Sensors</CardTitle>
+              <Radio className="h-5 w-5 text-indigo-600 dark:text-indigo-400 animate-pulse" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-black tracking-tight">{generatedData.kpis.sensorsActive}</div>
+              <div className="text-[10px] font-bold text-slate-400 mt-1 flex items-center gap-1">
+                <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{generatedData.kpis.sensorsActivePercent}%</span>
+                <span>telemetry coverage rate</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 2: Mean Temperature */}
+          <Card className={`border border-l-4 border-l-rose-500 ${
+            isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+          } rounded-2xl shadow-sm hover:border-indigo-500/20 transition-all duration-300`}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Mean Temperature</CardTitle>
+              <Thermometer className="h-5 w-5 text-rose-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-black tracking-tight">{generatedData.kpis.meanTemp}</div>
+              <div className="text-[10px] font-bold text-slate-400 mt-1 flex items-center gap-1">
+                <ArrowUpIcon className="h-3 w-3 text-rose-500" />
+                <span className="text-rose-500 font-extrabold">+1.2°C</span>
+                <span>above baseline norm</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 3: Accumulated Rain */}
+          <Card className={`border border-l-4 border-l-blue-500 ${
+            isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+          } rounded-2xl shadow-sm hover:border-indigo-500/20 transition-all duration-300`}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Rain Accumulation</CardTitle>
+              <CloudRain className="h-5 w-5 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-black tracking-tight">{generatedData.kpis.accumulatedRain}</div>
+              <div className="text-[10px] font-bold text-slate-400 mt-1 flex items-center gap-1">
+                <ArrowUpIcon className="h-3 w-3 text-blue-500" />
+                <span className="text-blue-500 font-extrabold">+8.4%</span>
+                <span>vs historical volume</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 4: Barometric Mean */}
+          <Card className={`border border-l-4 border-l-emerald-500 ${
+            isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+          } rounded-2xl shadow-sm hover:border-indigo-500/20 transition-all duration-300`}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Mean Pressure</CardTitle>
+              <Compass className="h-5 w-5 text-emerald-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-black tracking-tight">{generatedData.kpis.barometricMean}</div>
+              <div className="text-[10px] font-bold text-slate-400 mt-1 flex items-center gap-1">
+                <span className="text-emerald-500 dark:text-emerald-400 font-extrabold">STABLE</span>
+                <span>anticyclonic state</span>
+              </div>
+            </CardContent>
+          </Card>
+
+        </div>
+
+        {/* Charts & Diagnostics Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* Left Side: Trends & Regional Stats (8 columns) */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Chart 1: Climate Trends double-axis AreaChart */}
+            <Card className={`border ${
+              isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+            } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <Activity className="h-4.5 w-4.5 text-indigo-500" />
+                  <span>Climate Trends Overview</span>
+                </CardTitle>
+                <CardDescription className="text-[10px] font-semibold text-slate-400">
+                  Regional temperature variations and rainfall volumes over the {timeRange === "7d" ? "last 7 days" : timeRange === "30d" ? "last 30 days" : "last 90 days"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
+                <div className="h-[320px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={generatedData.chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? "#1e293b" : "#f1f5f9"} />
+                      <XAxis 
+                        dataKey="label" 
+                        stroke={isDarkMode ? "#64748b" : "#94a3b8"} 
+                        fontSize={10} 
+                        fontWeight="bold" 
+                      />
+                      <YAxis 
+                        yAxisId="left"
+                        stroke="#f43f5e" 
+                        fontSize={10} 
+                        fontWeight="bold" 
+                        label={{ value: "Temp (°C)", angle: -90, position: "insideLeft", offset: 0, style: { fill: "#f43f5e", fontSize: 9, fontWeight: 900 } }}
+                      />
+                      <YAxis 
+                        yAxisId="right"
+                        orientation="right"
+                        stroke="#3b82f6" 
+                        fontSize={10} 
+                        fontWeight="bold" 
+                        label={{ value: "Rain (mm)", angle: 90, position: "insideRight", offset: 0, style: { fill: "#3b82f6", fontSize: 9, fontWeight: 900 } }}
+                      />
+                      <Tooltip content={<CustomTooltip isDarkMode={isDarkMode} />} />
+                      <Legend 
+                        verticalAlign="top" 
+                        height={36} 
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{ fontSize: 10, fontWeight: "bold" }}
+                      />
+                      <Area
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="temp"
+                        name="Temperature"
+                        stroke="#f43f5e"
+                        strokeWidth={2}
+                        fillOpacity={0.1}
+                        fill="rgba(244, 63, 94, 0.05)"
+                      />
+                      <Area
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="rain"
+                        name="Rainfall"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        fillOpacity={0.1}
+                        fill="rgba(59, 130, 246, 0.05)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Regional Sector Telemetry Packets Log */}
+            <Card className={`border ${
+              isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+            } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <Server className="h-4.5 w-4.5 text-indigo-500" />
+                  <span>Regional Weather Station Telemetry load</span>
+                </CardTitle>
+                <CardDescription className="text-[10px] font-semibold text-slate-400">
+                  Total data packets logged and signal stability ratings per sector
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 space-y-4">
+                {generatedData.sectors.map((sector, index) => (
+                  <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-850/30 pb-3 last:border-b-0 last:pb-0">
+                    <div className="min-w-0">
+                      <p className="text-sm font-black text-slate-800 dark:text-slate-200">{sector.name}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="font-mono text-xs text-slate-450">{sector.packets.toLocaleString()} packets</span>
+                        <Badge 
+                          variant="outline" 
+                          className={`text-[9px] font-bold px-1.5 py-0.5 border ${
+                            sector.trend > 0 
+                              ? 'bg-emerald-500/10 text-emerald-550 dark:text-emerald-450 border-emerald-500/20' 
+                              : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                          }`}
+                        >
+                          {sector.trend > 0 ? "+" : ""}{sector.trend}% sync
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="w-full sm:w-[120px] flex items-center gap-2">
+                      <Progress 
+                        value={Math.max(20, Math.min(100, 80 + sector.trend * 1.5))} 
+                        className="h-1.5 w-full bg-slate-100 dark:bg-slate-950"
+                      />
+                      <span className="font-mono text-[10px] font-black text-slate-450">
+                        {Math.round(Math.max(20, Math.min(100, 80 + sector.trend * 1.5)))}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+          </div>
+
+          {/* Right Side: Calibration Breakdown & Target KPI Progress (4 columns) */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            {/* Chart 2: Doughnut PieChart for sensor categories */}
+            <Card className={`border ${
+              isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+            } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <Cpu className="h-4.5 w-4.5 text-indigo-500" />
+                  <span>Hardware Sensor array</span>
+                </CardTitle>
+                <CardDescription className="text-[10px] font-semibold text-slate-400">
+                  Distribution of hardware instruments in active duty
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center justify-center p-6">
+                <div className="relative w-full max-w-[200px] aspect-square mx-auto mb-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={generatedData.sensorsBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        {generatedData.sensorsBreakdown.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} stroke={isDarkMode ? "#0f172a" : "#ffffff"} strokeWidth={1} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  
+                  {/* Absolute core counter */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-2xl font-black text-slate-800 dark:text-slate-100 leading-none">
+                      {generatedData.kpis.sensorsActive.split(" / ")[0]}
+                    </span>
+                    <span className="text-[8px] font-black uppercase text-slate-450 tracking-wider mt-1">
+                      ACTIVE SENSORS
+                    </span>
+                  </div>
+                </div>
+
+                {/* Legend list */}
+                <div className="w-full space-y-2 mt-2">
+                  {generatedData.sensorsBreakdown.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between text-xs font-semibold">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                        <span className="text-slate-500 dark:text-slate-400 truncate">{item.name}</span>
+                      </div>
+                      <span className="font-mono text-slate-450 flex-shrink-0">{item.value}%</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Diagnostics indicators cards */}
+            <Card className={`border ${
+              isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+            } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <Signal className="h-4.5 w-4.5 text-indigo-500" />
+                  <span>Telemetry Diagnostic health</span>
+                </CardTitle>
+                <CardDescription className="text-[10px] font-semibold text-slate-400">
+                  Real-time status markers and target parameters
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 space-y-4">
+                
+                {/* Metric 1 */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-slate-550 dark:text-slate-350">Station Sync Rate</span>
+                    <span className="font-mono text-indigo-650 dark:text-indigo-400 font-black">98.1%</span>
+                  </div>
+                  <Progress value={98} className="h-1.5 bg-slate-100 dark:bg-slate-950" />
+                </div>
+
+                {/* Metric 2 */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-slate-550 dark:text-slate-350">Solar Array Efficiency</span>
+                    <span className="font-mono text-amber-500 font-black">92.4%</span>
+                  </div>
+                  <Progress value={92} className="h-1.5 bg-slate-100 dark:bg-slate-950" />
+                </div>
+
+                {/* Metric 3 */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-slate-550 dark:text-slate-350">Signal Integrity Index</span>
+                    <span className="font-mono text-cyan-500 font-black">95.8%</span>
+                  </div>
+                  <Progress value={96} className="h-1.5 bg-slate-100 dark:bg-slate-950" />
+                </div>
+
+                {/* Metric 4 */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-slate-550 dark:text-slate-350">Battery Backup Reserve</span>
+                    <span className="font-mono text-emerald-500 font-black">87.5%</span>
+                  </div>
+                  <Progress value={88} className="h-1.5 bg-slate-100 dark:bg-slate-950" />
+                </div>
+
+              </CardContent>
+            </Card>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Embedded CSS styles */}
+      <style jsx>{`
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   )
 }
