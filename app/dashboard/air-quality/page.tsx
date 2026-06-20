@@ -1,7 +1,6 @@
 "use client"
 
 import { useTheme } from "@/lib/ThemeContext"
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -24,7 +23,11 @@ import {
   Droplets,
   Heart,
   HeartPulse,
-  Brain
+  Brain,
+  Compass,
+  Cpu,
+  Signal,
+  Info
 } from "lucide-react"
 
 interface AirQualityData {
@@ -59,71 +62,61 @@ export default function AirQualityPage() {
 
   // Convert OpenWeatherMap AQI (1-5) to US EPA AQI (0-500)
   const convertToEPAAQI = (aqiLevel: number, components: any): number => {
-    // OpenWeatherMap uses CAQI: 1=Good, 2=Fair, 3=Moderate, 4=Poor, 5=Very Poor
-    // Convert to EPA AQI scale
-    const aqiMap: { [key: number]: number } = {
-      1: 25,   // Good: 0-50
-      2: 75,   // Fair: 51-100
-      3: 125,  // Moderate: 101-150
-      4: 175,  // Poor: 151-200
-      5: 250   // Very Poor: 201-300
-    }
-    
-    // Calculate based on PM2.5 if available for more accuracy
     if (components.pm2_5) {
       const pm25 = components.pm2_5
-      if (pm25 <= 12) return Math.round(pm25 * 4.17) // 0-50 AQI
-      if (pm25 <= 35.4) return Math.round(50 + (pm25 - 12) * 2.13) // 51-100 AQI
-      if (pm25 <= 55.4) return Math.round(100 + (pm25 - 35.4) * 2.5) // 101-150 AQI
-      if (pm25 <= 150.4) return Math.round(150 + (pm25 - 55.4) * 0.53) // 151-200 AQI
-      if (pm25 <= 250.4) return Math.round(200 + (pm25 - 150.4)) // 201-300 AQI
-      return Math.round(300 + (pm25 - 250.4) * 0.4) // 301-500 AQI
+      if (pm25 <= 12) return Math.round(pm25 * 4.17)
+      if (pm25 <= 35.4) return Math.round(50 + (pm25 - 12) * 2.13)
+      if (pm25 <= 55.4) return Math.round(100 + (pm25 - 35.4) * 2.5)
+      if (pm25 <= 150.4) return Math.round(150 + (pm25 - 55.4) * 0.53)
+      if (pm25 <= 250.4) return Math.round(200 + (pm25 - 150.4))
+      return Math.round(300 + (pm25 - 250.4) * 0.4)
     }
     
+    const aqiMap: { [key: number]: number } = {
+      1: 25,
+      2: 75,
+      3: 125,
+      4: 175,
+      5: 250
+    }
     return aqiMap[aqiLevel] || 50
   }
 
   const getAQIStatus = (aqi: number) => {
     if (aqi <= 50) return { 
       label: "Good", 
-      color: "bg-green-500", 
-      darkColor: "bg-green-500/20 border-green-400/30 text-green-300",
-      lightColor: "bg-green-100 border-green-300 text-green-800",
+      color: "text-emerald-550 dark:text-emerald-400", 
+      bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
       description: "Air quality is satisfactory, and air pollution poses little or no risk"
     }
     if (aqi <= 100) return { 
       label: "Moderate", 
-      color: "bg-yellow-500",
-      darkColor: "bg-yellow-500/20 border-yellow-400/30 text-yellow-300",
-      lightColor: "bg-yellow-100 border-yellow-300 text-yellow-800",
+      color: "text-amber-550 dark:text-amber-400",
+      bg: "bg-amber-500/10 border-amber-500/20 text-amber-400",
       description: "Air quality is acceptable. However, there may be a risk for some people"
     }
     if (aqi <= 150) return { 
-      label: "Unhealthy for Sensitive Groups", 
-      color: "bg-orange-500",
-      darkColor: "bg-orange-500/20 border-orange-400/30 text-orange-300",
-      lightColor: "bg-orange-100 border-orange-300 text-orange-800",
+      label: "Sensitive Alert", 
+      color: "text-orange-550 dark:text-orange-400",
+      bg: "bg-orange-500/10 border-orange-500/20 text-orange-400",
       description: "Members of sensitive groups may experience health effects"
     }
     if (aqi <= 200) return { 
       label: "Unhealthy", 
-      color: "bg-red-500",
-      darkColor: "bg-red-500/20 border-red-400/30 text-red-300",
-      lightColor: "bg-red-100 border-red-300 text-red-800",
+      color: "text-rose-550 dark:text-rose-400",
+      bg: "bg-rose-500/10 border-rose-500/20 text-rose-400",
       description: "Some members of the general public may experience health effects"
     }
     if (aqi <= 300) return { 
       label: "Very Unhealthy", 
-      color: "bg-purple-500",
-      darkColor: "bg-purple-500/20 border-purple-400/30 text-purple-300",
-      lightColor: "bg-purple-100 border-purple-300 text-purple-800",
+      color: "text-purple-550 dark:text-purple-400",
+      bg: "bg-purple-500/10 border-purple-500/20 text-purple-400",
       description: "Health alert: The risk of health effects is increased for everyone"
     }
     return { 
       label: "Hazardous", 
-      color: "bg-gray-800",
-      darkColor: "bg-red-900/20 border-red-800/30 text-red-200",
-      lightColor: "bg-red-200 border-red-400 text-red-900",
+      color: "text-red-550 dark:text-red-400",
+      bg: "bg-red-500/10 border-red-500/20 text-red-450",
       description: "Health warning of emergency conditions: everyone is more likely to be affected"
     }
   }
@@ -135,7 +128,7 @@ export default function AirQualityPage() {
       o3: components.o3 || 0,
       no2: components.no2 || 0,
       so2: components.so2 || 0,
-      co: (components.co || 0) / 1000 // Convert to mg/m³
+      co: (components.co || 0) / 1000
     }
     
     const max = Math.max(...Object.values(pollutants))
@@ -149,14 +142,12 @@ export default function AirQualityPage() {
       so2: "SO₂",
       co: "CO"
     }
-    
     return pollutantNames[pollutantKey || "pm2_5"] || "PM2.5"
   }
 
   const fetchAirQuality = async (lat: number, lon: number) => {
     setLoading(true)
     try {
-      // Fetch location name
       const locationResponse = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}`
       )
@@ -164,7 +155,6 @@ export default function AirQualityPage() {
       if (!locationResponse.ok) throw new Error('Failed to fetch location')
       const locationData = await locationResponse.json()
 
-      // Fetch current air quality
       const airQualityResponse = await fetch(
         `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}`
       )
@@ -172,7 +162,6 @@ export default function AirQualityPage() {
       if (!airQualityResponse.ok) throw new Error('Failed to fetch air quality')
       const airData = await airQualityResponse.json()
 
-      // Fetch air quality forecast
       const forecastResponse = await fetch(
         `https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=${lat}&lon=${lon}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}`
       )
@@ -183,7 +172,6 @@ export default function AirQualityPage() {
       const currentAQ = airData.list[0]
       const currentAQI = convertToEPAAQI(currentAQ.main.aqi, currentAQ.components)
 
-      // Process forecast data - group by day and get daily averages
       const dailyForecast: { [key: string]: any[] } = {}
       forecastData.list.forEach((item: any) => {
         const date = new Date(item.dt * 1000)
@@ -227,7 +215,7 @@ export default function AirQualityPage() {
           o3: Math.round(currentAQ.components.o3 * 10) / 10 || 0,
           no2: Math.round(currentAQ.components.no2 * 10) / 10 || 0,
           so2: Math.round(currentAQ.components.so2 * 10) / 10 || 0,
-          co: Math.round(currentAQ.components.co / 100) / 10 || 0, // Convert to mg/m³
+          co: Math.round(currentAQ.components.co / 100) / 10 || 0,
           nh3: Math.round(currentAQ.components.nh3 * 10) / 10 || 0
         },
         forecast,
@@ -246,7 +234,7 @@ export default function AirQualityPage() {
   const getUserLocation = () => {
     if (!navigator.geolocation) {
       setLocationStatus('error')
-      fetchAirQuality(51.5074, -0.1278) // Default to London
+      fetchAirQuality(51.5074, -0.1278)
       return
     }
 
@@ -260,7 +248,7 @@ export default function AirQualityPage() {
       (error) => {
         console.error('Location error:', error)
         setLocationStatus(error.code === 1 ? 'denied' : 'error')
-        fetchAirQuality(51.5074, -0.1278) // Fallback to London
+        fetchAirQuality(51.5074, -0.1278)
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     )
@@ -288,105 +276,88 @@ export default function AirQualityPage() {
     }
   }
 
-  useEffect(() => {
-    // Load dark mode preference
-    const savedDarkMode = localStorage.getItem("airQualityDarkMode")
-    if (savedDarkMode !== null) {
-      
-    }
-
-    // Get user location
-    getUserLocation()
-  }, [])
-
-  
-
   const getHealthRecommendations = (aqi: number) => {
     if (aqi <= 50) {
       return {
         general: [
-          "Enjoy your usual outdoor activities",
-          "Air quality is ideal for outdoor activities",
-          "No health implications"
+          "Enjoy your usual outdoor activities in clean ambient conditions.",
+          "Air quality is ideal for extensive outdoor cardio and recreation.",
+          "No health implications predicted. No mask or protection required."
         ],
         sensitive: [
-          "It's a great day to be active outside",
-          "No precautions necessary",
-          "Perfect conditions for exercise"
+          "Perfect day for outdoor exercise and structural activities.",
+          "No specific precautions are necessary for respiratory profiles.",
+          "Enjoy excellent airflow conditions throughout the sector."
         ]
       }
     } else if (aqi <= 100) {
       return {
         general: [
-          "Enjoy your usual outdoor activities",
-          "Unusually sensitive people should consider reducing prolonged outdoor exertion",
-          "Air quality is acceptable for most people"
+          "Air quality is acceptable for the vast majority of activities.",
+          "Enjoy outdoor recreation but consider minor pauses on prolonged exertion.",
+          "No major health hazards noted for general populations."
         ],
         sensitive: [
-          "Consider reducing prolonged or heavy outdoor exertion",
-          "Watch for symptoms such as coughing or shortness of breath",
-          "Take more breaks during outdoor activities"
+          "Unusually sensitive individuals should reduce intense prolonged exertion.",
+          "Monitor breathing logs for minor coughs or irritation signals.",
+          "Keep rescue inhalers close during rigorous workout sets."
         ]
       }
     } else if (aqi <= 150) {
       return {
         general: [
-          "Consider reducing prolonged or heavy exertion if you experience symptoms",
-          "It's okay to be active outside but take more breaks",
-          "Watch for symptoms such as coughing or shortness of breath"
+          "Consider reducing heavy or prolonged outdoor exertion sets.",
+          "Take regular hydration breaks to mitigate throat irritation.",
+          "Monitor current air quality sensors before planning workouts."
         ],
         sensitive: [
-          "Reduce prolonged or heavy outdoor exertion",
-          "Consider moving activities indoors",
-          "People with asthma should follow their action plans",
-          "Children and elderly should limit outdoor exposure"
+          "Limit heavy or prolonged outdoor work and sports sets.",
+          "Asthma profiles should follow prescription action guidelines.",
+          "Elderly and children should move key tasks indoors where possible."
         ]
       }
     } else if (aqi <= 200) {
       return {
         general: [
-          "Consider reducing prolonged or heavy exertion",
-          "Everyone may experience symptoms with prolonged exposure",
-          "Take more breaks during outdoor activities",
-          "Consider moving activities indoors"
+          "Minimize prolonged outdoor exertion and intense cardio.",
+          "Stay inside during early morning or sunset peak hours.",
+          "Switch to lighter indoor workout circuits if possible."
         ],
         sensitive: [
-          "Avoid prolonged or heavy outdoor exertion",
-          "Move activities indoors or reschedule",
-          "People with asthma should keep rescue inhaler nearby",
-          "Seek medical attention if symptoms persist"
+          "Avoid heavy outdoor work and restrict open exposure duration.",
+          "Keep windows closed and utilize indoor HEPA filtration units.",
+          "Keep close contact with medical services if symptom issues emerge."
         ]
       }
     } else {
       return {
         general: [
-          "Avoid prolonged or heavy outdoor exertion",
-          "Consider moving activities indoors",
-          "Everyone should reduce outdoor exposure",
-          "Wear N95 mask if going outside"
+          "Avoid all outdoor exertion. Keep physical activity minimal.",
+          "Close all windows to seal indoor rooms from outside particulate cells.",
+          "Wear a calibrated N95 filter mask if sector traversal is mandatory."
         ],
         sensitive: [
-          "Remain indoors and keep activity levels low",
-          "Follow tips for keeping indoor air clean",
-          "Seek immediate medical attention if experiencing symptoms",
-          "Close windows and use air purifiers"
+          "Remain strictly indoors and run high-efficiency air cleaners.",
+          "Avoid any forms of physical exertion to shield lung tissues.",
+          "Seek direct medical attention immediately if breathing indicators drop."
         ]
       }
     }
   }
 
+  useEffect(() => {
+    getUserLocation()
+  }, [])
+
   if (loading && !airQualityData) {
     return (
-      <div className={`min-h-screen ${
+      <div className={`w-full min-h-[calc(100vh-3.5rem)] ${
         isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
-      } p-6 flex items-center justify-center transition-colors duration-500`}>
+      } p-4 md:p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
-          <Loader2 className={`h-16 w-16 ${
-            isDarkMode ? 'text-white' : 'text-green-600'
-          } animate-spin mx-auto mb-4`} />
-          <p className={`text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Loading air quality data...
-          </p>
+          <Loader2 className="h-16 w-16 text-indigo-650 animate-spin mx-auto mb-4" />
+          <p className="text-xl font-bold tracking-tight">Syncing gas sensor telemetry...</p>
+          <p className="text-xs text-slate-400 mt-1">Measuring air pollutant densities...</p>
         </div>
       </div>
     )
@@ -394,461 +365,647 @@ export default function AirQualityPage() {
 
   if (!airQualityData) return null
 
-  const aqiStatus = getAQIStatus(airQualityData.aqi)
-  const healthRecs = getHealthRecommendations(airQualityData.aqi)
+  const latCoord = airQualityData.coord.lat
+  const lonCoord = airQualityData.coord.lon
+  const currentAQI = airQualityData ? airQualityData.aqi : 0
+  const aqiStatus = getAQIStatus(currentAQI)
+  const healthRecs = getHealthRecommendations(currentAQI)
+
+  // Floating molecular animation duration linked to AQI
+  // Higher AQI = faster, more chaotic particle movement
+  const molecularSpeed = currentAQI > 0
+    ? `${Math.max(1, Math.min(8, 200 / currentAQI))}s`
+    : '0s'
 
   return (
-    <div className={`min-h-screen ${
-      isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
-    } p-6 transition-colors duration-500`}>
+    <div className={`w-full max-w-full overflow-x-hidden min-h-[calc(100vh-3.5rem)] ${
+      isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    } p-4 md:p-6 transition-colors duration-500`}>
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-green-500">
-              <Activity className="h-8 w-8 text-white" />
+
+        {/* Header Console */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-start sm:items-center gap-3 w-full lg:w-auto">
+            <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/10 flex-shrink-0">
+              <Activity className="h-7 w-7" />
             </div>
-            <div>
-              <h1 className={`text-4xl font-bold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight truncate">
                 Air Quality Index
               </h1>
-              <div className={`flex items-center gap-2 mt-1 text-sm ${
-                isDarkMode ? 'text-white/70' : 'text-gray-600'
-              }`}>
-                <MapPin className="h-4 w-4 text-red-500" />
-                <span>{airQualityData.location}, {airQualityData.country}</span>
-                {locationStatus === 'success' && (
-                  <Badge className={`${
-                    isDarkMode 
-                      ? 'bg-green-500/20 text-green-300 border-green-500/30' 
-                      : 'bg-green-100 text-green-700 border-green-300'
-                  }`}>
-                    📍 Your Location
-                  </Badge>
-                )}
-              </div>
+              {airQualityData && (
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4 text-rose-500 animate-pulse flex-shrink-0" />
+                    <span className="truncate">{airQualityData.location}, {airQualityData.country}</span>
+                  </div>
+                  <span className="hidden sm:inline text-slate-350 dark:text-slate-700">|</span>
+                  <span className="font-mono text-xs bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800">
+                    LAT: {latCoord.toFixed(4)}° LON: {lonCoord.toFixed(4)}°
+                  </span>
+                  <span className="hidden sm:inline text-slate-350 dark:text-slate-700">|</span>
+                  {locationStatus === 'success' && (
+                    <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 border bg-indigo-500/10 text-indigo-650 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-500/20 flex-shrink-0">
+                      📍 System Calibrated
+                    </Badge>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex flex-wrap gap-2">
-            <form onSubmit={handleSearchCity} className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Search city..."
-                value={searchCity}
-                onChange={(e) => setSearchCity(e.target.value)}
-                className={`${
-                  isDarkMode 
-                    ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
-                }`}
-              />
-              <Button type="submit" size="icon" className="bg-green-600 hover:bg-green-700">
-                <Search className="h-4 w-4" />
+          {/* Action Row */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+            <form onSubmit={handleSearchCity} className="flex gap-2 w-full sm:w-auto">
+              <div className="relative flex items-center flex-1 sm:flex-initial sm:w-60">
+                <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
+                <Input
+                  type="text"
+                  placeholder="Search weather sector..."
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                  className={`pl-9 pr-3 py-2 w-full rounded-xl transition-all duration-300 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' 
+                      : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600'
+                  }`}
+                />
+              </div>
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide shadow-md shadow-indigo-600/15 flex-shrink-0">
+                Scan Sector
               </Button>
             </form>
             
-            <Button
-              onClick={getUserLocation}
-              size="icon"
-              className="bg-cyan-600 hover:bg-cyan-700"
-              title="Use My Location"
-            >
-              <Target className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  onClick={getUserLocation}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title="Locate station"
+                >
+                  <Target className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
+                </Button>
 
-            <Button
-              onClick={() => currentLocation && fetchAirQuality(currentLocation.lat, currentLocation.lon)}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title="Refresh Data"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+                <Button
+                  type="button"
+                  onClick={() => currentLocation && fetchAirQuality(currentLocation.lat, currentLocation.lon)}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title="Sync telemetry"
+                >
+                  <RefreshCw className="h-4.5 w-4.5" />
+                </Button>
 
-            <Button
-              onClick={toggleDarkMode}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title={isDarkMode ? "Light Mode" : "Dark Mode"}
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
+                <Button
+                  type="button"
+                  onClick={toggleDarkMode}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-800 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title={isDarkMode ? "Light Display" : "Dark Display"}
+                >
+                  {isDarkMode ? <Sun className="h-4.5 w-4.5 text-amber-500" /> : <Moon className="h-4.5 w-4.5 text-indigo-600" />}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Main AQI Display */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardContent className="p-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-              <div className="text-center lg:text-left">
-                <h2 className="text-2xl font-bold mb-2">{airQualityData.location}</h2>
-                <div className="flex items-center justify-center lg:justify-start gap-4 mb-4">
-                  <div className={`text-6xl font-bold ${
-                    airQualityData.aqi <= 50 ? isDarkMode ? 'text-green-300' : 'text-green-600' :
-                    airQualityData.aqi <= 100 ? isDarkMode ? 'text-yellow-300' : 'text-yellow-600' :
-                    airQualityData.aqi <= 150 ? isDarkMode ? 'text-orange-300' : 'text-orange-600' :
-                    airQualityData.aqi <= 200 ? isDarkMode ? 'text-red-300' : 'text-red-600' :
-                    isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                  }`}>
-                    {airQualityData.aqi}
-                  </div>
-                  <div>
-                    <Badge className={`border mb-2 ${
-                      isDarkMode ? aqiStatus.darkColor : aqiStatus.lightColor
-                    }`}>
-                      {aqiStatus.label}
-                    </Badge>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Air Quality Index</div>
-                  </div>
-                </div>
-                <p className={`text-sm ${
-                  isDarkMode ? 'text-white/70' : 'text-gray-600'
-                }`}>
-                  {aqiStatus.description}
-                </p>
+        {/* Warning Alert if AQI is Unhealthy or worse */}
+        {currentLocation && currentAQI > 100 && (
+          <div className={`p-4 rounded-2xl border ${
+            isDarkMode 
+              ? 'bg-rose-500/10 border-rose-500/20 text-rose-200' 
+              : 'bg-rose-50 border-rose-200 text-rose-900'
+          } flex items-start gap-3 shadow-sm`}>
+            <AlertTriangle className="h-5 w-5 text-rose-500 flex-shrink-0 mt-0.5 animate-bounce" />
+            <div>
+              <div className="text-sm font-medium">
+                <span className="font-bold uppercase tracking-wider text-xs mr-2">Air Hazard Alert:</span>
+                Air Quality Index is currently {currentAQI} ({aqiStatus.label}). Elevated fine particulate matter detected. Seek indoor shelters and close windows.
               </div>
+            </div>
+          </div>
+        )}
 
-              <div className="text-center">
-                <div className="relative w-40 h-40 mx-auto mb-4">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      fill="none"
-                      stroke={isDarkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)"}
-                      strokeWidth="8"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      fill="none"
-                      stroke={
-                        airQualityData.aqi <= 50 ? "#22c55e" :
-                        airQualityData.aqi <= 100 ? "#eab308" :
-                        airQualityData.aqi <= 150 ? "#f97316" :
-                        airQualityData.aqi <= 200 ? "#ef4444" :
-                        "#a855f7"
-                      }
-                      strokeWidth="8"
-                      strokeDasharray={`${Math.min((airQualityData.aqi / 300) * 251.2, 251.2)} 251.2`}
-                      strokeLinecap="round"
-                    />
+        {/* Main Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+          {/* Left Console Column: Gas Sensor Dial (4 columns) */}
+          <div className="lg:col-span-4">
+            <Card className={`border ${
+              isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+            } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <Compass className="h-4.5 w-4.5 text-indigo-500" />
+                  <span>Particulate Sensor Dial</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center justify-center p-6">
+                
+                {/* High Tech SVG Dial Face */}
+                <div className="relative w-full max-w-[240px] aspect-square mx-auto mb-6 bg-[#0a0f1d] rounded-full border border-slate-350 dark:border-slate-800 shadow-inner flex items-center justify-center">
+                  
+                  {/* Concentric Coordinate rings */}
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none text-indigo-500/10 dark:text-indigo-400/15" viewBox="0 0 200 200">
+                    <defs>
+                      <clipPath id="aqi-clip-bounds">
+                        <circle cx="100" cy="100" r="76" />
+                      </clipPath>
+                    </defs>
+
+                    {/* Concentric rings */}
+                    <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                    <circle cx="100" cy="100" r="76" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                    <circle cx="100" cy="100" r="56" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+                    
+                    {/* Dial scale marks (0 to 300+) */}
+                    {Array.from({ length: 20 }).map((_, i) => {
+                      const deg = i * 18
+                      const rad = (deg * Math.PI) / 180
+                      const outerR = 92
+                      const innerR = i % 5 === 0 ? 82 : 86
+                      const x1 = 100 + outerR * Math.sin(rad)
+                      const y1 = 100 - outerR * Math.cos(rad)
+                      const x2 = 100 + innerR * Math.sin(rad)
+                      const y2 = 100 - innerR * Math.cos(rad)
+                      return (
+                        <line 
+                          key={i} 
+                          x1={x1} y1={y1} x2={x2} y2={y2} 
+                          stroke="currentColor" 
+                          strokeWidth={i % 5 === 0 ? "1.5" : "0.75"} 
+                        />
+                      )
+                    })}
+
+                    {/* Scale labels */}
+                    <text x="100" y="24" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-black fill-indigo-400/60">0</text>
+                    <text x="176" y="100" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-black fill-indigo-400/60">100</text>
+                    <text x="100" y="176" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-black fill-indigo-400/60">200</text>
+                    <text x="24" y="100" textAnchor="middle" dominantBaseline="central" className="text-[10px] font-black fill-indigo-400/60">300</text>
                   </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Wind className={`h-12 w-12 ${
-                      isDarkMode ? 'text-cyan-300' : 'text-cyan-600'
-                    }`} />
+
+                  {/* Floating Molecule Particles Animation (Clipped to dial face) */}
+                  <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+                    <svg className="w-full h-full" viewBox="0 0 200 200">
+                      <g clipPath="url(#aqi-clip-bounds)">
+                        {currentAQI > 0 && (
+                          <>
+                            {/* Drifting particulate dots */}
+                            <circle cx="55" cy="80" r="3.5" fill="#10b981" className="molecule-drift-node" style={{ animationDuration: molecularSpeed }} />
+                            <circle cx="90" cy="130" r="4.5" fill="#f59e0b" className="molecule-drift-node" style={{ animationDuration: molecularSpeed, animationDelay: '0.4s' }} />
+                            <circle cx="120" cy="70" r="2.5" fill="#ef4444" className="molecule-drift-node" style={{ animationDuration: molecularSpeed, animationDelay: '1.2s' }} />
+                            <circle cx="140" cy="115" r="4.5" fill="#a855f7" className="molecule-drift-node" style={{ animationDuration: molecularSpeed, animationDelay: '0.8s' }} />
+                            <circle cx="75" cy="55" r="3.5" fill="#06b6d4" className="molecule-drift-node" style={{ animationDuration: molecularSpeed, animationDelay: '1.8s' }} />
+                          </>
+                        )}
+                      </g>
+                    </svg>
+                  </div>
+
+                  {/* Active AQI Gauge Tracker Arc */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    <svg className="w-full h-full" viewBox="0 0 200 200">
+                      {(() => {
+                        const maxRangeVal = 300
+                        const clipAQI = Math.min(currentAQI, maxRangeVal)
+                        const ratio = clipAQI / maxRangeVal
+                        const dashLength = 2 * Math.PI * 76
+                        
+                        let strokeColor = '#10b981'
+                        if (currentAQI > 200) strokeColor = '#a855f7'
+                        else if (currentAQI > 150) strokeColor = '#ef4444'
+                        else if (currentAQI > 100) strokeColor = '#f97316'
+                        else if (currentAQI > 50) strokeColor = '#f59e0b'
+
+                        return (
+                          <circle 
+                            cx="100" cy="100" r="76"
+                            fill="none" 
+                            stroke={strokeColor}
+                            strokeWidth="4.5"
+                            strokeLinecap="round"
+                            strokeDasharray={dashLength}
+                            strokeDashoffset={dashLength * (1 - ratio)}
+                            transform="rotate(-90 100 100)"
+                            className="transition-all duration-1000 ease-out opacity-80"
+                          />
+                        )
+                      })()}
+                    </svg>
+                  </div>
+
+                  {/* Core readouts HUD */}
+                  <div className="absolute w-[80px] h-[80px] bg-slate-950 rounded-full border border-slate-800 flex flex-col items-center justify-center shadow-md">
+                    <span className="text-3xl font-black text-white tracking-tight leading-none">
+                      {currentAQI}
+                    </span>
+                    <span className="text-[8px] font-black uppercase text-slate-500 tracking-wider mt-0.5">
+                      US EPA AQI
+                    </span>
+                    <span className={`text-[9px] font-extrabold mt-1 leading-none text-center px-1 truncate max-w-full ${aqiStatus.color}`}>
+                      {aqiStatus.label}
+                    </span>
+                  </div>
+
+                  {/* HUD labels */}
+                  <div className="absolute top-3 left-6 font-mono text-[8px] font-black text-indigo-400/40">SYS: SCANNER</div>
+                  <div className="absolute bottom-3 right-6 font-mono text-[8px] font-black text-indigo-400/40">POLL: PM2.5</div>
+
+                </div>
+
+                {/* Summary labels */}
+                <div className="w-full text-center space-y-1 mt-2">
+                  <p className="text-sm font-black text-slate-800 dark:text-slate-200 tracking-tight">
+                    Main Source: {getMainPollutant(airQualityData.components)}
+                  </p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
+                    Scanners tracking fine particulate concentrations
+                  </p>
+                </div>
+
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Metrics Dashboard Column (8 columns) */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Pollutant Gauges Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              
+              {/* Gauge 1: PM2.5 */}
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="p-4 pb-2">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                    <Gauge className="h-3.5 w-3.5 text-red-500" />
+                    <span>Fine PM2.5</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 flex flex-col items-center justify-between min-h-[145px]">
+                  
+                  {/* SVG progress circle */}
+                  <div className="relative w-16 h-16">
+                    <svg className="w-full h-full" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="41" fill="none" stroke="currentColor" className="text-slate-100 dark:text-slate-950" strokeWidth="6.5" />
+                      <circle 
+                        cx="50" cy="50" r="41" 
+                        fill="none" stroke="#ef4444" 
+                        strokeWidth="6.5" 
+                        strokeLinecap="round" 
+                        strokeDasharray={257.6}
+                        strokeDashoffset={257.6 * (1 - Math.min(airQualityData.components.pm25 / 100, 1))}
+                        transform="rotate(-90 50 50)"
+                        className="transition-all duration-1000 ease-out"
+                      />
+                      <text x="50" y="52" textAnchor="middle" dominantBaseline="central" className="text-sm font-black fill-slate-950 dark:fill-white">
+                        {airQualityData.components.pm25}
+                      </text>
+                    </svg>
+                  </div>
+                  <div className="text-[9px] text-slate-400 font-black tracking-widest mt-2 uppercase">μg / m³</div>
+
+                </CardContent>
+              </Card>
+
+              {/* Gauge 2: PM10 */}
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="p-4 pb-2">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                    <Gauge className="h-3.5 w-3.5 text-orange-500" />
+                    <span>Inhalable PM10</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 flex flex-col items-center justify-between min-h-[145px]">
+                  
+                  {/* SVG progress circle */}
+                  <div className="relative w-16 h-16">
+                    <svg className="w-full h-full" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="41" fill="none" stroke="currentColor" className="text-slate-100 dark:text-slate-950" strokeWidth="6.5" />
+                      <circle 
+                        cx="50" cy="50" r="41" 
+                        fill="none" stroke="#f97316" 
+                        strokeWidth="6.5" 
+                        strokeLinecap="round" 
+                        strokeDasharray={257.6}
+                        strokeDashoffset={257.6 * (1 - Math.min(airQualityData.components.pm10 / 150, 1))}
+                        transform="rotate(-90 50 50)"
+                        className="transition-all duration-1000 ease-out"
+                      />
+                      <text x="50" y="52" textAnchor="middle" dominantBaseline="central" className="text-sm font-black fill-slate-950 dark:fill-white">
+                        {airQualityData.components.pm10}
+                      </text>
+                    </svg>
+                  </div>
+                  <div className="text-[9px] text-slate-400 font-black tracking-widest mt-2 uppercase">μg / m³</div>
+
+                </CardContent>
+              </Card>
+
+              {/* Gauge 3: O3 */}
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="p-4 pb-2">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                    <Eye className="h-3.5 w-3.5 text-blue-500" />
+                    <span>Ozone O₃</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 flex flex-col items-center justify-between min-h-[145px]">
+                  
+                  {/* SVG progress circle */}
+                  <div className="relative w-16 h-16">
+                    <svg className="w-full h-full" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="41" fill="none" stroke="currentColor" className="text-slate-100 dark:text-slate-950" strokeWidth="6.5" />
+                      <circle 
+                        cx="50" cy="50" r="41" 
+                        fill="none" stroke="#3b82f6" 
+                        strokeWidth="6.5" 
+                        strokeLinecap="round" 
+                        strokeDasharray={257.6}
+                        strokeDashoffset={257.6 * (1 - Math.min(airQualityData.components.o3 / 180, 1))}
+                        transform="rotate(-90 50 50)"
+                        className="transition-all duration-1000 ease-out"
+                      />
+                      <text x="50" y="52" textAnchor="middle" dominantBaseline="central" className="text-sm font-black fill-slate-950 dark:fill-white">
+                        {airQualityData.components.o3}
+                      </text>
+                    </svg>
+                  </div>
+                  <div className="text-[9px] text-slate-400 font-black tracking-widest mt-2 uppercase">μg / m³</div>
+
+                </CardContent>
+              </Card>
+
+              {/* Gauge 4: NO2 */}
+              <Card className={`border ${
+                isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+              } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+                <CardHeader className="p-4 pb-2">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                    <Droplets className="h-3.5 w-3.5 text-purple-500" />
+                    <span>Nitrogen NO₂</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 flex flex-col items-center justify-between min-h-[145px]">
+                  
+                  {/* SVG progress circle */}
+                  <div className="relative w-16 h-16">
+                    <svg className="w-full h-full" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="41" fill="none" stroke="currentColor" className="text-slate-100 dark:text-slate-950" strokeWidth="6.5" />
+                      <circle 
+                        cx="50" cy="50" r="41" 
+                        fill="none" stroke="#a855f7" 
+                        strokeWidth="6.5" 
+                        strokeLinecap="round" 
+                        strokeDasharray={257.6}
+                        strokeDashoffset={257.6 * (1 - Math.min(airQualityData.components.no2 / 200, 1))}
+                        transform="rotate(-90 50 50)"
+                        className="transition-all duration-1000 ease-out"
+                      />
+                      <text x="50" y="52" textAnchor="middle" dominantBaseline="central" className="text-sm font-black fill-slate-950 dark:fill-white">
+                        {airQualityData.components.no2}
+                      </text>
+                    </svg>
+                  </div>
+                  <div className="text-[9px] text-slate-400 font-black tracking-widest mt-2 uppercase">μg / m³</div>
+
+                </CardContent>
+              </Card>
+
+            </div>
+
+            {/* Additional trace gases console */}
+            <Card className={`border ${
+              isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+            } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <Gauge className="h-4.5 w-4.5 text-indigo-500" />
+                  <span>Trace Gas Telemetry</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  
+                  {/* SO2 */}
+                  <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-emerald-500">
+                    <div className="font-mono text-[9px] text-slate-450 uppercase tracking-widest font-black">
+                      [ Sulfur_Dioxide_SO2 ]
+                    </div>
+                    <div className="text-lg font-black text-slate-850 dark:text-slate-200 mt-2">
+                      {airQualityData.components.so2} <span className="text-[10px] text-slate-450">μg/m³</span>
+                    </div>
+                  </div>
+
+                  {/* CO */}
+                  <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-amber-500">
+                    <div className="font-mono text-[9px] text-slate-450 uppercase tracking-widest font-black">
+                      [ Carbon_Monoxide_CO ]
+                    </div>
+                    <div className="text-lg font-black text-slate-850 dark:text-slate-200 mt-2">
+                      {airQualityData.components.co} <span className="text-[10px] text-slate-450">mg/m³</span>
+                    </div>
+                  </div>
+
+                  {/* NH3 */}
+                  <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-cyan-500">
+                    <div className="font-mono text-[9px] text-slate-450 uppercase tracking-widest font-black">
+                      [ Ammonia_NH3 ]
+                    </div>
+                    <div className="text-lg font-black text-slate-850 dark:text-slate-200 mt-2">
+                      {airQualityData.components.nh3} <span className="text-[10px] text-slate-450">μg/m³</span>
+                    </div>
+                  </div>
+
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+
+        {/* 5-Day AQI Forecast Stream Scroll Ribbon */}
+        {airQualityData && (
+          <Card className={`border ${
+            isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+          } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+            <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-indigo-500" />
+                <span>5-Day Air Quality Forecast Stream</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 md:p-6">
+              <div className="flex gap-4 overflow-x-auto pb-4 pt-1 scrollbar-thin scrollbar-thumb-indigo-500/20 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent">
+                {airQualityData.forecast.map((day, idx) => {
+                  const dayStatus = getAQIStatus(day.aqi)
+                  return (
+                    <div 
+                      key={`forecast-aqi-${idx}`}
+                      className={`flex-shrink-0 w-44 p-4 rounded-xl border text-center transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between items-center ${
+                        isDarkMode ? 'bg-slate-950 border-slate-850' : 'bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="text-xs font-black text-slate-800 dark:text-slate-200">{day.day}</div>
+                      <div className="text-[10px] font-bold text-slate-400 mb-2">{day.date}</div>
+                      
+                      {/* Metric level indicator track */}
+                      <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-900 rounded-full overflow-hidden my-2">
+                        <div 
+                          className="h-full bg-indigo-650 rounded-full" 
+                          style={{ width: `${Math.min((day.aqi / 300) * 100, 100)}%` }}
+                        />
+                      </div>
+
+                      <div className={`text-2xl font-black ${
+                        day.aqi <= 50 ? isDarkMode ? 'text-emerald-400' : 'text-emerald-600' :
+                        day.aqi <= 100 ? isDarkMode ? 'text-amber-400' : 'text-amber-600' :
+                        day.aqi <= 150 ? isDarkMode ? 'text-orange-400' : 'text-orange-600' :
+                        day.aqi <= 200 ? isDarkMode ? 'text-rose-450' : 'text-rose-600' :
+                        isDarkMode ? 'text-purple-400' : 'text-purple-600'
+                      }`}>{day.aqi}</div>
+
+                      <Badge className={`text-[10px] mt-2 border ${dayStatus.bg}`}>
+                        {dayStatus.label}
+                      </Badge>
+                      <div className="text-[10px] font-semibold text-slate-405 dark:text-slate-500 mt-2 font-mono">
+                        Main: {day.mainPollutant}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Health advisories grid */}
+        {airQualityData && (
+          <Card className={`border ${
+            isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+          } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+            <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Heart className="h-5 w-5 text-indigo-500 animate-pulse" />
+                <span>Sector Health Advisories</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 md:p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* General Population */}
+                <div className="p-5 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-emerald-500">
+                  <h3 className="font-black mb-3 text-xs text-slate-800 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                    <Heart className="h-4.5 w-4.5 text-emerald-500 animate-pulse" />
+                    <span>[ General_Population ]</span>
+                  </h3>
+                  <div className="space-y-3">
+                    {healthRecs.general.map((rec, index) => (
+                      <div key={`gen-${index}`} className="flex items-start gap-2.5">
+                        <Activity className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold leading-relaxed">
+                          {rec}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <div className={`text-sm ${
-                  isDarkMode ? 'text-white/80' : 'text-gray-600'
-                }`}>AQI Level Gauge</div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className={`rounded-lg p-4 text-center border ${
-                  isDarkMode 
-                    ? 'bg-red-500/20 border-red-400/30' 
-                    : 'bg-red-100 border-red-300'
-                }`}>
-                  <Gauge className={`h-6 w-6 mx-auto mb-2 ${
-                    isDarkMode ? 'text-red-300' : 'text-red-600'
-                  }`} />
-                  <div className={`text-2xl font-bold ${
-                    isDarkMode ? 'text-red-300' : 'text-red-600'
-                  }`}>{airQualityData.components.pm25}</div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-600'
-                  }`}>PM2.5 μg/m³</div>
-                </div>
-                <div className={`rounded-lg p-4 text-center border ${
-                  isDarkMode 
-                    ? 'bg-orange-500/20 border-orange-400/30' 
-                    : 'bg-orange-100 border-orange-300'
-                }`}>
-                  <Gauge className={`h-6 w-6 mx-auto mb-2 ${
-                    isDarkMode ? 'text-orange-300' : 'text-orange-600'
-                  }`} />
-                  <div className={`text-2xl font-bold ${
-                    isDarkMode ? 'text-orange-300' : 'text-orange-600'
-                  }`}>{airQualityData.components.pm10}</div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-600'
-                  }`}>PM10 μg/m³</div>
-                </div>
-                <div className={`rounded-lg p-4 text-center border ${
-                  isDarkMode 
-                    ? 'bg-blue-500/20 border-blue-400/30' 
-                    : 'bg-blue-100 border-blue-300'
-                }`}>
-                  <Eye className={`h-6 w-6 mx-auto mb-2 ${
-                    isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                  }`} />
-                  <div className={`text-2xl font-bold ${
-                    isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                  }`}>{airQualityData.components.o3}</div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-600'
-                  }`}>O₃ μg/m³</div>
-                </div>
-                <div className={`rounded-lg p-4 text-center border ${
-                  isDarkMode 
-                    ? 'bg-purple-500/20 border-purple-400/30' 
-                    : 'bg-purple-100 border-purple-300'
-                }`}>
-                  <Droplets className={`h-6 w-6 mx-auto mb-2 ${
-                    isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                  }`} />
-                  <div className={`text-2xl font-bold ${
-                    isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                  }`}>{airQualityData.components.no2}</div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-600'
-                  }`}>NO₂ μg/m³</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Additional Pollutants */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Gauge className="h-5 w-5" />
-              Additional Pollutants
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className={`p-4 rounded-lg border ${
-                isDarkMode ? 'bg-white/10 border-white/20' : 'bg-gray-50 border-gray-200'
-              }`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`font-medium ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}>Sulfur Dioxide (SO₂)</span>
-                  <Gauge className={`h-5 w-5 ${
-                    isDarkMode ? 'text-green-300' : 'text-green-600'
-                  }`} />
-                </div>
-                <div className={`text-2xl font-bold ${
-                  isDarkMode ? 'text-green-300' : 'text-green-600'
-                }`}>
-                  {airQualityData.components.so2} μg/m³
-                </div>
-                <div className={`text-xs ${
-                  isDarkMode ? 'text-white/60' : 'text-gray-500'
-                }`}>From fossil fuel burning</div>
-              </div>
-
-              <div className={`p-4 rounded-lg border ${
-                isDarkMode ? 'bg-white/10 border-white/20' : 'bg-gray-50 border-gray-200'
-              }`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`font-medium ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}>Carbon Monoxide (CO)</span>
-                  <Gauge className={`h-5 w-5 ${
-                    isDarkMode ? 'text-yellow-300' : 'text-yellow-600'
-                  }`} />
-                </div>
-                <div className={`text-2xl font-bold ${
-                  isDarkMode ? 'text-yellow-300' : 'text-yellow-600'
-                }`}>
-                  {airQualityData.components.co} mg/m³
-                </div>
-                <div className={`text-xs ${
-                  isDarkMode ? 'text-white/60' : 'text-gray-500'
-                }`}>From incomplete combustion</div>
-              </div>
-
-              <div className={`p-4 rounded-lg border ${
-                isDarkMode ? 'bg-white/10 border-white/20' : 'bg-gray-50 border-gray-200'
-              }`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`font-medium ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}>Ammonia (NH₃)</span>
-                  <Gauge className={`h-5 w-5 ${
-                    isDarkMode ? 'text-cyan-300' : 'text-cyan-600'
-                  }`} />
-                </div>
-                <div className={`text-2xl font-bold ${
-                  isDarkMode ? 'text-cyan-300' : 'text-cyan-600'
-                }`}>
-                  {airQualityData.components.nh3} μg/m³
-                </div>
-                <div className={`text-xs ${
-                  isDarkMode ? 'text-white/60' : 'text-gray-500'
-                }`}>From agricultural activities</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 5-Day AQI Forecast */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              5-Day Air Quality Forecast
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {airQualityData.forecast.map((day, index) => {
-                const dayStatus = getAQIStatus(day.aqi)
-                return (
-                  <div key={`aqi-forecast-${index}`} className={`text-center p-4 rounded-lg border ${
-                    isDarkMode ? 'bg-white/10 border-white/20' : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    <div className="font-medium mb-2">{day.day}</div>
-                    <div className="text-xs text-gray-500 mb-3">{day.date}</div>
-                    <div className={`text-3xl font-bold mb-2 ${
-                      day.aqi <= 50 ? isDarkMode ? 'text-green-300' : 'text-green-600' :
-                      day.aqi <= 100 ? isDarkMode ? 'text-yellow-300' : 'text-yellow-600' :
-                      day.aqi <= 150 ? isDarkMode ? 'text-orange-300' : 'text-orange-600' :
-                      day.aqi <= 200 ? isDarkMode ? 'text-red-300' : 'text-red-600' :
-                      isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                    }`}>{day.aqi}</div>
-                    <Badge className={`text-xs mb-2 border ${
-                      isDarkMode ? dayStatus.darkColor : dayStatus.lightColor
-                    }`}>
-                      {dayStatus.label}
-                    </Badge>
-                    <div className={`text-xs ${
-                      isDarkMode ? 'text-white/60' : 'text-gray-500'
-                    }`}>Main: {day.mainPollutant}</div>
+                {/* Sensitive Groups */}
+                <div className="p-5 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-orange-550">
+                  <h3 className="font-black mb-3 text-xs text-slate-800 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                    <HeartPulse className="h-4.5 w-4.5 text-orange-500" />
+                    <span>[ Sensitive_Profiles ]</span>
+                  </h3>
+                  <div className="space-y-3">
+                    {healthRecs.sensitive.map((rec, index) => (
+                      <div key={`sens-${index}`} className="flex items-start gap-2.5">
+                        <AlertTriangle className="h-4 w-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold leading-relaxed">
+                          {rec}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                </div>
 
-        {/* Health Recommendations */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Health Recommendations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold mb-3 text-lg flex items-center gap-2">
-                  <Heart className={`h-5 w-5 ${
-                    isDarkMode ? 'text-pink-300' : 'text-pink-600'
-                  }`} />
-                  General Population
-                </h3>
-                <div className="space-y-2">
-                  {healthRecs.general.map((rec, index) => (
-                    <div key={`gen-rec-${index}`} className="flex items-start gap-2">
-                      <div className={`h-2 w-2 rounded-full mt-1.5 flex-shrink-0 ${
-                        isDarkMode ? 'bg-green-400' : 'bg-green-600'
-                      }`} />
-                      <span className="text-sm">{rec}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
-              <div>
-                <h3 className="font-semibold mb-3 text-lg flex items-center gap-2">
-                  <HeartPulse className={`h-5 w-5 ${
-                    isDarkMode ? 'text-red-300' : 'text-red-600'
-                  }`} />
-                  Sensitive Groups
-                </h3>
-                <div className="space-y-2">
-                  {healthRecs.sensitive.map((rec, index) => (
-                    <div key={`sens-rec-${index}`} className="flex items-start gap-2">
-                      <div className={`h-2 w-2 rounded-full mt-1.5 flex-shrink-0 ${
-                        isDarkMode ? 'bg-orange-400' : 'bg-orange-600'
-                      }`} />
-                      <span className="text-sm">{rec}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* AQI Scale Reference */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5" />
-              Air Quality Index Scale
+        <Card className={`border ${
+          isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+        } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+          <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <Brain className="h-5 w-5 text-indigo-500" />
+              <span>US EPA Air Quality Scale Index</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {[
-                { range: "0-50", label: "Good", bgDark: "bg-green-500/20 border-green-400/30", bgLight: "bg-green-100 border-green-300", textDark: "text-green-300", textLight: "text-green-600", desc: "Excellent" },
-                { range: "51-100", label: "Moderate", bgDark: "bg-yellow-500/20 border-yellow-400/30", bgLight: "bg-yellow-100 border-yellow-300", textDark: "text-yellow-300", textLight: "text-yellow-600", desc: "Acceptable" },
-                { range: "101-150", label: "Unhealthy for Sensitive", bgDark: "bg-orange-500/20 border-orange-400/30", bgLight: "bg-orange-100 border-orange-300", textDark: "text-orange-300", textLight: "text-orange-600", desc: "Some risk" },
-                { range: "151-200", label: "Unhealthy", bgDark: "bg-red-500/20 border-red-400/30", bgLight: "bg-red-100 border-red-300", textDark: "text-red-300", textLight: "text-red-600", desc: "Everyone affected" },
-                { range: "201-300", label: "Very Unhealthy", bgDark: "bg-purple-500/20 border-purple-400/30", bgLight: "bg-purple-100 border-purple-300", textDark: "text-purple-300", textLight: "text-purple-600", desc: "Health alert" },
-                { range: "301+", label: "Hazardous", bgDark: "bg-slate-500/20 border-slate-400/30", bgLight: "bg-slate-100 border-slate-300", textDark: "text-slate-300", textLight: "text-slate-600", desc: "Emergency" }
+                { range: "0-50", label: "Good", color: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400", desc: "Excellent air quality" },
+                { range: "51-100", label: "Moderate", color: "bg-amber-500/10 border-amber-500/20 text-amber-400", desc: "Acceptable quality" },
+                { range: "101-150", label: "Sensitive", color: "bg-orange-500/10 border-orange-500/20 text-orange-400", desc: "Slight health risk" },
+                { range: "151-200", label: "Unhealthy", color: "bg-rose-500/10 border-rose-500/20 text-rose-400", desc: "General exposure risk" },
+                { range: "201-300", label: "Very Unhealthy", color: "bg-purple-500/10 border-purple-500/20 text-purple-400", desc: "Increased health warnings" },
+                { range: "301+", label: "Hazardous", color: "bg-red-500/10 border-red-500/20 text-red-400", desc: "Emergency alert" }
               ].map((level, index) => (
-                <div key={`aqi-scale-${index}`} className={`p-4 rounded-lg text-center border ${
-                  isDarkMode ? level.bgDark : level.bgLight
-                }`}>
-                  <div className={`text-xl font-bold mb-1 ${
-                    isDarkMode ? level.textDark : level.textLight
-                  }`}>{level.range}</div>
-                  <div className="font-medium text-sm mb-1">{level.label}</div>
-                  <div className={`text-xs ${
-                    isDarkMode ? 'text-white/70' : 'text-gray-600'
-                  }`}>{level.desc}</div>
+                <div key={`scale-ref-${index}`} className={`p-4 rounded-xl border flex flex-col justify-between h-28 hover:scale-[1.02] transition-all duration-300 ${level.color}`}>
+                  <div className="text-xl font-black">{level.range}</div>
+                  <div>
+                    <div className="font-extrabold text-xs">{level.label}</div>
+                    <div className="text-[9px] font-bold text-slate-400">{level.desc}</div>
+                  </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
+
       </div>
+
+      {/* Embedded CSS animations for Particulate molecular drift */}
+      <style jsx>{`
+        .molecule-drift-node {
+          animation: driftAround linear infinite;
+        }
+        @keyframes driftAround {
+          0% { transform: translate(0, 0); opacity: 0; }
+          10% { opacity: 0.7; }
+          45% { transform: translate(25px, -20px); }
+          55% { transform: translate(30px, -15px); }
+          90% { opacity: 0.7; }
+          100% { transform: translate(50px, -45px); opacity: 0; }
+        }
+      `}</style>
     </div>
   )
 }
