@@ -1,12 +1,23 @@
 "use client"
 
 import { useTheme } from "@/lib/ThemeContext"
-
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { 
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts"
 import { 
   History, 
   Calendar, 
@@ -24,7 +35,10 @@ import {
   Thermometer,
   Droplets,
   Wind,
-  Gauge
+  Gauge,
+  CloudRain,
+  Activity,
+  FileText
 } from "lucide-react"
 
 interface HistoryDataPoint {
@@ -65,6 +79,24 @@ interface HistoryData {
   country: string
 }
 
+const CustomTooltip = ({ active, payload, label, unit, isDarkMode }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className={`border p-3 rounded-xl shadow-md text-xs font-mono ${
+        isDarkMode ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-slate-200 text-slate-900"
+      }`}>
+        <p className={`font-black mb-1 uppercase tracking-wide ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>[{label}]</p>
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: payload[0].color || payload[0].stroke }} />
+          <span className={isDarkMode ? "text-slate-350" : "text-slate-500"}>{payload[0].name}:</span>
+          <span className="font-extrabold">{payload[0].value} {unit}</span>
+        </div>
+      </div>
+    )
+  }
+  return null
+}
+
 export default function HistoryPage() {
   const [historyData, setHistoryData] = useState<HistoryData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -84,17 +116,35 @@ export default function HistoryPage() {
   const metrics = [
     { id: "temperature", name: "Temperature", unit: "°C", icon: Thermometer },
     { id: "humidity", name: "Humidity", unit: "%", icon: Droplets },
-    { id: "precipitation", name: "Precipitation", unit: "mm", icon: TrendingDown },
+    { id: "precipitation", name: "Precipitation", unit: "mm", icon: CloudRain },
     { id: "pressure", name: "Pressure", unit: "hPa", icon: Gauge },
     { id: "windSpeed", name: "Wind Speed", unit: "km/h", icon: Wind }
   ]
 
+  const getMetricTheme = (metricId: string) => {
+    switch (metricId) {
+      case "temperature":
+        return { color: "#f43f5e", bg: "bg-rose-500/10 border-rose-500/20 text-rose-500", border: "border-l-rose-500" }
+      case "humidity":
+        return { color: "#6366f1", bg: "bg-indigo-500/10 border-indigo-500/20 text-indigo-550 dark:text-indigo-400", border: "border-l-indigo-600" }
+      case "precipitation":
+        return { color: "#3b82f6", bg: "bg-blue-500/10 border-blue-500/20 text-blue-500", border: "border-l-blue-500" }
+      case "pressure":
+        return { color: "#10b981", bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500", border: "border-l-emerald-500" }
+      case "windSpeed":
+        return { color: "#f59e0b", bg: "bg-amber-500/10 border-amber-500/20 text-amber-500", border: "border-l-amber-500" }
+      default:
+        return { color: "#6366f1", bg: "bg-indigo-500/10 border-indigo-500/20 text-indigo-550 dark:text-indigo-400", border: "border-l-indigo-650" }
+    }
+  }
+
   const fetchHistoricalData = async (lat: number, lon: number, days: number) => {
     setLoading(true)
+    const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 'ca695dcbc66c5fa3d0cb955033fd918f'
     try {
       // Fetch location name
       const locationResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}`
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`
       )
       
       if (!locationResponse.ok) throw new Error('Failed to fetch location')
@@ -102,7 +152,7 @@ export default function HistoryPage() {
 
       // Fetch 5-day forecast (best available for historical simulation)
       const forecastResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=metric`
+        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
       )
       
       if (!forecastResponse.ok) throw new Error('Failed to fetch forecast')
@@ -110,7 +160,7 @@ export default function HistoryPage() {
 
       // Fetch current weather
       const currentResponse = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=metric`
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
       )
       
       if (!currentResponse.ok) throw new Error('Failed to fetch current weather')
@@ -165,7 +215,7 @@ export default function HistoryPage() {
       })
 
       // Calculate daily averages from forecast
-      Object.keys(forecastByDay).slice(0, Math.min(days, 5)).forEach((dateKey, index) => {
+      Object.keys(forecastByDay).slice(0, Math.min(days, 5)).forEach((dateKey) => {
         const dayData = forecastByDay[dateKey]
         const date = new Date(dateKey)
         const timestamp = date.getTime()
@@ -274,8 +324,8 @@ export default function HistoryPage() {
         const secondHalf = values.slice(Math.floor(values.length / 2))
         const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length
         const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length
-        const trend = secondAvg > firstAvg + 2 ? 'increasing' : 
-                     secondAvg < firstAvg - 2 ? 'decreasing' : 'stable'
+        const trend = secondAvg > firstAvg + 1 ? 'increasing' : 
+                      secondAvg < firstAvg - 1 ? 'decreasing' : 'stable'
 
         return { avg, minVal, maxVal, minPoint, maxPoint, trend }
       }
@@ -362,6 +412,7 @@ export default function HistoryPage() {
         country: locationData.sys.country
       })
 
+      setCurrentLocation({ lat, lon })
       setLocationStatus('success')
     } catch (error) {
       console.error('Error fetching historical data:', error)
@@ -402,9 +453,10 @@ export default function HistoryPage() {
     if (!searchCity.trim()) return
 
     setLoading(true)
+    const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 'ca695dcbc66c5fa3d0cb955033fd918f'
     try {
       const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(searchCity)}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}`
+        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(searchCity)}&appid=${apiKey}`
       )
       
       if (!response.ok) throw new Error('City not found')
@@ -464,48 +516,30 @@ export default function HistoryPage() {
   }
 
   useEffect(() => {
-    // Load dark mode preference
-    const savedDarkMode = localStorage.getItem("weatherHistoryDarkMode")
-    if (savedDarkMode !== null) {
-      
-    }
-
-    // Get user location
     getUserLocation()
   }, [])
 
-  
-
-  const getTrendIcon = (trend: string, dark: boolean) => {
-    const color = trend === 'increasing' ? (dark ? 'text-red-300' : 'text-red-600') :
-                  trend === 'decreasing' ? (dark ? 'text-blue-300' : 'text-blue-600') :
-                  (dark ? 'text-gray-300' : 'text-gray-600')
-    
-    if (trend === 'increasing') return <TrendingUp className={`h-4 w-4 ${color}`} />
-    if (trend === 'decreasing') return <TrendingDown className={`h-4 w-4 ${color}`} />
-    return <BarChart3 className={`h-4 w-4 ${color}`} />
+  const getTrendIcon = (trend: string) => {
+    if (trend === 'increasing') return <TrendingUp className="h-4.5 w-4.5" />
+    if (trend === 'decreasing') return <TrendingDown className="h-4.5 w-4.5" />
+    return <BarChart3 className="h-4.5 w-4.5" />
   }
 
-  const getTrendColor = (trend: string, dark: boolean) => {
-    if (trend === 'increasing') return dark ? 'bg-red-500/20 text-red-300 border-red-400/30' : 'bg-red-100 text-red-700 border-red-300'
-    if (trend === 'decreasing') return dark ? 'bg-blue-500/20 text-blue-300 border-blue-400/30' : 'bg-blue-100 text-blue-700 border-blue-300'
-    return dark ? 'bg-gray-500/20 text-gray-300 border-gray-400/30' : 'bg-gray-100 text-gray-700 border-gray-300'
+  const getTrendColor = (trend: string) => {
+    if (trend === 'increasing') return 'text-rose-500 bg-rose-500/10 border-rose-500/25'
+    if (trend === 'decreasing') return 'text-blue-500 bg-blue-500/10 border-blue-500/25'
+    return 'text-slate-400 bg-slate-500/10 border-slate-500/25'
   }
 
   if (loading && !historyData) {
     return (
-      <div className={`min-h-screen ${
-        isDarkMode 
-          ? 'bg-slate-950 text-slate-100' 
-          : 'bg-slate-50 text-slate-900'
-      } p-6 flex items-center justify-center transition-colors duration-500`}>
+      <div className={`w-full min-h-[calc(100vh-3.5rem)] ${
+        isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
+      } p-4 md:p-6 flex items-center justify-center transition-colors duration-500`}>
         <div className="text-center">
-          <Loader2 className={`h-16 w-16 ${
-            isDarkMode ? 'text-white' : 'text-purple-600'
-          } animate-spin mx-auto mb-4`} />
-          <p className={`text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Loading historical data...
-          </p>
+          <Loader2 className="h-16 w-16 text-indigo-650 animate-spin mx-auto mb-4" />
+          <p className="text-xl font-bold tracking-tight">Syncing meteorological archive logs...</p>
+          <p className="text-xs text-slate-400 mt-1">Retrieving historical atmospheric telemetry...</p>
         </div>
       </div>
     )
@@ -518,478 +552,440 @@ export default function HistoryPage() {
 
   if (!selectedMetricInfo || !currentMetricData) return null
 
+  const latCoord = currentLocation?.lat || 51.5074
+  const lonCoord = currentLocation?.lon || -0.1278
+  const theme = getMetricTheme(selectedMetric)
+
   return (
-    <div className={`min-h-screen ${
-      isDarkMode 
-        ? 'bg-slate-950 text-slate-100' 
-        : 'bg-slate-50 text-slate-900'
-    } p-6 transition-colors duration-500`}>
+    <div className={`w-full max-w-full overflow-x-hidden min-h-[calc(100vh-3.5rem)] ${
+      isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    } p-4 md:p-6 transition-colors duration-500`}>
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-600 text-white shadow-md">
-              <History className="h-6 w-6 text-white" />
+
+        {/* Header Console */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-start sm:items-center gap-3 w-full lg:w-auto">
+            <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-600/10 flex-shrink-0">
+              <History className="h-7 w-7 animate-pulse" />
             </div>
-            <div>
-              <h1 className={`text-2xl font-bold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                Weather History
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight truncate">
+                Weather History Console
               </h1>
-              <div className={`flex items-center gap-2 mt-1 text-sm ${
-                isDarkMode ? 'text-white/70' : 'text-gray-600'
-              }`}>
-                <MapPin className="h-4 w-4 text-purple-500" />
-                <span>{historyData.location}, {historyData.country}</span>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4 text-rose-500 animate-pulse flex-shrink-0" />
+                  <span className="truncate">{historyData.location}, {historyData.country}</span>
+                </div>
+                <span className="hidden sm:inline text-slate-350 dark:text-slate-700">|</span>
+                <span className="font-mono text-xs bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-650 dark:text-slate-450 border border-slate-200 dark:border-slate-800">
+                  LAT: {latCoord.toFixed(4)}° LON: {lonCoord.toFixed(4)}°
+                </span>
+                <span className="hidden sm:inline text-slate-350 dark:text-slate-700">|</span>
                 {locationStatus === 'success' && (
-                  <Badge className={`${
-                    isDarkMode 
-                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' 
-                      : 'bg-purple-100 text-purple-700 border-purple-300'
-                  }`}>
-                    📍 Your Location
+                  <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 border bg-indigo-500/10 text-indigo-650 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-500/20 flex-shrink-0">
+                    📍 Calibrated Location
                   </Badge>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex flex-wrap gap-2">
-            <form onSubmit={handleSearchCity} className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Search city..."
-                value={searchCity}
-                onChange={(e) => setSearchCity(e.target.value)}
-                className={`${
-                  isDarkMode 
-                    ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
-                }`}
-              />
-              <Button type="submit" size="icon" className="bg-purple-600 hover:bg-purple-700">
-                <Search className="h-4 w-4" />
+          {/* Action Row */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+            <form onSubmit={handleSearchCity} className="flex gap-2 w-full sm:w-auto">
+              <div className="relative flex items-center flex-1 sm:flex-initial sm:w-60">
+                <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
+                <Input
+                  type="text"
+                  placeholder="Search weather sector..."
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                  className={`pl-9 pr-3 py-2 w-full rounded-xl transition-all duration-300 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-880 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500' 
+                      : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600'
+                  }`}
+                />
+              </div>
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 font-semibold text-xs tracking-wide shadow-md shadow-indigo-600/15 flex-shrink-0">
+                Scan Sector
               </Button>
             </form>
             
-            <Button
-              onClick={getUserLocation}
-              size="icon"
-              className="bg-indigo-600 hover:bg-indigo-700"
-              title="Use My Location"
-            >
-              <Target className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  onClick={getUserLocation}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-880 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title="Locate station"
+                >
+                  <Target className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
+                </Button>
 
-            <Button
-              onClick={() => currentLocation && fetchHistoricalData(
-                currentLocation.lat, 
-                currentLocation.lon, 
-                periods.find(p => p.id === selectedPeriod)?.days || 7
-              )}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title="Refresh Data"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+                <Button
+                  type="button"
+                  onClick={() => fetchHistoricalData(latCoord, lonCoord, periods.find(p => p.id === selectedPeriod)?.days || 7)}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-880 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title="Sync telemetry"
+                >
+                  <RefreshCw className="h-4.5 w-4.5" />
+                </Button>
 
-            <Button
-              onClick={toggleDarkMode}
-              size="icon"
-              variant="outline"
-              className={`${
-                isDarkMode 
-                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
-                  : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'
-              }`}
-              title={isDarkMode ? "Light Mode" : "Dark Mode"}
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
+                <Button
+                  type="button"
+                  onClick={toggleDarkMode}
+                  variant="outline"
+                  size="icon"
+                  className={`rounded-xl border h-10 w-10 ${
+                    isDarkMode 
+                      ? 'bg-slate-900 border-slate-880 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                  title={isDarkMode ? "Light Display" : "Dark Display"}
+                >
+                  {isDarkMode ? <Sun className="h-4.5 w-4.5 text-amber-500" /> : <Moon className="h-4.5 w-4.5 text-indigo-600" />}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Period Selection */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardContent className="p-4">
-            <div className="flex gap-2 flex-wrap">
+        {/* Data Range / Period Selector console */}
+        <Card className={`border ${
+          isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+        } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">Analysis Frame Range</p>
+              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Toggle active tracking history bounds</p>
+            </div>
+            <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-950 p-1 border border-slate-200 dark:border-slate-850 self-start sm:self-auto">
               {periods.map((period) => (
-                <Button
+                <button
                   key={period.id}
                   onClick={() => handlePeriodChange(period.id)}
-                  variant={selectedPeriod === period.id ? "secondary" : "outline"}
-                  className={selectedPeriod === period.id 
-                    ? isDarkMode
-                      ? "bg-white text-slate-900" 
-                      : "bg-gray-900 text-white"
-                    : isDarkMode
-                      ? "bg-white/10 border-white/30 text-white hover:bg-white/20"
-                      : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-                  }
-                >
-                  {period.name}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Data Summary */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Data Summary - {historyData.summary.period}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className={`text-center p-4 rounded-lg border ${
-                isDarkMode ? 'bg-blue-500/20 border-blue-400/30' : 'bg-blue-100 border-blue-300'
-              }`}>
-                <Calendar className={`h-6 w-6 mx-auto mb-2 ${
-                  isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                }`} />
-                <div className={`text-3xl font-bold ${
-                  isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                }`}>{historyData.summary.totalDays}</div>
-                <div className={`text-sm ${
-                  isDarkMode ? 'text-white/80' : 'text-gray-600'
-                }`}>Total Days</div>
-              </div>
-              <div className={`text-center p-4 rounded-lg border ${
-                isDarkMode ? 'bg-green-500/20 border-green-400/30' : 'bg-green-100 border-green-300'
-              }`}>
-                <BarChart3 className={`h-6 w-6 mx-auto mb-2 ${
-                  isDarkMode ? 'text-green-300' : 'text-green-600'
-                }`} />
-                <div className={`text-3xl font-bold ${
-                  isDarkMode ? 'text-green-300' : 'text-green-600'
-                }`}>{historyData.summary.dataPoints.toLocaleString()}</div>
-                <div className={`text-sm ${
-                  isDarkMode ? 'text-white/80' : 'text-gray-600'
-                }`}>Data Points</div>
-              </div>
-              <div className={`text-center p-4 rounded-lg border ${
-                isDarkMode ? 'bg-purple-500/20 border-purple-400/30' : 'bg-purple-100 border-purple-300'
-              }`}>
-                <History className={`h-6 w-6 mx-auto mb-2 ${
-                  isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                }`} />
-                <div className={`text-3xl font-bold ${
-                  isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                }`}>24/7</div>
-                <div className={`text-sm ${
-                  isDarkMode ? 'text-white/80' : 'text-gray-600'
-                }`}>Monitoring</div>
-              </div>
-              <div className={`text-center p-4 rounded-lg border ${
-                isDarkMode ? 'bg-orange-500/20 border-orange-400/30' : 'bg-orange-100 border-orange-300'
-              }`}>
-                <Download className={`h-6 w-6 mx-auto mb-2 ${
-                  isDarkMode ? 'text-orange-300' : 'text-orange-600'
-                }`} />
-                <div className={`text-lg font-bold ${
-                  isDarkMode ? 'text-orange-300' : 'text-orange-600'
-                }`}>
-                  {historyData.summary.lastUpdated.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })}
-                </div>
-                <div className={`text-sm ${
-                  isDarkMode ? 'text-white/80' : 'text-gray-600'
-                }`}>Last Updated</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Metric Selection */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardContent className="p-4">
-            <div className="flex gap-2 flex-wrap">
-              {metrics.map((metric) => (
-                <Button
-                  key={metric.id}
-                  onClick={() => setSelectedMetric(metric.id)}
-                  variant={selectedMetric === metric.id ? "secondary" : "outline"}
-                  className={`gap-2 ${
-                    selectedMetric === metric.id 
-                      ? isDarkMode
-                        ? "bg-white text-slate-900" 
-                        : "bg-gray-900 text-white"
-                      : isDarkMode
-                        ? "bg-white/10 border-white/30 text-white hover:bg-white/20"
-                        : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
+                  className={`rounded-lg px-4 py-1.5 text-xs font-bold transition-all ${
+                    selectedPeriod === period.id
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "text-slate-500 dark:text-slate-450 hover:text-slate-950 dark:hover:text-white"
                   }`}
                 >
-                  <metric.icon className="h-4 w-4" />
-                  {metric.name}
-                </Button>
+                  {period.name}
+                </button>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Selected Metric Details */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardHeader>
-            <CardTitle className="flex flex-wrap items-center gap-2">
-              <selectedMetricInfo.icon className="h-5 w-5" />
-              {selectedMetricInfo.name} Analysis
-              <Badge className={`border ${getTrendColor(currentMetricData.trend, isDarkMode)}`}>
-                {getTrendIcon(currentMetricData.trend, isDarkMode)}
-                <span className="ml-1 capitalize">{currentMetricData.trend}</span>
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Statistics */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Statistics</h3>
+        {/* Data Summary Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          
+          <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-blue-500">
+            <div className="font-mono text-[9px] text-slate-450 uppercase tracking-widest font-black">[ Total_Days ]</div>
+            <div className="text-2xl font-black text-blue-500 dark:text-blue-450 mt-2">{historyData.summary.totalDays}</div>
+          </div>
+
+          <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-emerald-500">
+            <div className="font-mono text-[9px] text-slate-450 uppercase tracking-widest font-black">[ Data_Points ]</div>
+            <div className="text-2xl font-black text-emerald-500 dark:text-emerald-450 mt-2">{historyData.summary.dataPoints}</div>
+          </div>
+
+          <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-indigo-600">
+            <div className="font-mono text-[9px] text-slate-450 uppercase tracking-widest font-black">[ Monitoring ]</div>
+            <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-2">ACTIVE 24/7</div>
+          </div>
+
+          <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 flex flex-col justify-between h-24 hover:border-indigo-500/20 transition-all duration-300 border-l-4 border-l-amber-500">
+            <div className="font-mono text-[9px] text-slate-450 uppercase tracking-widest font-black">[ Last_BroadCast_Sync ]</div>
+            <div className="text-sm font-black text-slate-800 dark:text-slate-200 mt-2">
+              {new Date(historyData.summary.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Metric Selection console */}
+        <Card className={`border ${
+          isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+        } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">Atmospheric Variable</p>
+              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Select weather metric telemetry stream</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {metrics.map((metric) => {
+                const MIcon = metric.icon
+                return (
+                  <button
+                    key={metric.id}
+                    onClick={() => setSelectedMetric(metric.id)}
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold border transition-all ${
+                      selectedMetric === metric.id
+                        ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
+                        : isDarkMode
+                          ? "bg-slate-950 border-slate-850 text-slate-400 hover:text-white"
+                          : "bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    <MIcon className="h-4 w-4" />
+                    <span>{metric.name}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Main Grid Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* Chart Display: Left column (8 columns) */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            <Card className={`border ${
+              isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+            } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <Activity className="h-4.5 w-4.5 text-indigo-500" />
+                  <span>Historical Trend: {selectedMetricInfo.name}</span>
+                </CardTitle>
+                <CardDescription className="text-[10px] font-semibold text-slate-400">
+                  Visual telemetry chart tracking variations over the frame bounds
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
                 
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    {/* Render BarChart or AreaChart based on selectedMetric */}
+                    {(selectedMetric === "precipitation" || selectedMetric === "windSpeed") ? (
+                      <BarChart data={currentMetricData.data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? "#1e293b" : "#f1f5f9"} />
+                        <XAxis 
+                          dataKey="date" 
+                          stroke={isDarkMode ? "#64748b" : "#94a3b8"} 
+                          fontSize={10} 
+                          fontWeight="bold" 
+                        />
+                        <YAxis 
+                          stroke={theme.color} 
+                          fontSize={10} 
+                          fontWeight="bold" 
+                        />
+                        <Tooltip content={<CustomTooltip unit={selectedMetricInfo.unit} isDarkMode={isDarkMode} />} />
+                        <Bar
+                          dataKey="value"
+                          name={selectedMetricInfo.name}
+                          fill={theme.color}
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={40}
+                        />
+                      </BarChart>
+                    ) : (
+                      <AreaChart data={currentMetricData.data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? "#1e293b" : "#f1f5f9"} />
+                        <XAxis 
+                          dataKey="date" 
+                          stroke={isDarkMode ? "#64748b" : "#94a3b8"} 
+                          fontSize={10} 
+                          fontWeight="bold" 
+                        />
+                        <YAxis 
+                          stroke={theme.color} 
+                          fontSize={10} 
+                          fontWeight="bold" 
+                        />
+                        <Tooltip content={<CustomTooltip unit={selectedMetricInfo.unit} isDarkMode={isDarkMode} />} />
+                        <Area
+                          type="monotone"
+                          dataKey="value"
+                          name={selectedMetricInfo.name}
+                          stroke={theme.color}
+                          strokeWidth={2}
+                          fillOpacity={0.1}
+                          fill={theme.color}
+                        />
+                      </AreaChart>
+                    )}
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-850/50 mt-4 pt-3 text-[10px] font-mono text-indigo-400/40 font-bold">
+                  <span>SYS: ARCHIVE_SCAN</span>
+                  <span>RATE: HISTORIC</span>
+                  <span>DTR_LOCK: OK</span>
+                </div>
+
+              </CardContent>
+            </Card>
+
+          </div>
+
+          {/* Metric Summary statistics: Right column (4 columns) */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            <Card className={`border ${
+              isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+            } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center justify-between gap-1.5">
+                  <span>Metrics Summary</span>
+                  <Badge variant="outline" className={`text-[9px] font-black uppercase px-2 py-0.5 border ${getTrendColor(currentMetricData.trend)}`}>
+                    {getTrendIcon(currentMetricData.trend)}
+                    <span className="ml-1 capitalize">{currentMetricData.trend}</span>
+                  </Badge>
+                </CardTitle>
+                <CardDescription className="text-[10px] font-semibold text-slate-400">
+                  Calculated records over active timeline frames
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 space-y-4">
+                
+                {/* Stat block 1 */}
                 {selectedMetric === "precipitation" ? (
                   <>
-                    <div className={`rounded-lg p-4 border ${
-                      isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'
-                    }`}>
-                      <div className={`text-2xl font-bold ${
-                        isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                      }`}>
-                        {currentMetricData.total}{selectedMetricInfo.unit}
-                      </div>
-                      <div className={`text-sm ${
-                        isDarkMode ? 'text-white/80' : 'text-gray-600'
-                      }`}>Total {selectedMetricInfo.name}</div>
+                    <div className={`p-4 rounded-xl border ${theme.border} bg-slate-50 dark:bg-slate-950 border-slate-250 dark:border-slate-850 flex flex-col justify-between h-20`}>
+                      <div className="font-mono text-[8px] text-slate-450 uppercase tracking-wider font-black">Total Precipitation</div>
+                      <div className="text-lg font-black text-slate-850 dark:text-slate-100">{currentMetricData.total} {selectedMetricInfo.unit}</div>
                     </div>
-                    <div className={`rounded-lg p-4 border ${
-                      isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'
-                    }`}>
-                      <div className={`text-2xl font-bold ${
-                        isDarkMode ? 'text-green-300' : 'text-green-600'
-                      }`}>
-                        {currentMetricData.rainyDays}
-                      </div>
-                      <div className={`text-sm ${
-                        isDarkMode ? 'text-white/80' : 'text-gray-600'
-                      }`}>Rainy Days</div>
+
+                    <div className={`p-4 rounded-xl border border-l-4 border-l-cyan-500 bg-slate-50 dark:bg-slate-950 border-slate-250 dark:border-slate-850 flex flex-col justify-between h-20`}>
+                      <div className="font-mono text-[8px] text-slate-450 uppercase tracking-wider font-black">Rainy Days count</div>
+                      <div className="text-lg font-black text-slate-850 dark:text-slate-100">{currentMetricData.rainyDays} days</div>
                     </div>
                   </>
                 ) : (
-                  <div className={`rounded-lg p-4 border ${
-                    isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    <div className={`text-2xl font-bold ${
-                      isDarkMode ? 'text-green-300' : 'text-green-600'
-                    }`}>
-                      {currentMetricData.average}{selectedMetricInfo.unit}
-                    </div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>Average {selectedMetricInfo.name}</div>
+                  <div className={`p-4 rounded-xl border ${theme.border} bg-slate-50 dark:bg-slate-950 border-slate-250 dark:border-slate-850 flex flex-col justify-between h-20`}>
+                    <div className="font-mono text-[8px] text-slate-450 uppercase tracking-wider font-black">Average value</div>
+                    <div className="text-lg font-black text-slate-850 dark:text-slate-100">{currentMetricData.average} {selectedMetricInfo.unit}</div>
                   </div>
                 )}
 
-                <div className={`rounded-lg p-4 border ${
-                  isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'
-                }`}>
-                  <div className={`text-2xl font-bold ${
-                    isDarkMode ? 'text-red-300' : 'text-red-600'
-                  }`}>
-                    {currentMetricData.max?.value || currentMetricData.total}{selectedMetricInfo.unit}
-                  </div>
-                  <div className={`text-sm ${
-                    isDarkMode ? 'text-white/80' : 'text-gray-600'
-                  }`}>
-                    Maximum ({currentMetricData.max?.date || "N/A"})
+                {/* Stat block 2 */}
+                <div className="p-4 rounded-xl border border-l-4 border-l-rose-500 bg-slate-50 dark:bg-slate-950 border-slate-250 dark:border-slate-850 flex flex-col justify-between h-20">
+                  <div className="font-mono text-[8px] text-slate-450 uppercase tracking-wider font-black">Peak Maximum</div>
+                  <div>
+                    <span className="text-lg font-black text-rose-500">{currentMetricData.max?.value || currentMetricData.total} {selectedMetricInfo.unit}</span>
+                    {currentMetricData.max?.date && <span className="text-[9px] font-bold text-slate-450 ml-1.5">on {currentMetricData.max.date}</span>}
                   </div>
                 </div>
 
+                {/* Stat block 3 */}
                 {currentMetricData.min && (
-                  <div className={`rounded-lg p-4 border ${
-                    isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    <div className={`text-2xl font-bold ${
-                      isDarkMode ? 'text-blue-300' : 'text-blue-600'
-                    }`}>
-                      {currentMetricData.min.value}{selectedMetricInfo.unit}
-                    </div>
-                    <div className={`text-sm ${
-                      isDarkMode ? 'text-white/80' : 'text-gray-600'
-                    }`}>
-                      Minimum ({currentMetricData.min.date})
+                  <div className="p-4 rounded-xl border border-l-4 border-l-blue-500 bg-slate-50 dark:bg-slate-950 border-slate-250 dark:border-slate-850 flex flex-col justify-between h-20">
+                    <div className="font-mono text-[8px] text-slate-450 uppercase tracking-wider font-black">Valley Minimum</div>
+                    <div>
+                      <span className="text-lg font-black text-blue-500">{currentMetricData.min.value} {selectedMetricInfo.unit}</span>
+                      <span className="text-[9px] font-bold text-slate-450 ml-1.5">on {currentMetricData.min.date}</span>
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* Chart */}
-              <div className="lg:col-span-2">
-                <h3 className="font-semibold text-lg mb-4">Historical Trend</h3>
-                <div className={`h-64 rounded-lg p-4 border ${
-                  isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'
-                }`}>
-                  <div className="h-full flex items-end justify-around gap-1">
-                    {currentMetricData.data.slice(-20).map((point, index) => {
-                      const maxValue = Math.max(...currentMetricData.data.map(d => d.value))
-                      const minValue = Math.min(...currentMetricData.data.map(d => d.value))
-                      const range = maxValue - minValue
-                      const height = range > 0 ? ((point.value - minValue) / range) * 100 : 50
-                      
-                      return (
-                        <div key={`chart-point-${index}`} className="flex flex-col items-center flex-1 min-w-0">
-                          <div className={`text-xs mb-1 ${
-                            isDarkMode ? 'text-white/70' : 'text-gray-600'
-                          }`}>
-                            {point.value}
-                          </div>
-                          <div 
-                            className={`w-full ${
-                              isDarkMode 
-                                ? 'bg-purple-500' 
-                                : 'bg-purple-600'
-                            } rounded-t transition-all hover:opacity-80`}
-                            style={{ height: `${Math.max(height, 5)}%`, minHeight: '8px' }}
-                            title={`${point.date}: ${point.value}${selectedMetricInfo.unit}`}
-                          ></div>
-                          {index % 3 === 0 && (
-                            <div className={`text-xs mt-1 ${
-                              isDarkMode ? 'text-white/60' : 'text-gray-500'
-                            } truncate max-w-full`}>
-                              {point.date.split(' ')[0]}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-                <p className={`text-xs mt-2 ${
-                  isDarkMode ? 'text-white/60' : 'text-gray-500'
-                }`}>
-                  Showing last {Math.min(20, currentMetricData.data.length)} data points
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        {/* Weather Extremes */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Weather Extremes - {historyData.summary.period}
+          </div>
+
+        </div>
+
+        {/* Weather Extremes Reference Panel */}
+        <Card className={`border ${
+          isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+        } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+          <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-indigo-500" />
+              <span>Meteorological Extreme Records - {historyData.summary.period}</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <CardContent className="p-4 md:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {historyData.extremes.map((extreme, index) => (
-                <div key={`extreme-${index}`} className={`rounded-lg p-4 border ${
-                  isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'
+                <div key={index} className={`p-4 rounded-xl border flex flex-col justify-between h-28 hover:scale-[1.02] transition-all duration-300 ${
+                  isDarkMode ? 'bg-slate-950/40 border-slate-850' : 'bg-slate-50 border-slate-200'
                 }`}>
-                  <div className={`text-lg font-bold mb-2 ${
-                    isDarkMode ? 'text-yellow-300' : 'text-yellow-600'
-                  }`}>{extreme.value}</div>
-                  <div className="text-sm font-medium mb-1">{extreme.type}</div>
-                  <div className={`text-xs mb-2 ${
-                    isDarkMode ? 'text-white/70' : 'text-gray-600'
-                  }`}>{extreme.date}</div>
-                  <div className={`text-xs ${
-                    isDarkMode ? 'text-white/60' : 'text-gray-500'
-                  }`}>{extreme.description}</div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[8px] uppercase tracking-wider text-slate-450 font-black">Record</span>
+                    <Badge variant="outline" className="text-[8px] font-black font-mono border bg-amber-500/10 text-amber-500 border-amber-500/20 px-1.5 py-0.5">EX_LMT</Badge>
+                  </div>
+                  <div className="mt-1">
+                    <div className="text-base font-black text-rose-500 dark:text-rose-400">{extreme.value}</div>
+                    <div className="text-[10px] font-black text-slate-800 dark:text-slate-200 truncate mt-0.5">{extreme.type}</div>
+                  </div>
+                  <div className="border-t border-slate-100 dark:border-slate-850/50 mt-1 pt-1.5">
+                    <div className="text-[9px] font-bold text-slate-400">Date: {extreme.date}</div>
+                    <div className="text-[8px] text-slate-450 font-semibold truncate mt-0.5">{extreme.description}</div>
+                  </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Data Export Options */}
-        <Card className={`${
-          isDarkMode 
-            ? 'bg-white/10 border-white/20 text-white' 
-            : 'bg-white border-gray-200 text-gray-900'
-        } backdrop-blur-lg`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Download className="h-5 w-5" />
-              Export Historical Data
+        {/* Data Export Console */}
+        <Card className={`border ${
+          isDarkMode ? 'bg-slate-900 border-slate-850' : 'bg-white border-slate-200'
+        } rounded-2xl shadow-sm overflow-hidden hover:border-indigo-500/20 transition-all duration-300`}>
+          <CardHeader className="pb-3 border-b border-slate-150 dark:border-slate-850">
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <Download className="h-5 w-5 text-indigo-500" />
+              <span>Export Diagnostic Telemetry Report</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <CardContent className="p-4 md:p-6 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Button 
                 onClick={exportAsCSV}
-                className={isDarkMode
-                  ? "bg-white/10 border-white/30 text-white hover:bg-white/20"
-                  : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-                }
-                variant="outline"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 px-4 font-bold text-xs tracking-wide shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2"
               >
-                <Download className="h-4 w-4 mr-2" />
-                Export as CSV
+                <Download className="h-4 w-4" />
+                <span>Export as CSV</span>
               </Button>
+              
               <Button 
                 onClick={exportAsJSON}
-                className={isDarkMode
-                  ? "bg-white/10 border-white/30 text-white hover:bg-white/20"
-                  : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-                }
-                variant="outline"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 px-4 font-bold text-xs tracking-wide shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2"
               >
-                <Download className="h-4 w-4 mr-2" />
-                Export as JSON
+                <Download className="h-4 w-4" />
+                <span>Export as JSON</span>
               </Button>
+
               <Button 
                 onClick={() => window.print()}
-                className={isDarkMode
-                  ? "bg-white/10 border-white/30 text-white hover:bg-white/20"
-                  : "bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
-                }
                 variant="outline"
+                className={`rounded-xl py-2 px-4 font-bold text-xs tracking-wide border flex items-center justify-center gap-2 ${
+                  isDarkMode 
+                    ? 'bg-slate-950 border-slate-850 text-slate-350 hover:bg-slate-850 hover:text-white' 
+                    : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-100 hover:text-slate-900'
+                }`}
               >
-                <Download className="h-4 w-4 mr-2" />
-                Generate Report
+                <FileText className="h-4 w-4" />
+                <span>Print Telemetry Log</span>
               </Button>
             </div>
-            <p className={`text-sm mt-4 ${
-              isDarkMode ? 'text-white/70' : 'text-gray-600'
-            }`}>
-              Export historical weather data for analysis, research, or backup purposes. 
-              Data includes temperature, humidity, precipitation, atmospheric pressure, and wind speed measurements.
+            <p className="text-xs text-slate-450 font-semibold leading-relaxed">
+              Generate structured historical meteorological reports for downstream climate analysis, backup redundancy, or scientific study. 
+              The package includes calibrated measurements for temperature variations, precipitation intensity logs, atmospheric relative humidity, barometric pressure fluctuations, and wind velocity metrics.
             </p>
           </CardContent>
         </Card>
+
       </div>
     </div>
   )
