@@ -35,7 +35,8 @@ import {
   BarChart3,
   Map,
   Sparkles,
-  Moon
+  Moon,
+  Smile
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -108,6 +109,14 @@ function DashboardLayoutContent({ children }) {
   const [searchQuery, setSearchQuery] = useState("")
   const { isDarkMode, toggleDarkMode } = useTheme()
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+  const [formattedDate, setFormattedDate] = useState("")
+
+  useEffect(() => {
+    setMounted(true)
+    const options = { weekday: 'long', month: 'short', day: 'numeric' }
+    setFormattedDate(new Date().toLocaleDateString('en-US', options))
+  }, [])
 
   // Get all navigation items for search
   const allNavItems = navigationGroups.flatMap(group => group.items)
@@ -436,18 +445,30 @@ function DashboardLayoutContent({ children }) {
               </SheetContent>
             </Sheet>
 
-            {/* Top Search Bar */}
-            <div className="flex-1">
-              <form onSubmit={(e) => e.preventDefault()}>
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-                  <Input
-                    type="search"
-                    placeholder="Search weather data..."
-                    className="w-full pl-8 h-9 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm border-slate-200 dark:border-slate-800 focus:border-indigo-400 focus:ring-indigo-400 text-slate-900 dark:text-slate-100 md:w-2/3 lg:w-1/3"
-                  />
+            {/* Dynamic Welcome Greeting & Location Details instead of Search */}
+            <div className="flex-1 flex items-center justify-between min-w-0 md:mr-4">
+              <div className="flex items-center gap-3 truncate">
+                <div className="hidden lg:flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400">
+                  <Smile className="h-4.5 w-4.5 animate-pulse" />
                 </div>
-              </form>
+                <div className="text-left leading-none">
+                  <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                    Welcome to Climafy
+                  </div>
+                  <div className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">
+                    {mounted ? formattedDate : 'Loading date...'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Weather Snapshot Badge */}
+              <div className="hidden md:flex items-center gap-2 border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 px-3 py-1 rounded-xl max-w-xs transition-colors">
+                <MapPin className="h-3.5 w-3.5 text-rose-500 animate-bounce" />
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">Medina Estates, GH</span>
+                <Badge variant="secondary" className="bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 border-0 py-0 px-1.5 text-[10px] font-bold">
+                  27°C
+                </Badge>
+              </div>
             </div>
 
             {/* Notification and User Menu */}
