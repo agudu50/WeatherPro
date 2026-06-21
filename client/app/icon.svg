@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <!-- Sun Gradient -->
+    <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFEA36" />
+      <stop offset="100%" stop-color="#FF7A00" />
+    </linearGradient>
+    <!-- Cloud Gradient -->
+    <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#4F46E5" />
+    </linearGradient>
+    <!-- Shadow Filter -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1.2" stdDeviation="0.8" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  
+  <!-- Sun -->
+  <circle cx="21" cy="11" r="6" fill="url(#sunGrad)" />
+  
+  <!-- Cloud -->
+  <g filter="url(#shadow)">
+    <path d="M 9 20 A 5 5 0 0 1 14 15 A 6.5 6.5 0 0 1 25.5 16.5 A 4.5 4.5 0 0 1 28 21.5 A 4.5 4.5 0 0 1 23.5 26 L 9.5 26 A 5 5 0 0 1 5 21 A 5 5 0 0 1 9 20 Z" 
+          fill="url(#cloudGrad)" 
+          stroke="#FFFFFF" 
+          stroke-width="0.75" 
+          stroke-opacity="0.2" />
+  </g>
+</svg>
