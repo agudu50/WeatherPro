@@ -20,7 +20,8 @@ export async function GET(request) {
 
   try {
     const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+      `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`,
+      { next: { revalidate: 600 } }
     )
     
     if (!response.ok) throw new Error('Forecast API failed')

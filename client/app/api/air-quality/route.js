@@ -20,7 +20,8 @@ export async function GET(request) {
 
   try {
     const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+      `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`,
+      { next: { revalidate: 600 } }
     )
     
     if (!response.ok) {

@@ -24,6 +24,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://openweathermap.org" />
+        <link rel="dns-prefetch" href="https://openweathermap.org" />
+      </head>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} overflow-x-hidden`}>
         {children}
         <Analytics />

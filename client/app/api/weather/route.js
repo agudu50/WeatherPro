@@ -28,7 +28,7 @@ export async function GET(request) {
     
     url += `&appid=${API_KEY}&units=metric`
     
-    const response = await fetch(url)
+    const response = await fetch(url, { next: { revalidate: 300 } })
     
     if (!response.ok) {
       throw new Error(`OpenWeather API error: ${response.status}`)
