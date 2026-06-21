@@ -213,7 +213,7 @@ export default function App() {
     <div className={`min-h-screen ${
       isDarkMode 
         ? 'dark bg-slate-950 text-white' 
-        : 'bg-slate-50 text-slate-900'
+        : 'bg-zinc-50 text-slate-900'
     } relative overflow-hidden transition-colors duration-500`}>
       {/* Premium Modern Animated Background Design */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -221,25 +221,21 @@ export default function App() {
         <div className={`absolute inset-0 opacity-[0.5] dark:opacity-[0.15] bg-[linear-gradient(to_right,#8080800d_1px,transparent_1px),linear-gradient(to_bottom,#8080800d_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)]`} />
 
         {/* Floating animated ambient gradient color blobs - warm rose/amber/violet/fuchsia light mode palette */}
-        <div className={`absolute -top-40 -left-40 w-[550px] h-[550px] rounded-full blur-[110px] animate-drift-one transition-colors duration-1000 ${
-          isDarkMode ? 'bg-indigo-600/15' : 'bg-rose-300/30'
-        }`} />
-        <div className={`absolute top-[20%] -right-20 w-[500px] h-[500px] rounded-full blur-[110px] animate-drift-two transition-colors duration-1000 ${
-          isDarkMode ? 'bg-violet-600/15' : 'bg-amber-300/25'
-        }`} style={{ animationDelay: '-4s' }} />
-        <div className={`absolute bottom-[10%] left-[10%] w-[600px] h-[600px] rounded-full blur-[130px] animate-drift-three transition-colors duration-1000 ${
-          isDarkMode ? 'bg-fuchsia-600/10' : 'bg-violet-300/30'
-        }`} style={{ animationDelay: '-2s' }} />
-        <div className={`absolute -bottom-20 -right-20 w-[450px] h-[450px] rounded-full blur-[100px] animate-drift-one transition-colors duration-1000 ${
-          isDarkMode ? 'bg-cyan-600/10' : 'bg-fuchsia-300/25'
-        }`} style={{ animationDelay: '-7s' }} />
+        {isDarkMode && (
+          <>
+            <div className="absolute -top-40 -left-40 w-[550px] h-[550px] rounded-full blur-[110px] animate-drift-one transition-colors duration-1000 bg-indigo-600/15" />
+            <div className="absolute top-[20%] -right-20 w-[500px] h-[500px] rounded-full blur-[110px] animate-drift-two transition-colors duration-1000 bg-violet-600/15" style={{ animationDelay: '-4s' }} />
+            <div className="absolute bottom-[10%] left-[10%] w-[600px] h-[600px] rounded-full blur-[130px] animate-drift-three transition-colors duration-1000 bg-fuchsia-600/10" style={{ animationDelay: '-2s' }} />
+            <div className="absolute -bottom-20 -right-20 w-[450px] h-[450px] rounded-full blur-[100px] animate-drift-one transition-colors duration-1000 bg-cyan-600/10" style={{ animationDelay: '-7s' }} />
+          </>
+        )}
 
         {/* Small floating particles */}
         {backgroundParticles.map((particle) => (
           <div
             key={`bg-element-${particle.id}`}
             className={`absolute w-1.5 h-1.5 ${
-              isDarkMode ? 'bg-indigo-400/20' : 'bg-indigo-500/15'
+              isDarkMode ? 'bg-indigo-400/20' : 'bg-zinc-300/30'
             } rounded-full animate-float blur-[1px]`}
             style={{
               left: `${particle.left}%`,
@@ -323,10 +319,10 @@ export default function App() {
             ].map((stat, index) => (
               <div 
                 key={`stat-${index}`}
-                className={`rounded-2xl p-4 transition-all duration-300 hover:scale-105 border backdrop-blur-md ${
+                className={`rounded-2xl p-4 transition-all duration-350 hover:-translate-y-1 border ${
                   isDarkMode 
-                    ? 'bg-slate-900/40 border-white/10 text-white hover:bg-slate-900/60 shadow-xl' 
-                    : 'bg-white/60 border-slate-200 text-slate-800 hover:bg-white shadow-md'
+                    ? 'bg-slate-900/40 border-white/10 text-white hover:bg-slate-900/60 shadow-xl backdrop-blur-md' 
+                    : 'bg-white border-zinc-200 text-zinc-800 shadow-sm hover:border-zinc-350 hover:shadow-md'
                 }`}
               >
                 <stat.icon className="h-6 w-6 text-indigo-500 dark:text-indigo-400 mx-auto mb-2" />
@@ -350,7 +346,7 @@ export default function App() {
               className={`inline-flex items-center justify-center text-base px-8 py-4 border hover:scale-105 active:scale-95 transition-all rounded-2xl font-bold ${
                 isDarkMode 
                   ? 'border-white/10 text-white bg-slate-900/50 hover:bg-slate-900/80 shadow-md shadow-slate-950/20' 
-                  : 'border-slate-200 text-slate-800 bg-white/55 hover:bg-slate-100 shadow-md shadow-slate-100/10'
+                  : 'border-zinc-200 text-zinc-800 bg-white hover:bg-zinc-50 shadow-sm'
               }`}
             >
               <Thermometer className="mr-2 h-4.5 w-4.5 text-indigo-500 dark:text-indigo-400" />
@@ -382,10 +378,10 @@ export default function App() {
 
           {/* Featured Spotlight */}
           <div className="mb-16">
-            <Card className={`border shadow-2xl overflow-hidden relative group max-w-4xl mx-auto rounded-3xl backdrop-blur-xl ${
-              isDarkMode ? 'bg-slate-900/40 border-white/10 text-white' : 'bg-white/60 border-slate-200 text-slate-800'
+            <Card className={`border shadow-2xl overflow-hidden relative group max-w-4xl mx-auto rounded-3xl ${
+              isDarkMode ? 'bg-slate-900/40 border-white/10 text-white backdrop-blur-xl' : 'bg-white border-zinc-200 text-zinc-800'
             }`}>
-              <div className={`absolute inset-0 opacity-10 transition-opacity duration-500 ${isDarkMode ? 'bg-indigo-500/10' : 'bg-indigo-500/5'}`} />
+              <div className={`absolute inset-0 opacity-10 transition-opacity duration-500 ${isDarkMode ? 'bg-indigo-500/10' : 'bg-zinc-100/40'}`} />
               <CardContent className="p-8 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                   <div>
@@ -429,10 +425,10 @@ export default function App() {
               return (
                 <Link key={`feature-${index}`} href={feature.link}>
                   <Card 
-                    className={`border transition-all duration-500 hover:scale-[1.03] hover:-translate-y-1 group cursor-pointer h-full backdrop-blur-xl ${
+                    className={`border transition-all duration-500 hover:scale-[1.03] hover:-translate-y-1 group cursor-pointer h-full ${
                       isDarkMode 
-                        ? 'bg-slate-900/40 border-white/10 text-white hover:bg-slate-900/60 shadow-xl' 
-                        : 'bg-white/60 border-slate-200 text-slate-800 hover:bg-white shadow-md'
+                        ? 'bg-slate-900/40 border-white/10 text-white hover:bg-slate-900/60 shadow-xl backdrop-blur-xl' 
+                        : 'bg-white border-zinc-200 text-zinc-800 hover:border-indigo-500 hover:shadow-md shadow-sm'
                     } ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
                     style={{ 
                       animationDelay: `${1300 + index * 100}ms`,
@@ -477,10 +473,10 @@ export default function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={`testimonial-${index}`} className={`border transition-all duration-300 hover:scale-105 backdrop-blur-xl ${
+              <Card key={`testimonial-${index}`} className={`border transition-all duration-300 hover:-translate-y-1 ${
                 isDarkMode 
-                  ? 'bg-slate-900/40 border-white/10 text-white shadow-xl' 
-                  : 'bg-white/60 border-slate-200 text-slate-800 shadow-md'
+                  ? 'bg-slate-900/40 border-white/10 text-white shadow-xl backdrop-blur-xl' 
+                  : 'bg-white border-zinc-200 text-zinc-800 shadow-sm hover:shadow-md'
               }`}>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4 mb-4">
@@ -506,16 +502,18 @@ export default function App() {
 
         {/* Enhanced CTA Section */}
         <div className="py-20 text-center">
-          <div className={`backdrop-blur-xl border rounded-3xl p-12 max-w-3xl mx-auto relative overflow-hidden group shadow-2xl transition-all duration-500 ${
-            isDarkMode ? 'bg-slate-900/40 border-white/10 text-white shadow-indigo-950/10' : 'bg-white/60 border-slate-200 text-slate-800 shadow-indigo-100/10'
+          <div className={`border rounded-3xl p-12 max-w-3xl mx-auto relative overflow-hidden group shadow-2xl transition-all duration-500 ${
+            isDarkMode 
+              ? 'bg-slate-900/40 border-white/10 text-white shadow-indigo-950/10 backdrop-blur-xl' 
+              : 'bg-zinc-900 border-zinc-800 text-white shadow-xl'
           }`}>
-            <div className={`absolute inset-0 transition-all duration-500 ${isDarkMode ? 'bg-indigo-950/10' : 'bg-indigo-50/5'}`} />
+            <div className={`absolute inset-0 transition-all duration-500 ${isDarkMode ? 'bg-indigo-950/10' : 'bg-zinc-800/10'}`} />
             <div className="relative z-10">
-              <Zap className="h-16 w-16 text-amber-500 mx-auto mb-6 animate-pulse" />
-              <h3 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-6">
+              <Zap className="h-16 w-16 text-amber-400 mx-auto mb-6 animate-pulse" />
+              <h3 className="text-3xl md:text-4xl font-extrabold text-white mb-6">
                 Ready to Get Started?
               </h3>
-              <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 mb-8 max-w-lg mx-auto">
+              <p className={`text-lg md:text-xl mb-8 max-w-lg mx-auto ${isDarkMode ? 'text-slate-400' : 'text-zinc-400'}`}>
                 Join thousands of teams already using our platform to make better decisions with real-time data.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -532,7 +530,7 @@ export default function App() {
                   className={`inline-flex items-center justify-center text-base px-8 py-4 border hover:scale-105 active:scale-95 transition-all rounded-2xl font-bold ${
                     isDarkMode 
                       ? 'border-white/10 text-white bg-slate-900/50 hover:bg-slate-900/80 shadow-md shadow-slate-950/20' 
-                      : 'border-slate-200 text-slate-800 bg-white/55 hover:bg-slate-100 shadow-md shadow-slate-100/10'
+                      : 'border-zinc-700 text-zinc-300 bg-zinc-800/50 hover:bg-zinc-800 hover:text-white'
                   }`}
                 >
                   <Eye className="mr-2 h-4.5 w-4.5" />
