@@ -404,12 +404,16 @@ export default function App() {
                     </Button>
                   </div>
                   <div className="relative">
-                    <div className={`w-full h-64 rounded-2xl border flex items-center justify-center backdrop-blur-md ${
-                      isDarkMode ? 'bg-slate-950/20 border-white/5' : 'bg-slate-50/50 border-slate-200/50'
+                    <div className={`w-full h-64 rounded-2xl border flex items-center justify-center ${
+                      isDarkMode 
+                        ? 'bg-slate-950/20 border-white/5 backdrop-blur-md' 
+                        : 'bg-zinc-50 border-zinc-200'
                     }`}>
                       {(() => {
                         const IconComponent = features[currentFeature].icon
-                        return <IconComponent className="h-24 w-24 text-slate-300 dark:text-white/20" />
+                        return <IconComponent className={`h-24 w-24 ${
+                          isDarkMode ? 'text-white/10' : 'text-indigo-600/20'
+                        }`} />
                       })()}
                     </div>
                   </div>
