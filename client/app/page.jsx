@@ -384,24 +384,28 @@ export default function App() {
               <div className={`absolute inset-0 opacity-10 transition-opacity duration-500 ${isDarkMode ? 'bg-indigo-500/10' : 'bg-zinc-100/40'}`} />
               <CardContent className="p-8 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                  <div>
-                    <div className={`w-16 h-16 rounded-2xl ${features[currentFeature].color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 text-white shadow-lg`}>
-                      {(() => {
-                        const IconComponent = features[currentFeature].icon
-                        return <IconComponent className="h-8 w-8" />
-                      })()}
+                  <div className="min-h-[340px] sm:min-h-[300px] lg:min-h-[320px] flex flex-col justify-between">
+                    <div>
+                      <div className={`w-16 h-16 rounded-2xl ${features[currentFeature].color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 text-white shadow-lg`}>
+                        {(() => {
+                          const IconComponent = features[currentFeature].icon
+                          return <IconComponent className="h-8 w-8" />
+                        })()}
+                      </div>
+                      <h3 className="text-2xl sm:text-3xl font-black mb-4 text-slate-900 dark:text-white">{features[currentFeature].title}</h3>
+                      <p className="text-slate-500 dark:text-slate-300 text-base sm:text-lg mb-6 leading-relaxed">{features[currentFeature].description}</p>
                     </div>
-                    <h3 className="text-3xl font-black mb-4 text-slate-900 dark:text-white">{features[currentFeature].title}</h3>
-                    <p className="text-slate-500 dark:text-slate-300 text-lg mb-6 leading-relaxed">{features[currentFeature].description}</p>
-                    <Button asChild className={`rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 ${
-                      isDarkMode 
-                        ? 'bg-white/10 hover:bg-white/20 text-white border-white/10' 
-                        : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/10'
-                    }`}>
-                      <Link href={features[currentFeature].link}>
-                        Explore Feature <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
+                    <div>
+                      <Button asChild className={`rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 ${
+                        isDarkMode 
+                          ? 'bg-white/10 hover:bg-white/20 text-white border-white/10' 
+                          : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/10'
+                      }`}>
+                        <Link href={features[currentFeature].link}>
+                          Explore Feature <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                   <div className="relative">
                     <div className={`w-full h-64 rounded-2xl border flex items-center justify-center ${
